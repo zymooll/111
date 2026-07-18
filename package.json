@@ -1,0 +1,13 @@
+{
+  "name": "campus-foodie",
+  "private": true,
+  "packageManager": "pnpm@11.9.0",
+  "scripts": {
+    "dev:user": "pnpm --filter @campus-foodie/user-web dev",
+    "dev:admin": "pnpm --filter @campus-foodie/admin-web dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint"
+  }
+}

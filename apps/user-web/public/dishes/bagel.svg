@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="流心芝士贝果插画">
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff0d8"/><stop offset="1" stop-color="#e9b16f"/></linearGradient><radialGradient id="bread"><stop stop-color="#f6c775"/><stop offset=".75" stop-color="#c87935"/><stop offset="1" stop-color="#8a4b28"/></radialGradient></defs><rect width="800" height="600" fill="url(#bg)"/><circle cx="656" cy="94" r="138" fill="#fff" opacity=".24"/>
+  <ellipse cx="400" cy="476" rx="260" ry="58" fill="#8b542f" opacity=".24"/><ellipse cx="400" cy="320" rx="245" ry="185" fill="url(#bread)" stroke="#5a3322" stroke-width="14"/><ellipse cx="400" cy="310" rx="88" ry="68" fill="#fff2d8" stroke="#5a3322" stroke-width="12"/>
+  <path d="M225 330c96 48 254 48 350 0" fill="none" stroke="#fff3b0" stroke-width="40" stroke-linecap="round"/><path d="M307 325c25 48 73 86 93 153 37-62 81-110 102-156" fill="#ffd952" stroke="#b56c28" stroke-width="7"/>
+  <g fill="#fff4cc"><ellipse cx="278" cy="205" rx="13" ry="7" transform="rotate(24 278 205)"/><ellipse cx="365" cy="165" rx="13" ry="7" transform="rotate(-15 365 165)"/><ellipse cx="486" cy="190" rx="13" ry="7" transform="rotate(28 486 190)"/><ellipse cx="542" cy="262" rx="13" ry="7" transform="rotate(-20 542 262)"/></g>
+</svg>

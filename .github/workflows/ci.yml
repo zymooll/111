@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install backend
+        run: python -m pip install -e './backend[dev]'
+      - name: Test backend
+        run: python -m pytest backend/tests --cov=app --cov-report=term-missing
+      - name: Static contract audit
+        run: python scripts/static_audit.py
+      - name: Validate database migration
+        working-directory: backend
+        env:
+          DATABASE_URL: sqlite:///./runtime/ci.db
+          AUTO_SEED: "false"
+        run: python -m alembic upgrade head
+      - name: Generate OpenAPI documents
+        working-directory: backend
+        run: python scripts/export_openapi.py
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+      - name: Install workspace
+        run: pnpm install --frozen-lockfile
+      - name: Typecheck and build
+        run: pnpm build
+      - name: Test
+        run: pnpm test

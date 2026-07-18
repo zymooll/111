@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="鸡腿能量碗插画">
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e4f7dc"/><stop offset="1" stop-color="#9dd16f"/></linearGradient></defs><rect width="800" height="600" fill="url(#bg)"/><circle cx="135" cy="110" r="125" fill="#fff" opacity=".22"/>
+  <ellipse cx="400" cy="460" rx="275" ry="66" fill="#3c672b" opacity=".2"/><path d="M130 248h540l-78 242c-12 38-48 64-89 64H297c-41 0-77-26-89-64z" fill="#f7f1e4" stroke="#31432b" stroke-width="14"/>
+  <ellipse cx="400" cy="248" rx="270" ry="105" fill="#fff" stroke="#31432b" stroke-width="14"/><path d="M175 250c38-70 126-86 188-32-7 74-94 112-188 32z" fill="#73b759"/><path d="M357 174c86-33 177 9 200 83-67 60-172 25-200-83z" fill="#d8904f"/><path d="M340 276c43-46 118-42 157 15-32 54-127 58-157-15z" fill="#f3c94e"/>
+  <g fill="#4b8f47"><circle cx="252" cy="225" r="22"/><circle cx="285" cy="270" r="25"/><circle cx="220" cy="286" r="20"/></g><g fill="#f2eee2"><circle cx="399" cy="332" r="12"/><circle cx="426" cy="324" r="10"/><circle cx="454" cy="337" r="11"/></g>
+</svg>
