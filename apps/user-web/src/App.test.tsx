@@ -126,6 +126,54 @@ describe('user app navigation shell', () => {
     expect(screen.queryByText('游客也可以先写草稿')).not.toBeInTheDocument()
   })
 
+  it('refreshes the dish rating after a published review is submitted', async () => {
+    localStorage.setItem('campus-foodie:user', JSON.stringify({
+      id: 'u1', username: 'demo', email: 'demo@example.com', displayName: '演示用户',
+      publishedReviews: 0, views: 0, emailVerified: true
+    }))
+    const initialDish = await api.getDish('d1', [])
+    expect(initialDish).toBeDefined()
+    const refreshedDish = {
+      ...initialDish!,
+      rating: 4.75,
+      reviewCount: initialDish!.reviewCount + 1
+    }
+    const getDish = vi.spyOn(api, 'getDish')
+      .mockResolvedValueOnce(initialDish)
+      .mockResolvedValue(refreshedDish)
+    vi.spyOn(api, 'submitReview').mockResolvedValue({
+      id: 'review-new',
+      dishId: 'd1',
+      userId: 'u1',
+      userName: 'demo',
+      avatarText: 'd',
+      rating: 5,
+      content: '味道很好，分量也很足。',
+      images: [],
+      createdAt: '2026/07/18',
+      likes: 0,
+      status: 'published'
+    })
+    const user = userEvent.setup()
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    render(
+      <QueryClientProvider client={client}>
+        <MemoryRouter initialEntries={['/dish/d1/review']}>
+          <AppStateProvider><App /></AppStateProvider>
+        </MemoryRouter>
+      </QueryClientProvider>
+    )
+
+    expect(await screen.findByText(initialDish!.name)).toBeInTheDocument()
+    await user.click(screen.getAllByRole('radio')[4])
+    await user.type(screen.getByPlaceholderText('真实、具体的体验最能帮助到同学……'), '味道很好，分量也很足。')
+    await user.click(screen.getByRole('button', { name: '发布评价' }))
+
+    expect(await screen.findByText(`${refreshedDish.reviewCount} 人评价`)).toBeInTheDocument()
+    expect(screen.getByText('4.75')).toBeInTheDocument()
+    expect(getDish.mock.calls.length).toBeGreaterThanOrEqual(2)
+  })
+
   it('reads current profile statistics instead of the login snapshot', async () => {
     localStorage.setItem('campus-foodie:user', JSON.stringify({
       id: 'u1', username: 'demo', email: 'demo@example.com', displayName: '演示用户',

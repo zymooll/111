@@ -382,9 +382,11 @@ h1, h2, h3, p { margin: 0; }
 .campus-map.amap-live { background: var(--surface-soft); }
 .amap-canvas { position: absolute; inset: 0; }
 .amap-loading { position: absolute; z-index: 8; top: 50%; left: 50%; padding: 9px 13px; border-radius: 999px; background: color-mix(in srgb, var(--surface) 92%, transparent); color: var(--text-soft); box-shadow: var(--shadow); font-size: 12px; transform: translate(-50%, -50%); }
-.amap-food-marker { display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 3px solid #fff; border-radius: 50% 50% 50% 8px; background: var(--primary); color: #fff; box-shadow: 0 6px 14px rgba(32,70,110,.3); font-size: 14px; cursor: pointer; transform: rotate(-45deg); }
+.amap-food-marker { display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 3px solid #fff; border-radius: 50% 50% 50% 8px; background: var(--primary); color: #fff; box-shadow: 0 6px 14px rgba(32,70,110,.3); font-size: 14px; cursor: pointer; touch-action: manipulation; transform: rotate(-45deg); }
 .amap-food-marker.is-favorite { background: var(--amber); }
-.amap-cluster-marker { display: flex; align-items: center; justify-content: center; gap: 2px; width: 46px; height: 46px; padding: 0; border: 4px solid rgba(255,255,255,.9); border-radius: 50%; background: var(--primary); color: #fff; box-shadow: 0 0 0 7px rgba(var(--primary-rgb),.16), 0 8px 18px rgba(32,70,110,.25); font: inherit; font-size: 13px; font-weight: 800; cursor: pointer; }
+.amap-cluster-marker { display: flex; align-items: center; justify-content: center; gap: 2px; width: 46px; height: 46px; padding: 0; border: 4px solid rgba(255,255,255,.9); border-radius: 50%; background: var(--primary); color: #fff; box-shadow: 0 0 0 7px rgba(var(--primary-rgb),.16), 0 8px 18px rgba(32,70,110,.25); font: inherit; font-size: 13px; font-weight: 800; cursor: pointer; touch-action: manipulation; }
+.campus-map .amap-marker:has(.amap-food-marker) { z-index: 80 !important; }
+.campus-map .amap-marker:has(.amap-cluster-marker) { z-index: 120 !important; }
 .amap-cluster-marker.has-star { border-color: #ffd96b; box-shadow: 0 0 0 7px rgba(255,191,0,.18), 0 8px 18px rgba(32,70,110,.25); }
 .amap-cluster-marker b { color: #ffe48a; font-size: 12px; }
 .map-grid { position: absolute; inset: 0; opacity: .33; background-image: linear-gradient(rgba(80,109,91,.12) 1px, transparent 1px), linear-gradient(90deg, rgba(80,109,91,.12) 1px, transparent 1px); background-size: 25px 25px; transform: rotate(-7deg) scale(1.2); }

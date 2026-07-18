@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.models import Favorite, MenuItem, Merchant, Review, User
 from app.schemas import MenuItemSummary, MerchantRead, ReviewRead
-from app.services.ratings import merchant_scores
+from app.services.ratings import merchant_review_counts, merchant_scores
 
 
 def favorite_merchant_ids(
@@ -37,6 +37,7 @@ def present_merchant(
     payload = MerchantRead.model_validate(merchant)
     payload.is_favorite = merchant.id in (favorites or set())
     payload.rating_avg = merchant_rating(db, merchant.id)
+    payload.review_count = merchant_review_counts(db, [merchant.id]).get(merchant.id, 0)
     return payload
 
 

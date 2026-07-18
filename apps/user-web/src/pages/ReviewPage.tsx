@@ -55,7 +55,10 @@ export function ReviewPage() {
     onSuccess: async (review) => {
       sessionStorage.removeItem(draftKey)
       await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['dish', dishId] }),
         queryClient.invalidateQueries({ queryKey: ['dish-reviews', dishId] }),
+        queryClient.invalidateQueries({ queryKey: ['recommendations'] }),
+        queryClient.invalidateQueries({ queryKey: ['map-merchants'] }),
         queryClient.invalidateQueries({ queryKey: ['my-reviews'] }),
         queryClient.invalidateQueries({ queryKey: ['my-stats'] })
       ])

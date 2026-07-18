@@ -16,6 +16,10 @@ CORRUPT_PNG = base64.b64decode(
 def test_review_manual_fallback_admin_publish_and_stats(client, demo_ids):
     user_pair = login(client)
     user_headers = bearer(user_pair["access_token"])
+    detail_before = client.get(
+        f"/api/v1/menu-items/{demo_ids['item_one']}",
+        params={"campus_id": demo_ids["campus"]},
+    ).json()
     seeded_total = client.get(
         f"/api/v1/menu-items/{demo_ids['item_one']}/reviews",
         params={"campus_id": demo_ids["campus"]},
@@ -37,6 +41,16 @@ def test_review_manual_fallback_admin_publish_and_stats(client, demo_ids):
         params={"campus_id": demo_ids["campus"]},
     ).json()
     assert public_before["total"] == seeded_total
+    pending_detail = client.get(
+        f"/api/v1/menu-items/{demo_ids['item_one']}",
+        params={"campus_id": demo_ids["campus"]},
+    ).json()
+    assert pending_detail["review_count"] == detail_before["review_count"]
+    assert pending_detail["rating_avg"] == detail_before["rating_avg"]
+    assert (
+        pending_detail["merchant"]["review_count"]
+        == detail_before["merchant"]["review_count"]
+    )
 
     admin_pair = admin_login(client)
     admin_headers = bearer(admin_pair["access_token"])
@@ -62,6 +76,15 @@ def test_review_manual_fallback_admin_publish_and_stats(client, demo_ids):
         params={"campus_id": demo_ids["campus"]},
     ).json()
     assert public_after["total"] == seeded_total + 1
+    published_detail = client.get(
+        f"/api/v1/menu-items/{demo_ids['item_one']}",
+        params={"campus_id": demo_ids["campus"]},
+    ).json()
+    assert published_detail["review_count"] == detail_before["review_count"] + 1
+    assert (
+        published_detail["merchant"]["review_count"]
+        == detail_before["merchant"]["review_count"] + 1
+    )
 
     guest_headers = bearer(client.post("/api/v1/auth/guest").json()["access_token"])
     event = {
@@ -95,6 +118,42 @@ def test_review_manual_fallback_admin_publish_and_stats(client, demo_ids):
     )
     assert audit.status_code == 200
     assert audit.json()["items"][0]["action"] == "review.publish"
+
+    hidden = client.post(
+        f"/admin/api/v1/reviews/{review['id']}/moderate",
+        params={"campus_id": demo_ids["campus"]},
+        json={"action": "hide", "reason": "状态回归测试"},
+        headers=admin_headers,
+    )
+    assert hidden.status_code == 200
+    hidden_detail = client.get(
+        f"/api/v1/menu-items/{demo_ids['item_one']}",
+        params={"campus_id": demo_ids["campus"]},
+    ).json()
+    assert hidden_detail["review_count"] == detail_before["review_count"]
+    assert hidden_detail["rating_avg"] == detail_before["rating_avg"]
+    assert (
+        hidden_detail["merchant"]["review_count"]
+        == detail_before["merchant"]["review_count"]
+    )
+
+    restored = client.post(
+        f"/admin/api/v1/reviews/{review['id']}/moderate",
+        params={"campus_id": demo_ids["campus"]},
+        json={"action": "restore", "reason": ""},
+        headers=admin_headers,
+    )
+    assert restored.status_code == 200
+    restored_detail = client.get(
+        f"/api/v1/menu-items/{demo_ids['item_one']}",
+        params={"campus_id": demo_ids["campus"]},
+    ).json()
+    assert restored_detail["review_count"] == published_detail["review_count"]
+    assert restored_detail["rating_avg"] == published_detail["rating_avg"]
+    assert (
+        restored_detail["merchant"]["review_count"]
+        == published_detail["merchant"]["review_count"]
+    )
 
 
 def test_admin_crud_and_role_separation(client, demo_ids):

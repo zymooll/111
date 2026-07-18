@@ -62,3 +62,20 @@ def merchant_scores(db: Session, merchant_ids: list[str]) -> dict[str, float]:
         merchant_id: round(total / weights, 2) if weights else 0
         for merchant_id, (total, weights) in weighted.items()
     }
+
+
+def merchant_review_counts(db: Session, merchant_ids: list[str]) -> dict[str, int]:
+    if not merchant_ids:
+        return {}
+    rows = db.execute(
+        select(MenuItem.merchant_id, func.count(Review.id))
+        .join(Review, Review.menu_item_id == MenuItem.id)
+        .where(
+            MenuItem.merchant_id.in_(merchant_ids),
+            MenuItem.is_active.is_(True),
+            Review.status == ReviewStatus.PUBLISHED,
+            Review.deleted_at.is_(None),
+        )
+        .group_by(MenuItem.merchant_id)
+    ).all()
+    return {merchant_id: int(count or 0) for merchant_id, count in rows}

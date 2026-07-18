@@ -16,8 +16,18 @@ export function DishDetailPage() {
   const [photoIndex, setPhotoIndex] = useState(0)
   const viewedDish = useRef<string | null>(null)
   const viewedReviews = useRef(new Set<string>())
-  const dishQuery = useQuery({ queryKey: ['dish', dishId, favorites], queryFn: () => api.getDish(dishId, favorites) })
-  const reviewsQuery = useQuery({ queryKey: ['dish-reviews', dishId], queryFn: () => api.getDishReviews(dishId) })
+  const dishQuery = useQuery({
+    queryKey: ['dish', dishId, favorites],
+    queryFn: () => api.getDish(dishId, favorites),
+    refetchInterval: 5_000,
+    refetchOnWindowFocus: true
+  })
+  const reviewsQuery = useQuery({
+    queryKey: ['dish-reviews', dishId],
+    queryFn: () => api.getDishReviews(dishId),
+    refetchInterval: 5_000,
+    refetchOnWindowFocus: true
+  })
   const dish = dishQuery.data
 
   useEffect(() => {

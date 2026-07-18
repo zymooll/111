@@ -111,7 +111,8 @@ export function MapPage() {
         zoom: 17,
         mapStyle: 'amap://styles/fresh',
         viewMode: '2D',
-        resizeEnable: true
+        resizeEnable: true,
+        doubleClickZoom: false
       })
       amapInstance.current = map
       const openMerchants = (items: MerchantWithFavorite[]) => setSelectedGroup({
@@ -121,6 +122,22 @@ export function MapPage() {
         y: 50,
         favorite: items.some((merchant) => merchant.favorite)
       })
+      const bindSingleClick = (marker: any, content: HTMLButtonElement, items: MerchantWithFavorite[]) => {
+        let lastOpenedAt = 0
+        const openOnce = () => {
+          const now = Date.now()
+          if (now - lastOpenedAt < 250) return
+          lastOpenedAt = now
+          openMerchants(items)
+        }
+        content.addEventListener('pointerdown', (event) => event.stopPropagation())
+        content.addEventListener('click', (event) => {
+          event.preventDefault()
+          event.stopPropagation()
+          openOnce()
+        })
+        marker.off?.('click')
+      }
       const points = merchants.map((merchant) => ({
         lnglat: [Number(merchant.longitude), Number(merchant.latitude)],
         merchant
@@ -139,8 +156,8 @@ export function MapPage() {
             content.textContent = merchant.favorite ? '★' : '●'
             context.marker.setContent(content)
             context.marker.setExtData?.(merchant)
-            context.marker.off?.('click')
-            context.marker.on?.('click', () => openMerchants([merchant]))
+            context.marker.setzIndex?.(80)
+            bindSingleClick(context.marker, content, [merchant])
           },
           renderClusterMarker: (context: any) => {
             const clusterMerchants = (context.clusterData ?? [])
@@ -148,9 +165,21 @@ export function MapPage() {
               .filter(Boolean) as MerchantWithFavorite[]
             const containsFavorite = clusterMerchants.some((merchant) => merchant.favorite)
             const count = clusterMerchants.length || Number(context.count) || 0
-            context.marker.setContent(`<button class="amap-cluster-marker ${containsFavorite ? 'has-star' : ''}" aria-label="附近 ${count} 家商家${containsFavorite ? '，含收藏商家' : ''}">${containsFavorite ? '<b>★</b>' : ''}<span>${count}</span></button>`)
-            context.marker.off?.('click')
-            context.marker.on?.('click', () => openMerchants(clusterMerchants))
+            const content = document.createElement('button')
+            content.type = 'button'
+            content.className = `amap-cluster-marker ${containsFavorite ? 'has-star' : ''}`
+            content.setAttribute('aria-label', `附近 ${count} 家商家${containsFavorite ? '，含收藏商家' : ''}`)
+            if (containsFavorite) {
+              const star = document.createElement('b')
+              star.textContent = '★'
+              content.appendChild(star)
+            }
+            const countLabel = document.createElement('span')
+            countLabel.textContent = String(count)
+            content.appendChild(countLabel)
+            context.marker.setContent(content)
+            context.marker.setzIndex?.(120)
+            bindSingleClick(context.marker, content, clusterMerchants)
           }
         })
       } else {
@@ -164,9 +193,10 @@ export function MapPage() {
             position: [merchant.longitude, merchant.latitude],
             anchor: 'center',
             extData: merchant,
-            content
+            content,
+            zIndex: 80
           })
-          marker.on('click', () => openMerchants([merchant]))
+          bindSingleClick(marker, content, [merchant])
           return marker
         })
         map.add(markers)

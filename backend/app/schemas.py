@@ -144,6 +144,7 @@ class MerchantRead(ORMModel):
     is_active: bool
     is_favorite: bool = False
     rating_avg: float = 0
+    review_count: int = 0
 
 
 class AdminMerchantRead(MerchantRead):
