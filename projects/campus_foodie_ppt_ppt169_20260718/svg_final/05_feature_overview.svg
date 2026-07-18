@@ -57,12 +57,12 @@
     <text x="786" y="510" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#1F8A70">商家、菜品、评价和审计可治理</text>
     <text font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" fill="#4D5A57" x="692" y="562">独立端口与登录态支撑管理员维护数据、审核</text><text font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" fill="#4D5A57" x="692" y="592">评价、预校验 CSV，并留下审计日志。</text></g>
   <g id="loop-label">
-    <path fill="#1F8A70" d="M494,336 H786 A24,24 0 0 1 810,360 V360 A24,24 0 0 1 786,384 H494 A24,24 0 0 1 470,360 V360 A24,24 0 0 1 494,336 Z" />
+    <path fill="#1F8A70" d="M486,374 H794 A16,16 0 0 1 810,390 V390 A16,16 0 0 1 794,406 H486 A16,16 0 0 1 470,390 V390 A16,16 0 0 1 486,374 Z" />
     
-  <g transform="translate(500, 347) scale(0.101562)" fill="#FFFFFF">
+  <g transform="translate(510, 381) scale(0.0703125)" fill="#FFFFFF">
     <path d="M160,200l-32,32L96,200Z" opacity="0.2" />
     <path d="M184,32a8,8,0,0,0-8,8v60.69l-48,48-48-48V40a8,8,0,0,0-16,0v64a8,8,0,0,0,2.34,5.66L120,163.31V192H96a8,8,0,0,0-5.66,13.66l32,32a8,8,0,0,0,11.32,0l32-32A8,8,0,0,0,160,192H136V163.31l53.66-53.65A8,8,0,0,0,192,104V40A8,8,0,0,0,184,32ZM128,220.69,115.31,208h25.38Z" />
   </g>
-    <text x="640" y="367" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" font-weight="800" fill="#FFFFFF">推荐 → 决策 → 评价 → 治理</text>
+    <text x="650" y="396" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" font-weight="800" fill="#FFFFFF">推荐 → 决策 → 评价 → 治理</text>
   </g>
 </svg>

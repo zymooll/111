@@ -1,3 +1,4 @@
+<?xml version='1.0' encoding='UTF-8'?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
   <defs>
     <linearGradient id="phoneGlow" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -16,8 +17,8 @@
     <text x="1224" y="72" text-anchor="end" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="11" fill="#74807C">06 / 16</text>
   </g>
   <g id="phone-mockup">
-    <path fill="#182026" d="M212,104 H376 A42,42 0 0 1 418,146 V582 A42,42 0 0 1 376,624 H212 A42,42 0 0 1 170,582 V146 A42,42 0 0 1 212,104 Z" />
-    <path fill="#FFFFFF" d="M218,126 H370 A30,30 0 0 1 400,156 V572 A30,30 0 0 1 370,602 H218 A30,30 0 0 1 188,572 V156 A30,30 0 0 1 218,126 Z" />
+    <path fill="#4D5A57" d="M212,104 H376 A42,42 0 0 1 418,146 V582 A42,42 0 0 1 376,624 H212 A42,42 0 0 1 170,582 V146 A42,42 0 0 1 212,104 Z" />
+    <path fill="#FFFFFF" d="M214,116 H374 A32,32 0 0 1 406,148 V580 A32,32 0 0 1 374,612 H214 A32,32 0 0 1 182,580 V148 A32,32 0 0 1 214,116 Z" />
     <path fill="#74807C" d="M256.50,142 H331.50 A3.50,3.50 0 0 1 335,145.50 V145.50 A3.50,3.50 0 0 1 331.50,149 H256.50 A3.50,3.50 0 0 1 253,145.50 V145.50 A3.50,3.50 0 0 1 256.50,142 Z" />
     <circle cx="215" cy="176" r="18" fill="#EAF7EF" />
     
