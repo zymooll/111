@@ -30,7 +30,7 @@
     <use data-icon="phosphor-duotone/bowl-food" x="736" y="194" width="30" height="30" fill="#FFB703" />
     <text x="806" y="198" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="24" font-weight="800" fill="#182026">菜品级推荐</text>
     <text x="806" y="234" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#4D5A57">直接回答“吃什么”，比商家级推荐少一步决策。</text>
-    <text x="1120" y="230" text-anchor="end" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="48" font-weight="800" fill="#FFB703" fill-opacity="0.35">01</text>
+    <text x="1120" y="226" text-anchor="end" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="32" font-weight="700" fill="#BFD9CC">01</text>
   </g>
   <g id="highlight-ai">
     <rect x="624" y="306" width="522" height="116" rx="28" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" />

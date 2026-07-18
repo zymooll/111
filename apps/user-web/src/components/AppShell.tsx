@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react'
-import { Home, Map, UserRound } from 'lucide-react'
+import { Compass, Map, UserRound } from 'lucide-react'
 import { NavLink, useLocation } from 'react-router-dom'
 
 const navItems = [
-  { to: '/', label: '首页', icon: Home },
+  { to: '/', label: '首页', icon: Compass },
   { to: '/map', label: '地图', icon: Map },
   { to: '/mine', label: '我的', icon: UserRound }
 ]
@@ -20,7 +20,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="bottom-nav__inner">
             {navItems.map(({ to, label, icon: Icon }) => (
               <NavLink key={to} to={to} end={to === '/'} className={({ isActive }) => `bottom-nav__item ${isActive ? 'is-active' : ''}`}>
-                <Icon size={21} strokeWidth={2.2} />
+                <span className="bottom-nav__icon"><Icon size={20} strokeWidth={2.25} /></span>
                 <span>{label}</span>
               </NavLink>
             ))}

@@ -17,8 +17,11 @@
   --surface-raised: #ffffff;
   --surface-soft: #f4f7fb;
   --line: #e8ecf2;
-  --shadow: 0 14px 40px rgba(31, 47, 76, 0.09);
-  --shadow-soft: 0 6px 22px rgba(31, 47, 76, 0.07);
+  --shadow: 0 18px 48px rgba(35, 73, 110, 0.14);
+  --shadow-soft: 0 8px 26px rgba(35, 73, 110, 0.10);
+  --glass: rgba(255, 255, 255, 0.62);
+  --glass-strong: rgba(255, 255, 255, 0.82);
+  --glass-line: rgba(255, 255, 255, 0.76);
   --adm-color-primary: var(--primary);
   --adm-color-background: var(--surface);
   --adm-color-text: var(--text);
@@ -57,9 +60,10 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
   background:
-    radial-gradient(circle at 16% 12%, rgba(var(--primary-rgb), 0.09), transparent 27%),
-    radial-gradient(circle at 85% 80%, rgba(34, 160, 107, 0.07), transparent 25%),
-    #e8edf5;
+    radial-gradient(circle at 5% 5%, rgba(120, 192, 255, 0.48), transparent 30%),
+    radial-gradient(circle at 94% 16%, rgba(203, 166, 255, 0.34), transparent 30%),
+    radial-gradient(circle at 70% 92%, rgba(123, 236, 194, 0.30), transparent 34%),
+    linear-gradient(145deg, #edf5ff 0%, #f7f3ff 48%, #ecfff7 100%);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   overscroll-behavior-y: none;
@@ -80,8 +84,8 @@ h1, h2, h3, p { margin: 0; }
   min-height: 100vh;
   min-height: 100dvh;
   margin: 0 auto;
-  background: var(--surface-soft);
-  box-shadow: 0 0 80px rgba(28, 40, 62, 0.14);
+  background: rgba(248, 251, 255, 0.42);
+  box-shadow: 0 0 90px rgba(45, 67, 104, 0.18);
   overflow: clip;
 }
 
@@ -517,4 +521,81 @@ h1, h2, h3, p { margin: 0; }
 
 @media (prefers-reduced-motion: reduce) {
   *,*::before,*::after { scroll-behavior: auto!important; animation-duration: .01ms!important; animation-iteration-count: 1!important; transition-duration: .01ms!important; }
+}
+
+/* iOS-inspired liquid glass refresh for the high-frequency user journeys. */
+.bottom-nav__inner {
+  height: 70px;
+  padding: 5px 7px;
+  border: 1px solid var(--glass-line);
+  border-radius: 25px;
+  background: var(--glass);
+  box-shadow: 0 14px 42px rgba(39, 59, 97, .18), inset 0 1px 0 rgba(255, 255, 255, .7);
+  backdrop-filter: blur(28px) saturate(155%);
+}
+
+.bottom-nav__item { gap: 2px; transition: color .18s ease, transform .18s ease, background .18s ease; }
+.bottom-nav__icon { display: grid; place-items: center; width: 32px; height: 28px; border-radius: 11px; transition: background .18s ease, box-shadow .18s ease; }
+.bottom-nav__item.is-active .bottom-nav__icon { background: rgba(var(--primary-rgb), .13); box-shadow: inset 0 1px 1px rgba(255,255,255,.65); }
+
+.home-page .search-box,
+.home-page .filter-select,
+.home-page .quick-chip,
+.home-page .weather-pill {
+  border-color: var(--glass-line);
+  background: var(--glass-strong);
+  backdrop-filter: blur(18px) saturate(135%);
+}
+
+.home-page .ai-insight {
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,.75);
+  border-radius: 18px;
+  background: linear-gradient(110deg, rgba(102,160,255,.20), rgba(196,173,255,.16));
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(18px) saturate(150%);
+}
+
+.home-page .dish-card {
+  border-color: var(--glass-line);
+  border-radius: 24px;
+  background: var(--glass-strong);
+  box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255,255,255,.76);
+  backdrop-filter: blur(18px) saturate(125%);
+}
+
+.home-page .filter-select__icon,
+.home-page .section-heading > div > span {
+  background: linear-gradient(145deg, rgba(255,245,223,.92), rgba(255,225,184,.72));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.7);
+}
+.home-page .filter-select__icon.blue { background: linear-gradient(145deg, rgba(220,236,255,.95), rgba(188,217,255,.72)); }
+
+.filter-hero {
+  border: 1px solid rgba(255,255,255,.56);
+  border-radius: 24px;
+  background: linear-gradient(135deg, rgba(30,112,255,.88), rgba(116,150,255,.78) 62%, rgba(178,133,255,.78));
+  box-shadow: 0 18px 36px rgba(64,105,191,.26), inset 0 1px 0 rgba(255,255,255,.35);
+}
+
+.filter-page .tree-picker,
+.filter-page .tree-picker__parents,
+.filter-page .tree-option {
+  background: var(--glass);
+  backdrop-filter: blur(18px) saturate(135%);
+}
+.filter-page .tree-option { border-color: var(--glass-line); border-radius: 18px; }
+
+.dish-detail-page .dish-detail-main,
+.dish-detail-page .merchant-detail-card,
+.dish-detail-page .review-card,
+.dish-detail-page .detail-action-bar {
+  border-color: var(--glass-line);
+  background: var(--glass-strong);
+  backdrop-filter: blur(20px) saturate(140%);
+}
+
+@media (min-width: 700px) {
+  .app-shell { border-left: 1px solid rgba(255,255,255,.72); border-right: 1px solid rgba(255,255,255,.72); }
 }
