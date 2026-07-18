@@ -1,0 +1,44 @@
+{
+  "canvas": "ppt169",
+  "page_count": "16",
+  "audience": "课程设计答辩评委、指导老师和同学；用于 8-12 分钟项目答辩，重点讲清 Campus Foodie 的业务价值、系统设计、AI 受约束使用、安全降级和工程质量。",
+  "content_divergence": "这是一个黑客松比赛的项目，PPT用来做路演用的，受众是参赛者和评委",
+  "mode": "showcase",
+  "visual_style": "soft-rounded",
+  "color": {
+    "name": "鲜活校园科技",
+    "palette": {
+      "background": "#FBFFF7",
+      "secondary_bg": "#EAF7EF",
+      "primary": "#1F8A70",
+      "accent": "#FFB703",
+      "secondary_accent": "#3A86FF",
+      "body_text": "#182026"
+    }
+  },
+  "icons": "phosphor-duotone",
+  "typography": {
+    "name": "友好产品答辩",
+    "heading": {
+      "cjk": "Microsoft YaHei",
+      "css": "\"Trebuchet MS\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+      "latin": "Trebuchet MS",
+      "sample_cjk": "校园饮食推荐",
+      "sample_latin": "Campus Foodie"
+    },
+    "body": {
+      "cjk": "Microsoft YaHei",
+      "css": "\"Microsoft YaHei\", \"PingFang SC\", Arial, sans-serif",
+      "latin": "Arial",
+      "sample_cjk": "菜品级推荐、地图发现、评价审核和可靠降级形成完整闭环。",
+      "sample_latin": "FastAPI, React PWA, DeepSeek, CI"
+    },
+    "body_size": "18"
+  },
+  "formula_policy": "text-only",
+  "image_usage": "placeholder",
+  "generation_mode": "continuous",
+  "refine_spec": false,
+  "status": "confirmed",
+  "confirmed_at": "2026-07-18T16:16:37"
+}

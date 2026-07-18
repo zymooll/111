@@ -1,0 +1,127 @@
+{
+  "lang": "zh",
+  "recommend": {
+    "canvas": "ppt169",
+    "mode": "instructional",
+    "visual_style": "soft-rounded",
+    "icons": "phosphor-duotone",
+    "image_usage": "placeholder",
+    "formula_policy": "text-only",
+    "generation_mode": "continuous"
+  },
+  "page_count": {
+    "value": "16"
+  },
+  "audience": {
+    "value": "课程设计答辩评委、指导老师和同学；用于 8-12 分钟项目答辩，重点讲清 Campus Foodie 的业务价值、系统设计、AI 受约束使用、安全降级和工程质量。"
+  },
+  "content_divergence": {
+    "value": ""
+  },
+  "color": {
+    "selected": 0,
+    "candidates": [
+      {
+        "name": "鲜活校园科技",
+        "note": "推荐方案。用绿色承接校园与饮食，用蓝色承接技术可信度，黄色作为食物与关键结论的温暖高亮。",
+        "palette": {
+          "background": "#FBFFF7",
+          "secondary_bg": "#EAF7EF",
+          "primary": "#1F8A70",
+          "accent": "#FFB703",
+          "secondary_accent": "#3A86FF",
+          "body_text": "#182026"
+        }
+      },
+      {
+        "name": "清爽产品蓝",
+        "note": "更像 SaaS 产品答辩，适合突出 FastAPI、PWA、DeepSeek、CI 等工程能力。",
+        "palette": {
+          "background": "#F7FAFC",
+          "secondary_bg": "#EAF1FF",
+          "primary": "#2563EB",
+          "accent": "#F97316",
+          "secondary_accent": "#14B8A6",
+          "body_text": "#172033"
+        }
+      },
+      {
+        "name": "温暖食物实验室",
+        "note": "更有饮食与校园生活温度，适合希望答辩气质亲和、少一点技术冷感的版本。",
+        "palette": {
+          "background": "#FFF8ED",
+          "secondary_bg": "#F1F5F9",
+          "primary": "#D97706",
+          "accent": "#16A34A",
+          "secondary_accent": "#2563EB",
+          "body_text": "#1F2937"
+        }
+      }
+    ]
+  },
+  "typography": {
+    "selected": 0,
+    "candidates": [
+      {
+        "name": "友好产品答辩",
+        "note": "推荐方案。标题圆润但清晰，正文稳定易读，适合 soft-rounded 的校园产品气质。",
+        "heading": {
+          "cjk": "Microsoft YaHei",
+          "latin": "Trebuchet MS",
+          "css": "\"Trebuchet MS\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+          "sample_cjk": "校园饮食推荐",
+          "sample_latin": "Campus Foodie"
+        },
+        "body": {
+          "cjk": "Microsoft YaHei",
+          "latin": "Arial",
+          "css": "\"Microsoft YaHei\", \"PingFang SC\", Arial, sans-serif",
+          "sample_cjk": "菜品级推荐、地图发现、评价审核和可靠降级形成完整闭环。",
+          "sample_latin": "FastAPI, React PWA, DeepSeek, CI"
+        },
+        "body_size": 18
+      },
+      {
+        "name": "稳重答辩黑体",
+        "note": "标题更有现场投影冲击力，适合偏正式、偏成果汇报的展示。",
+        "heading": {
+          "cjk": "SimHei",
+          "latin": "Arial Black",
+          "css": "\"Arial Black\", SimHei, \"Microsoft YaHei\", sans-serif",
+          "sample_cjk": "项目价值与工程闭环",
+          "sample_latin": "System Design"
+        },
+        "body": {
+          "cjk": "Microsoft YaHei",
+          "latin": "Arial",
+          "css": "\"Microsoft YaHei\", Arial, sans-serif",
+          "sample_cjk": "用确定性算法保证基础可用，用大模型增强推荐理由。",
+          "sample_latin": "Reliable fallback keeps the core flow available."
+        },
+        "body_size": 18
+      },
+      {
+        "name": "技术说明清单",
+        "note": "更偏工程说明，适合架构、API、测试页占比较高的答辩版本。",
+        "heading": {
+          "cjk": "Microsoft YaHei",
+          "latin": "Segoe UI",
+          "css": "\"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+          "sample_cjk": "模块化单体架构",
+          "sample_latin": "Technical Briefing"
+        },
+        "body": {
+          "cjk": "Microsoft YaHei",
+          "latin": "Segoe UI",
+          "css": "\"Segoe UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+          "sample_cjk": "前后端分离、校园隔离、游标分页、幂等写入。",
+          "sample_latin": "REST API, Problem Details, Docker Compose"
+        },
+        "body_size": 17
+      }
+    ]
+  },
+  "refine_spec": {
+    "value": false
+  }
+}

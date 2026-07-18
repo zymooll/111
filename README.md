@@ -4,15 +4,16 @@ Campus Foodie 是一个面向校园场景的菜品与套餐推荐系统。用户
 
 ## 工作区
 
-- `backend/`：FastAPI API、数据模型、推荐与审核服务、后台任务及测试。
+- `backend/`：FastAPI API、数据模型、推荐与审核服务、迁移及测试。
 - `apps/user-web/`：移动端 React PWA，开发端口 `5173`。
 - `apps/admin-web/`：独立管理端 React 应用，开发端口 `5174`。
-- `docs/`：架构、API 使用说明和验收记录。
+- `docs/`：架构、API、验收记录及高校餐饮调研报告。
+- `e2e/`、`playwright.config.ts`：用户端与管理端关键流程 E2E。
 - `docker-compose.yml`：PostgreSQL/PostGIS、Redis、Mailpit 和 API 的本地联调环境。
 - `data/merchants.csv`、`data/images.csv`、`assets/merchant-images/`：中南林业科技大学历史调研档案。
 - `data/csut_merchants.csv`、`data/csut_images.csv`、`assets/csut-images/`：长沙理工大学金盆岭、云塘两校区历史调研档案。
-- `docs/research-report.md`、`docs/sources.md`：中南林业科技大学调研说明与来源。
-- `docs/csut-research-report.md`、`docs/csut-sources.md`：长沙理工大学专项调研说明与来源。
+- `data/hunan_universities_merchants.csv`、`data/hunan_universities_images.csv`、`assets/hunan-universities-images/`：湖南农大、湖南工商、中南、湖大、湖师大历史调研档案。
+- `projects/campus_foodie_ppt_ppt169_20260718/`：项目路演 PPT、讲稿、设计稿与导出文件。
 
 ## 本地开发
 
@@ -37,17 +38,29 @@ pnpm dev:admin
 
 完整依赖服务可通过 `docker compose up --build` 启动。没有 Docker 时也可以使用默认 SQLite 配置直接启动 API。
 
+完整检查：
+
+```powershell
+& '.\scripts\check.ps1'
+```
+
 ## 降级策略
 
 - 未配置 DeepSeek 时，推荐流使用确定性排序，评价转入人工审核队列。
-- 未配置高德 Key 时，地图页使用校园示意地图，同时保留相同的筛选和聚合交互。
+- 未配置高德 Key 时，地图页使用校园示意地图，同时保留筛选、聚合和收藏星标交互。
 - 图片加载失败时展示与品类匹配的渐变封面，不影响卡片和详情页使用。
 
-## 历史调研数据
+## 高校餐饮资料档案
 
-仓库中的两组调研资料均保持为历史研究档案：中南林业科技大学资料主要来自 2018、2019 年公开文章，包含 42 条待核验商家记录；长沙理工大学资料覆盖金盆岭、云塘两校区，包含 43 条结构化记录和 25 条图片索引。两组资料均不能直接视为 2026 年实时营业数据，且部分记录缺少可直接用于地图的精确经纬度。
+仓库归档长沙多所高校校内食堂档口及周边餐饮商家的公开资料。资料来自不同年份的高校官网、校级媒体和公开攻略，并在 2026-07-18 汇总；商家可能已迁址、改名、调价或停业，不能直接视为 2026 年实时营业清单。
 
-归档图片的许可证均为未知，部分带有平台水印或二维码，因此不会复制到用户端 `public`、通过 `/media` 对外提供或用于公开推荐卡片。当前界面使用项目原创 SVG 占位插画；正式上线前应由管理端替换为商家授权照片，并记录来源与许可。
+对应说明与来源：
+
+- `docs/research-report.md`、`docs/sources.md`：中南林业科技大学。
+- `docs/csut-research-report.md`、`docs/csut-sources.md`：长沙理工大学。
+- `docs/hunan-universities-research-report.md`、`docs/hunan-universities-sources.md`：湖南农大、湖南工商、中南、湖大、湖师大。
+
+所有归档图片仅作资料索引和研究存档，版权归原作者或平台所有，许可证未知；对外使用前应重新核验并取得授权。归档图片不会复制到用户端 `public`、通过 `/media` 对外提供或用于公开推荐卡片。当前界面使用项目原创 SVG 占位插画，正式上线前应由管理端替换为商家授权照片并记录来源。
 
 ## API 文档
 

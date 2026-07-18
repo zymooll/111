@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <defs>
+    <linearGradient id="hubFill" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1F8A70" />
+      <stop offset="100%" stop-color="#3A86FF" />
+    </linearGradient>
+  </defs>
+  <g id="background">
+    <rect x="0" y="0" width="1280" height="720" fill="#FBFFF7" />
+    <circle cx="640" cy="392" r="330" fill="#EAF7EF" />
+    <circle cx="640" cy="392" r="246" fill="none" stroke="#BFD9CC" stroke-width="2" stroke-dasharray="8,4" />
+    <circle cx="640" cy="392" r="154" fill="none" stroke="#DCEBE3" stroke-width="2" />
+  </g>
+  <g id="header">
+    <text x="56" y="64" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="34" font-weight="800" fill="#182026">把 AI 放进边界里</text>
+    <text x="56" y="96" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="700" fill="#4D5A57">敏感身份、原始搜索、评价原文和私有缓存不直接进入模型路径。</text>
+    <text x="1224" y="72" text-anchor="end" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="11" fill="#74807C">13 / 16</text>
+  </g>
+  <g id="connection-lines">
+    <line x1="640" y1="392" x2="640" y2="158" stroke="#BFD9CC" stroke-width="2" stroke-dasharray="6,8" />
+    <line x1="640" y1="392" x2="902" y2="266" stroke="#BFD9CC" stroke-width="2" stroke-dasharray="6,8" />
+    <line x1="640" y1="392" x2="884" y2="540" stroke="#BFD9CC" stroke-width="2" stroke-dasharray="6,8" />
+    <line x1="640" y1="392" x2="396" y2="540" stroke="#BFD9CC" stroke-width="2" stroke-dasharray="6,8" />
+    <line x1="640" y1="392" x2="378" y2="266" stroke="#BFD9CC" stroke-width="2" stroke-dasharray="6,8" />
+  </g>
+  <g id="center-hub">
+    <circle cx="640" cy="392" r="96" fill="url(#hubFill)" />
+    <circle cx="640" cy="392" r="78" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-opacity="0.45" />
+    
+  <g transform="translate(594, 330) scale(0.359375)" fill="#FFFFFF">
+    <path d="M216,56v58.77c0,84.18-71.31,112.07-85.54,116.8a7.54,7.54,0,0,1-4.92,0C111.31,226.86,40,199,40,114.79V56a8,8,0,0,1,8-8H208A8,8,0,0,1,216,56Z" opacity="0.2" />
+    <path d="M208,40H48A16,16,0,0,0,32,56v58.78c0,89.61,75.82,119.34,91,124.39a15.53,15.53,0,0,0,10,0c15.2-5.05,91-34.78,91-124.39V56A16,16,0,0,0,208,40Zm0,74.79c0,78.42-66.35,104.62-80,109.18-13.53-4.51-80-30.69-80-109.18V56H208ZM82.34,141.66a8,8,0,0,1,11.32-11.32L112,148.68l50.34-50.34a8,8,0,0,1,11.32,11.32l-56,56a8,8,0,0,1-11.32,0Z" />
+  </g>
+    <text x="640" y="454" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="22" font-weight="800" fill="#FFFFFF">安全边界</text>
+  </g>
+  <g id="spoke-audience">
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" d="M540,112 H740 A20,20 0 0 1 760,132 V184 A20,20 0 0 1 740,204 H540 A20,20 0 0 1 520,184 V132 A20,20 0 0 1 540,112 Z" />
+    
+  <g transform="translate(548, 138) scale(0.148438)" fill="#1F8A70">
+    <path d="M208,88H48a8,8,0,0,0-8,8V208a8,8,0,0,0,8,8H208a8,8,0,0,0,8-8V96A8,8,0,0,0,208,88Zm-80,72a20,20,0,1,1,20-20A20,20,0,0,1,128,160Z" opacity="0.2" />
+    <path d="M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80ZM96,56a32,32,0,0,1,64,0V80H96ZM208,208H48V96H208V208Zm-80-96a28,28,0,0,0-8,54.83V184a8,8,0,0,0,16,0V166.83A28,28,0,0,0,128,112Zm0,40a12,12,0,1,1,12-12A12,12,0,0,1,128,152Z" />
+  </g>
+    <text x="602" y="148" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="17" font-weight="800" fill="#182026">Audience 分离</text>
+    <text x="602" y="174" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57">用户令牌与管理员令牌隔离</text>
+  </g>
+  <g id="spoke-password">
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" d="M870,220 H1112 A20,20 0 0 1 1132,240 V292 A20,20 0 0 1 1112,312 H870 A20,20 0 0 1 850,292 V240 A20,20 0 0 1 870,220 Z" />
+    
+  <g transform="translate(878, 246) scale(0.148438)" fill="#3A86FF">
+    <path d="M208,88H48a8,8,0,0,0-8,8V208a8,8,0,0,0,8,8H208a8,8,0,0,0,8-8V96A8,8,0,0,0,208,88Zm-80,72a20,20,0,1,1,20-20A20,20,0,0,1,128,160Z" opacity="0.2" />
+    <path d="M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80ZM96,56a32,32,0,0,1,64,0V80H96ZM208,208H48V96H208V208Zm-80-96a28,28,0,0,0-8,54.83V184a8,8,0,0,0,16,0V166.83A28,28,0,0,0,128,112Zm0,40a12,12,0,1,1,12-12A12,12,0,0,1,128,152Z" />
+  </g>
+    <text x="932" y="256" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="17" font-weight="800" fill="#182026">密码安全哈希</text>
+    <text x="932" y="282" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57">管理端不查看、不修改明文密码</text>
+  </g>
+  <g id="spoke-image">
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" d="M862,494 H1112 A20,20 0 0 1 1132,514 V566 A20,20 0 0 1 1112,586 H862 A20,20 0 0 1 842,566 V514 A20,20 0 0 1 862,494 Z" />
+    
+  <g transform="translate(870, 520) scale(0.148438)" fill="#22A06B">
+    <path d="M224,128a96,96,0,1,1-96-96A96,96,0,0,1,224,128Z" opacity="0.2" />
+    <path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z" />
+  </g>
+    <text x="924" y="530" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="17" font-weight="800" fill="#182026">图片重编码</text>
+    <text x="924" y="556" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57">校验真实格式、像素并清除 EXIF</text>
+  </g>
+  <g id="spoke-ai-data">
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" d="M168,494 H426 A20,20 0 0 1 446,514 V566 A20,20 0 0 1 426,586 H168 A20,20 0 0 1 148,566 V514 A20,20 0 0 1 168,494 Z" />
+    
+  <g transform="translate(176, 520) scale(0.148438)" fill="#3A86FF">
+    <path d="M240,124a48,48,0,0,1-32,45.27h0V176a40,40,0,0,1-80,0,40,40,0,0,1-80,0v-6.73h0a48,48,0,0,1,0-90.54V72a40,40,0,0,1,80,0,40,40,0,0,1,80,0v6.73A48,48,0,0,1,240,124Z" opacity="0.2" />
+    <path d="M248,124a56.11,56.11,0,0,0-32-50.61V72a48,48,0,0,0-88-26.49A48,48,0,0,0,40,72v1.39a56,56,0,0,0,0,101.2V176a48,48,0,0,0,88,26.49A48,48,0,0,0,216,176v-1.41A56.09,56.09,0,0,0,248,124ZM88,208a32,32,0,0,1-31.81-28.56A55.87,55.87,0,0,0,64,180h8a8,8,0,0,0,0-16H64A40,40,0,0,1,50.67,86.27,8,8,0,0,0,56,78.73V72a32,32,0,0,1,64,0v68.26A47.8,47.8,0,0,0,88,128a8,8,0,0,0,0,16,32,32,0,0,1,0,64Zm104-44h-8a8,8,0,0,0,0,16h8a55.87,55.87,0,0,0,7.81-.56A32,32,0,1,1,168,144a8,8,0,0,0,0-16,47.8,47.8,0,0,0-32,12.26V72a32,32,0,0,1,64,0v6.73a8,8,0,0,0,5.33,7.54A40,40,0,0,1,192,164Zm16-52a8,8,0,0,1-8,8h-4a36,36,0,0,1-36-36V80a8,8,0,0,1,16,0v4a20,20,0,0,0,20,20h4A8,8,0,0,1,208,112ZM60,120H56a8,8,0,0,1,0-16h4A20,20,0,0,0,80,84V80a8,8,0,0,1,16,0v4A36,36,0,0,1,60,120Z" />
+  </g>
+    <text x="230" y="530" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="17" font-weight="800" fill="#182026">AI 数据最小化</text>
+    <text x="230" y="556" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57">不发邮箱、令牌、账号 ID、评价原文</text>
+  </g>
+  <g id="spoke-cache">
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" d="M162,220 H428 A20,20 0 0 1 448,240 V292 A20,20 0 0 1 428,312 H162 A20,20 0 0 1 142,292 V240 A20,20 0 0 1 162,220 Z" />
+    
+  <g transform="translate(170, 246) scale(0.148438)" fill="#1F8A70">
+    <path d="M240,128a80,80,0,0,1-80,80H72A56,56,0,1,1,85.92,97.74l0,.1A80,80,0,0,1,240,128Z" opacity="0.2" />
+    <path d="M160,40A88.09,88.09,0,0,0,81.29,88.67,64,64,0,1,0,72,216h88a88,88,0,0,0,0-176Zm0,160H72a48,48,0,0,1,0-96c1.1,0,2.2,0,3.29.11A88,88,0,0,0,72,128a8,8,0,0,0,16,0,72,72,0,1,1,72,72Zm37.66-93.66a8,8,0,0,1,0,11.32l-48,48a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L144,148.69l42.34-42.35A8,8,0,0,1,197.66,106.34Z" />
+  </g>
+    <text x="224" y="256" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="17" font-weight="800" fill="#182026">PWA 缓存边界</text>
+    <text x="224" y="282" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57">公开应用壳可缓存，个人响应不持久化</text>
+  </g>
+  <g id="bottom-rule">
+    <path fill="#FFFFFF" stroke="#1F8A70" stroke-width="2" d="M417,628 H863 A23,23 0 0 1 886,651 V651 A23,23 0 0 1 863,674 H417 A23,23 0 0 1 394,651 V651 A23,23 0 0 1 417,628 Z" />
+    <text x="640" y="657" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="17" font-weight="800" fill="#1F8A70">模型是增强层，不是隐私和权限边界的替代品</text>
+  </g>
+</svg>

@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <defs>
+    <linearGradient id="heroGreen" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1F8A70" />
+      <stop offset="100%" stop-color="#3A86FF" />
+    </linearGradient>
+  </defs>
+  <g id="background">
+    <rect x="0" y="0" width="1280" height="720" fill="#FBFFF7" />
+    <circle cx="240" cy="530" r="280" fill="#EAF7EF" />
+    <circle cx="1080" cy="140" r="170" fill="#FFB703" fill-opacity="0.15" />
+  </g>
+  <g id="header">
+    <text x="56" y="74" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" font-weight="800" fill="#1F8A70" letter-spacing="2">DIFFERENTIATION</text>
+    <text x="1224" y="72" text-anchor="end" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="11" fill="#74807C">15 / 16</text>
+  </g>
+  <g id="big-claim">
+    <text font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="64" font-weight="800" fill="#182026" x="82" y="238">三个让项目</text><text font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="64" font-weight="800" fill="#182026" x="82" y="320">站住的设计</text><text x="88" y="420" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="96" font-weight="800" fill="url(#heroGreen)">3</text>
+    <text x="184" y="398" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="24" font-weight="800" fill="#1F8A70">not just a demo page</text>
+    <text x="184" y="438" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="20" fill="#4D5A57">不是套壳推荐页，而是一个能解释、能回退、能治理的 MVP 闭环。</text>
+  </g>
+  <g id="highlight-dish">
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" d="M718,150 H1118 A28,28 0 0 1 1146,178 V238 A28,28 0 0 1 1118,266 H718 A28,28 0 0 1 690,238 V178 A28,28 0 0 1 718,150 Z" />
+    <path fill="#EAF7EF" d="M740,180 H762 A18,18 0 0 1 780,198 V220 A18,18 0 0 1 762,238 H740 A18,18 0 0 1 722,220 V198 A18,18 0 0 1 740,180 Z" />
+    
+  <g transform="translate(736, 194) scale(0.117188)" fill="#FFB703">
+    <path d="M224,112a96,96,0,0,1-56,87.3V208a8,8,0,0,1-8,8H96a8,8,0,0,1-8-8v-8.7A96,96,0,0,1,32,112Z" opacity="0.2" />
+    <path d="M224,104h-8.37a88,88,0,0,0-175.26,0H32a8,8,0,0,0-8,8,104.35,104.35,0,0,0,56,92.28V208a16,16,0,0,0,16,16h64a16,16,0,0,0,16-16v-3.72A104.35,104.35,0,0,0,232,112,8,8,0,0,0,224,104ZM173.48,56.23q2.75,2.25,5.27,4.75a87.92,87.92,0,0,0-49.15,43H100.1A72.26,72.26,0,0,1,168,56C169.83,56,171.66,56.09,173.48,56.23Zm15.91,18.2A71.45,71.45,0,0,1,199.54,104H148.12A71.84,71.84,0,0,1,189.39,74.43ZM128,40a71.87,71.87,0,0,1,19,2.57A88.36,88.36,0,0,0,83.33,104H56.46A72.08,72.08,0,0,1,128,40Zm36.66,152A8,8,0,0,0,160,199.3V208H96v-8.7A8,8,0,0,0,91.34,192a88.29,88.29,0,0,1-51-72H215.63A88.29,88.29,0,0,1,164.66,192Z" />
+  </g>
+    <text x="806" y="198" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="24" font-weight="800" fill="#182026">菜品级推荐</text>
+    <text x="806" y="234" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#4D5A57">直接回答“吃什么”，比商家级推荐少一步决策。</text>
+    <text x="1120" y="230" text-anchor="end" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="48" font-weight="800" fill="#FFB703" fill-opacity="0.35">01</text>
+  </g>
+  <g id="highlight-ai">
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" d="M652,306 H1118 A28,28 0 0 1 1146,334 V394 A28,28 0 0 1 1118,422 H652 A28,28 0 0 1 624,394 V334 A28,28 0 0 1 652,306 Z" />
+    <path fill="#EAF7EF" d="M674,336 H696 A18,18 0 0 1 714,354 V376 A18,18 0 0 1 696,394 H674 A18,18 0 0 1 656,376 V354 A18,18 0 0 1 674,336 Z" />
+    
+  <g transform="translate(670, 350) scale(0.117188)" fill="#3A86FF">
+    <path d="M240,124a48,48,0,0,1-32,45.27h0V176a40,40,0,0,1-80,0,40,40,0,0,1-80,0v-6.73h0a48,48,0,0,1,0-90.54V72a40,40,0,0,1,80,0,40,40,0,0,1,80,0v6.73A48,48,0,0,1,240,124Z" opacity="0.2" />
+    <path d="M248,124a56.11,56.11,0,0,0-32-50.61V72a48,48,0,0,0-88-26.49A48,48,0,0,0,40,72v1.39a56,56,0,0,0,0,101.2V176a48,48,0,0,0,88,26.49A48,48,0,0,0,216,176v-1.41A56.09,56.09,0,0,0,248,124ZM88,208a32,32,0,0,1-31.81-28.56A55.87,55.87,0,0,0,64,180h8a8,8,0,0,0,0-16H64A40,40,0,0,1,50.67,86.27,8,8,0,0,0,56,78.73V72a32,32,0,0,1,64,0v68.26A47.8,47.8,0,0,0,88,128a8,8,0,0,0,0,16,32,32,0,0,1,0,64Zm104-44h-8a8,8,0,0,0,0,16h8a55.87,55.87,0,0,0,7.81-.56A32,32,0,1,1,168,144a8,8,0,0,0,0-16,47.8,47.8,0,0,0-32,12.26V72a32,32,0,0,1,64,0v6.73a8,8,0,0,0,5.33,7.54A40,40,0,0,1,192,164Zm16-52a8,8,0,0,1-8,8h-4a36,36,0,0,1-36-36V80a8,8,0,0,1,16,0v4a20,20,0,0,0,20,20h4A8,8,0,0,1,208,112ZM60,120H56a8,8,0,0,1,0-16h4A20,20,0,0,0,80,84V80a8,8,0,0,1,16,0v4A36,36,0,0,1,60,120Z" />
+  </g>
+    <text x="740" y="354" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="24" font-weight="800" fill="#182026">受约束 AI</text>
+    <text x="740" y="390" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#4D5A57">DeepSeek 只重排合法候选，坏 JSON、虚构 ID 都会回退。</text>
+    <text x="1120" y="386" text-anchor="end" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="48" font-weight="800" fill="#3A86FF" fill-opacity="0.30">02</text>
+  </g>
+  <g id="highlight-governance">
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" d="M718,462 H1118 A28,28 0 0 1 1146,490 V550 A28,28 0 0 1 1118,578 H718 A28,28 0 0 1 690,550 V490 A28,28 0 0 1 718,462 Z" />
+    <path fill="#EAF7EF" d="M740,492 H762 A18,18 0 0 1 780,510 V532 A18,18 0 0 1 762,550 H740 A18,18 0 0 1 722,532 V510 A18,18 0 0 1 740,492 Z" />
+    
+  <g transform="translate(736, 506) scale(0.117188)" fill="#1F8A70">
+    <path d="M216,56v58.77c0,84.18-71.31,112.07-85.54,116.8a7.54,7.54,0,0,1-4.92,0C111.31,226.86,40,199,40,114.79V56a8,8,0,0,1,8-8H208A8,8,0,0,1,216,56Z" opacity="0.2" />
+    <path d="M208,40H48A16,16,0,0,0,32,56v58.78c0,89.61,75.82,119.34,91,124.39a15.53,15.53,0,0,0,10,0c15.2-5.05,91-34.78,91-124.39V56A16,16,0,0,0,208,40Zm0,74.79c0,78.42-66.35,104.62-80,109.18-13.53-4.51-80-30.69-80-109.18V56H208ZM82.34,141.66a8,8,0,0,1,11.32-11.32L112,148.68l50.34-50.34a8,8,0,0,1,11.32,11.32l-56,56a8,8,0,0,1-11.32,0Z" />
+  </g>
+    <text x="806" y="510" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="24" font-weight="800" fill="#182026">可靠降级与治理</text>
+    <text x="806" y="546" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#4D5A57">没有 AI 或地图 Key，浏览、推荐、提交和管理仍可演示。</text>
+    <text x="1120" y="542" text-anchor="end" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="48" font-weight="800" fill="#1F8A70" fill-opacity="0.30">03</text>
+  </g>
+  <g id="small-footer">
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" d="M107,588 H487 A25,25 0 0 1 512,613 V613 A25,25 0 0 1 487,638 H107 A25,25 0 0 1 82,613 V613 A25,25 0 0 1 107,588 Z" />
+    
+  <g transform="translate(112, 600) scale(0.109375)" fill="#1F8A70">
+    <path d="M208,40V208H152V40Z" opacity="0.2" />
+    <path d="M224,200h-8V40a8,8,0,0,0-8-8H152a8,8,0,0,0-8,8V80H96a8,8,0,0,0-8,8v40H48a8,8,0,0,0-8,8v64H32a8,8,0,0,0,0,16H224a8,8,0,0,0,0-16ZM160,48h40V200H160ZM104,96h40V200H104ZM56,144H88v56H56Z" />
+  </g>
+    <text x="154" y="623" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="800" fill="#182026">游客优先、多校园基础、内容治理闭环</text>
+  </g>
+</svg>

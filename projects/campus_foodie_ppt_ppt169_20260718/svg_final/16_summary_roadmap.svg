@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <defs>
+    <linearGradient id="heroGreen" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1F8A70" />
+      <stop offset="100%" stop-color="#3A86FF" />
+    </linearGradient>
+  </defs>
+  <g id="background">
+    <rect x="0" y="0" width="1280" height="720" fill="#FBFFF7" />
+    <path d="M 0 0 H 560 C 504 146, 530 302, 448 446 C 372 582, 234 660, 0 720 Z" fill="#EAF7EF" />
+    <circle cx="1080" cy="116" r="130" fill="#FFB703" fill-opacity="0.14" />
+  </g>
+  <g id="left-closing-thesis">
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" d="M76,82 H214 A20,20 0 0 1 234,102 V102 A20,20 0 0 1 214,122 H76 A20,20 0 0 1 56,102 V102 A20,20 0 0 1 76,82 Z" />
+    <text x="145" y="108" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" font-weight="800" fill="#1F8A70">SUMMARY</text>
+    <text font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="54" font-weight="800" fill="#182026" x="72" y="222">让校园选择</text><text font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="54" font-weight="800" fill="#182026" x="72" y="294">更轻一点</text><text font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="22" fill="#4D5A57" x="76" y="398">Campus Foodie 已形成</text><text font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="22" fill="#4D5A57" x="76" y="436">从推荐、决策、评价、审核</text><text font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="22" fill="#4D5A57" x="76" y="474">到影响统计的 MVP 闭环。</text><path fill="url(#heroGreen)" d="M106,536 H368 A28,28 0 0 1 396,564 V564 A28,28 0 0 1 368,592 H106 A28,28 0 0 1 78,564 V564 A28,28 0 0 1 106,536 Z" />
+    
+  <g transform="translate(110, 550) scale(0.109375)" fill="#FFFFFF">
+    <path d="M72,160l24,24s-8,32-56,32C40,168,72,160,72,160Zm64-88H74.35a8,8,0,0,0-5.65,2.34L34.35,108.69a8,8,0,0,0,4.53,13.57L80,128Zm-8,104,5.74,41.12a8,8,0,0,0,13.57,4.53l34.35-34.35a8,8,0,0,0,2.34-5.65V120Z" opacity="0.2" />
+    <path d="M103.77,185.94C103.38,187.49,93.63,224,40,224a8,8,0,0,1-8-8c0-53.63,36.51-63.38,38.06-63.77a8,8,0,0,1,3.88,15.53c-.9.25-22.42,6.54-25.56,39.86C81.7,204.48,88,183,88.26,182a8,8,0,0,1,15.51,4Zm93-67.4L192,123.31v58.33A15.91,15.91,0,0,1,187.32,193L153,227.3A15.91,15.91,0,0,1,141.7,232a16.11,16.11,0,0,1-5.1-.83,15.94,15.94,0,0,1-10.78-12.92l-5.37-38.49L76.24,135.55l-38.47-5.37A16,16,0,0,1,28.7,103L63,68.68A15.91,15.91,0,0,1,74.36,64h58.33l4.77-4.77c26.68-26.67,58.83-27.82,71.41-27.07a16,16,0,0,1,15,15C224.6,59.71,223.45,91.86,196.78,118.54ZM40,114.34l37.15,5.18L116.69,80H74.36ZM91.32,128,128,164.68l57.45-57.45a76.46,76.46,0,0,0,22.42-59.16,76.64,76.64,0,0,0-59.11,22.47ZM176,139.31l-39.53,39.53L141.67,216,176,181.64Z" />
+  </g>
+    <text x="160" y="572" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" font-weight="800" fill="#FFFFFF">可演示，也能继续迭代</text>
+  </g>
+  <g id="roadmap-panel">
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" d="M630,92 H1148 A30,30 0 0 1 1178,122 V598 A30,30 0 0 1 1148,628 H630 A30,30 0 0 1 600,598 V122 A30,30 0 0 1 630,92 Z" />
+    <text x="640" y="142" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="24" font-weight="800" fill="#182026">下一步路线</text>
+    <line x1="676" y1="178" x2="676" y2="552" stroke="#DCEBE3" stroke-width="4" stroke-linecap="round" />
+    <line x1="676" y1="178" x2="676" y2="252" stroke="#1F8A70" stroke-width="4" stroke-linecap="round" />
+  </g>
+  <g id="roadmap-now">
+    <circle cx="676" cy="204" r="17" fill="#1F8A70" stroke="#FFFFFF" stroke-width="4" />
+    <path d="M 668,204 L 674,210 L 686,196" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+    <text x="642" y="210" text-anchor="end" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" font-weight="800" fill="#1F8A70">NOW</text>
+    <path fill="#EAF7EF" stroke="#BFD9CC" stroke-width="1" d="M734,170 H1104 A18,18 0 0 1 1122,188 V220 A18,18 0 0 1 1104,238 H734 A18,18 0 0 1 716,220 V188 A18,18 0 0 1 734,170 Z" />
+    <text x="742" y="198" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="17" font-weight="800" fill="#182026">MVP 闭环完成</text>
+    <text x="742" y="222" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57">推荐、地图、评价、审核、降级链路可路演</text>
+  </g>
+  <g id="roadmap-identity">
+    <circle cx="676" cy="292" r="15" fill="#FFFFFF" stroke="#3A86FF" stroke-width="4" />
+    <text x="642" y="298" text-anchor="end" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" font-weight="800" fill="#3A86FF">01</text>
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1" d="M734,258 H1104 A18,18 0 0 1 1122,276 V308 A18,18 0 0 1 1104,326 H734 A18,18 0 0 1 716,308 V276 A18,18 0 0 1 734,258 Z" />
+    <text x="742" y="286" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="17" font-weight="800" fill="#182026">统一身份接入</text>
+    <text x="742" y="310" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57">学校统一认证、微信或企业微信登录</text>
+  </g>
+  <g id="roadmap-realtime">
+    <circle cx="676" cy="380" r="15" fill="#FFFFFF" stroke="#FFB703" stroke-width="4" />
+    <text x="642" y="386" text-anchor="end" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" font-weight="800" fill="#FFB703">02</text>
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1" d="M734,346 H1104 A18,18 0 0 1 1122,364 V396 A18,18 0 0 1 1104,414 H734 A18,18 0 0 1 716,396 V364 A18,18 0 0 1 734,346 Z" />
+    <text x="742" y="374" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="17" font-weight="800" fill="#182026">实时营业数据</text>
+    <text x="742" y="398" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57">营业时间、拥挤度、售罄状态进入推荐</text>
+  </g>
+  <g id="roadmap-context">
+    <circle cx="676" cy="468" r="15" fill="#FFFFFF" stroke="#1F8A70" stroke-width="4" />
+    <text x="642" y="474" text-anchor="end" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" font-weight="800" fill="#1F8A70">03</text>
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1" d="M734,434 H1104 A18,18 0 0 1 1122,452 V484 A18,18 0 0 1 1104,502 H734 A18,18 0 0 1 716,484 V452 A18,18 0 0 1 734,434 Z" />
+    <text x="742" y="462" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="17" font-weight="800" fill="#182026">情境推荐</text>
+    <text x="742" y="486" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57">时间段、天气、课程地点帮助更快决策</text>
+  </g>
+  <g id="roadmap-metrics">
+    <circle cx="676" cy="556" r="15" fill="#FFFFFF" stroke="#3A86FF" stroke-width="4" />
+    <text x="642" y="562" text-anchor="end" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" font-weight="800" fill="#3A86FF">04</text>
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1" d="M734,522 H1104 A18,18 0 0 1 1122,540 V572 A18,18 0 0 1 1104,590 H734 A18,18 0 0 1 716,572 V540 A18,18 0 0 1 734,522 Z" />
+    <text x="742" y="550" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="17" font-weight="800" fill="#182026">推荐效果指标</text>
+    <text x="742" y="574" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57">点击率、收藏率、评价转化率与多样性</text>
+  </g>
+  <g id="qa-cue">
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" d="M493,654 H787 A23,23 0 0 1 810,677 V677 A23,23 0 0 1 787,700 H493 A23,23 0 0 1 470,677 V677 A23,23 0 0 1 493,654 Z" />
+    
+  <g transform="translate(504, 665) scale(0.09375)" fill="#1F8A70">
+    <path d="M224,128a96,96,0,1,1-96-96A96,96,0,0,1,224,128Z" opacity="0.2" />
+    <path d="M140,180a12,12,0,1,1-12-12A12,12,0,0,1,140,180ZM128,72c-22.06,0-40,16.15-40,36v4a8,8,0,0,0,16,0v-4c0-11,10.77-20,24-20s24,9,24,20-10.77,20-24,20a8,8,0,0,0-8,8v8a8,8,0,0,0,16,0v-.72c18.24-3.35,32-17.9,32-35.28C168,88.15,150.06,72,128,72Zm104,56A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z" />
+  </g>
+    <text x="640" y="683" text-anchor="middle" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="22" font-weight="800" fill="#182026">Q&amp;A</text>
+  </g>
+</svg>

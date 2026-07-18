@@ -1,0 +1,1 @@
+从工程交付角度，我们希望这个项目不只是能跑，而是可以被验收。后端用 Pytest 验证认证、校园隔离、评分、幂等、分页和管理 API；前端用 Vitest 和 Testing Library 覆盖页面状态和表单交互；端到端用 Playwright 串起评价到审核的闭环。再加上 static_audit、OpenAPI 导出和 Docker Compose，评委能看到一条清晰的质量路径。

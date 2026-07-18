@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <defs>
+    <marker id="arrowPrimary" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#1F8A70" />
+    </marker>
+  </defs>
+  <g id="background">
+    <rect x="0" y="0" width="1280" height="720" fill="#FBFFF7" />
+    <path fill="#EAF7EF" d="M72,124 H1208 A28,28 0 0 1 1236,152 V582 A28,28 0 0 1 1208,610 H72 A28,28 0 0 1 44,582 V152 A28,28 0 0 1 72,124 Z" />
+  </g>
+  <g id="header">
+    <text x="56" y="64" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="34" font-weight="800" fill="#182026">从能跑到可信</text>
+    <text x="56" y="96" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="700" fill="#4D5A57">分层测试、静态审计、构建检查和容器化部署支撑可验收交付。</text>
+    <text x="1224" y="72" text-anchor="end" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="11" fill="#74807C">14 / 16</text>
+  </g>
+  <g id="pipeline-frame">
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" d="M100,154 H1180 A22,22 0 0 1 1202,176 V518 A22,22 0 0 1 1180,540 H100 A22,22 0 0 1 78,518 V176 A22,22 0 0 1 100,154 Z" />
+    <text x="640" y="188" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" font-weight="800" fill="#4D5A57" letter-spacing="1.5">QUALITY PIPELINE · EACH STAGE LEAVES AN ARTIFACT</text>
+  </g>
+  <g id="stage-backend">
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" d="M122,226 H274 A18,18 0 0 1 292,244 V458 A18,18 0 0 1 274,476 H122 A18,18 0 0 1 104,458 V244 A18,18 0 0 1 122,226 Z" />
+    <path fill="#1F8A70" d="M122,226 H274 A18,18 0 0 1 292,244 V264 A18,18 0 0 1 274,282 H122 A18,18 0 0 1 104,264 V244 A18,18 0 0 1 122,226 Z" />
+    <text x="128" y="262" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" font-weight="800" fill="#FFFFFF">01 Pytest</text>
+    
+  <g transform="translate(132, 314) scale(0.140625)" fill="#1F8A70">
+    <path d="M167.18,140.82,94.77,213.23a36.77,36.77,0,0,1-52,0h0a36.77,36.77,0,0,1,0-52l30-30c9.37-3.65,25.78-6.36,47.18,4.82S157.81,144.47,167.18,140.82Z" opacity="0.2" />
+    <path d="M237.66,86.34l-60-60a8,8,0,0,0-11.32,0L37.11,155.57a44.77,44.77,0,0,0,63.32,63.32L212.32,107l22.21-7.4a8,8,0,0,0,3.13-13.25ZM89.11,207.57a28.77,28.77,0,0,1-40.68-40.68l28.8-28.8c8.47-2.9,21.75-4,39.07,5,10.6,5.54,20.18,8,28.56,8.73ZM205.47,92.41a8,8,0,0,0-3.13,1.93l-39.57,39.57c-8.47,2.9-21.75,4-39.07-5-10.6-5.54-20.18-8-28.56-8.73L172,43.31,217.19,88.5Z" />
+  </g>
+    <text x="178" y="324" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" font-weight="800" fill="#182026">后端测试</text>
+    <text font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57" x="132" y="382">认证、校园隔离、</text><text font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57" x="132" y="405">评分、幂等、分页、</text><text font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57" x="132" y="428">上传和管理 API</text><path fill="#EAF7EF" d="M140,432 H256 A14,14 0 0 1 270,446 V446 A14,14 0 0 1 256,460 H140 A14,14 0 0 1 126,446 V446 A14,14 0 0 1 140,432 Z" />
+    <text x="198" y="451" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="12" font-weight="800" fill="#1F8A70">测试报告</text>
+  </g>
+  <g id="stage-frontend">
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" d="M350,226 H502 A18,18 0 0 1 520,244 V458 A18,18 0 0 1 502,476 H350 A18,18 0 0 1 332,458 V244 A18,18 0 0 1 350,226 Z" />
+    <path fill="#3A86FF" d="M350,226 H502 A18,18 0 0 1 520,244 V264 A18,18 0 0 1 502,282 H350 A18,18 0 0 1 332,264 V244 A18,18 0 0 1 350,226 Z" />
+    <text x="356" y="262" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" font-weight="800" fill="#FFFFFF">02 Vitest</text>
+    
+  <g transform="translate(360, 314) scale(0.140625)" fill="#3A86FF">
+    <path d="M192,56V200H64V56Z" opacity="0.2" />
+    <path d="M176,16H80A24,24,0,0,0,56,40V216a24,24,0,0,0,24,24h96a24,24,0,0,0,24-24V40A24,24,0,0,0,176,16ZM72,64H184V192H72Zm8-32h96a8,8,0,0,1,8,8v8H72V40A8,8,0,0,1,80,32Zm96,192H80a8,8,0,0,1-8-8v-8H184v8A8,8,0,0,1,176,224Z" />
+  </g>
+    <text x="406" y="324" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" font-weight="800" fill="#182026">前端组件</text>
+    <text font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57" x="360" y="382">页面渲染、状态、</text><text font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57" x="360" y="405">HTTP 映射、表单、</text><text font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57" x="360" y="428">交互行为</text><path fill="#EAF7EF" d="M368,432 H484 A14,14 0 0 1 498,446 V446 A14,14 0 0 1 484,460 H368 A14,14 0 0 1 354,446 V446 A14,14 0 0 1 368,432 Z" />
+    <text x="426" y="451" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="12" font-weight="800" fill="#3A86FF">组件结果</text>
+  </g>
+  <g id="stage-e2e">
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" d="M578,226 H730 A18,18 0 0 1 748,244 V458 A18,18 0 0 1 730,476 H578 A18,18 0 0 1 560,458 V244 A18,18 0 0 1 578,226 Z" />
+    <path fill="#FFB703" d="M578,226 H730 A18,18 0 0 1 748,244 V264 A18,18 0 0 1 730,282 H578 A18,18 0 0 1 560,264 V244 A18,18 0 0 1 578,226 Z" />
+    <text x="584" y="262" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" font-weight="800" fill="#182026">03 E2E</text>
+    
+  <g transform="translate(588, 314) scale(0.140625)" fill="#FFB703">
+    <path d="M224,200a24,24,0,1,1-24-24A24,24,0,0,1,224,200Z" opacity="0.2" />
+    <path d="M200,168a32.06,32.06,0,0,0-31,24H72a32,32,0,0,1,0-64h96a40,40,0,0,0,0-80H72a8,8,0,0,0,0,16h96a24,24,0,0,1,0,48H72a48,48,0,0,0,0,96h97a32,32,0,1,0,31-40Zm0,48a16,16,0,1,1,16-16A16,16,0,0,1,200,216Z" />
+  </g>
+    <text x="634" y="324" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" font-weight="800" fill="#182026">端到端</text>
+    <text font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57" x="588" y="382">用户评价到管理审核、</text><text font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57" x="588" y="405">游客阅读、地图星标、</text><text font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57" x="588" y="428">管理 CRUD 与审计</text><path fill="#EAF7EF" d="M596,432 H712 A14,14 0 0 1 726,446 V446 A14,14 0 0 1 712,460 H596 A14,14 0 0 1 582,446 V446 A14,14 0 0 1 596,432 Z" />
+    <text x="654" y="451" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="12" font-weight="800" fill="#1F8A70">演示闭环</text>
+  </g>
+  <g id="stage-contract">
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" d="M806,226 H958 A18,18 0 0 1 976,244 V458 A18,18 0 0 1 958,476 H806 A18,18 0 0 1 788,458 V244 A18,18 0 0 1 806,226 Z" />
+    <path fill="#1F8A70" d="M806,226 H958 A18,18 0 0 1 976,244 V264 A18,18 0 0 1 958,282 H806 A18,18 0 0 1 788,264 V244 A18,18 0 0 1 806,226 Z" />
+    <text x="812" y="262" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" font-weight="800" fill="#FFFFFF">04 Audit</text>
+    
+  <g transform="translate(816, 314) scale(0.140625)" fill="#1F8A70">
+    <path d="M208,56V200a8,8,0,0,1-8,8H56a8,8,0,0,1-8-8V56a8,8,0,0,1,8-8H200A8,8,0,0,1,208,56Z" opacity="0.2" />
+    <path d="M58.34,101.66l-32-32a8,8,0,0,1,0-11.32l32-32A8,8,0,0,1,69.66,37.66L43.31,64,69.66,90.34a8,8,0,0,1-11.32,11.32Zm40,0a8,8,0,0,0,11.32,0l32-32a8,8,0,0,0,0-11.32l-32-32A8,8,0,0,0,98.34,37.66L124.69,64,98.34,90.34A8,8,0,0,0,98.34,101.66ZM200,40H176a8,8,0,0,0,0,16h24V200H56V136a8,8,0,0,0-16,0v64a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V56A16,16,0,0,0,200,40Z" />
+  </g>
+    <text x="862" y="324" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" font-weight="800" fill="#182026">静态契约</text>
+    <text font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57" x="816" y="382">static_audit 检查</text><text font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57" x="816" y="405">路由边界、核心文件、</text><text font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57" x="816" y="428">关键 UI/API 契约</text><path fill="#EAF7EF" d="M824,432 H940 A14,14 0 0 1 954,446 V446 A14,14 0 0 1 940,460 H824 A14,14 0 0 1 810,446 V446 A14,14 0 0 1 824,432 Z" />
+    <text x="882" y="451" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="12" font-weight="800" fill="#1F8A70">审计结果</text>
+  </g>
+  <g id="stage-deploy">
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" d="M1034,226 H1158 A18,18 0 0 1 1176,244 V458 A18,18 0 0 1 1158,476 H1034 A18,18 0 0 1 1016,458 V244 A18,18 0 0 1 1034,226 Z" />
+    <path fill="#3A86FF" d="M1034,226 H1158 A18,18 0 0 1 1176,244 V264 A18,18 0 0 1 1158,282 H1034 A18,18 0 0 1 1016,264 V244 A18,18 0 0 1 1034,226 Z" />
+    <text x="1040" y="262" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" font-weight="800" fill="#FFFFFF">05 Deploy</text>
+    
+  <g transform="translate(1044, 314) scale(0.140625)" fill="#3A86FF">
+    <path d="M72,160l24,24s-8,32-56,32C40,168,72,160,72,160Zm64-88H74.35a8,8,0,0,0-5.65,2.34L34.35,108.69a8,8,0,0,0,4.53,13.57L80,128Zm-8,104,5.74,41.12a8,8,0,0,0,13.57,4.53l34.35-34.35a8,8,0,0,0,2.34-5.65V120Z" opacity="0.2" />
+    <path d="M103.77,185.94C103.38,187.49,93.63,224,40,224a8,8,0,0,1-8-8c0-53.63,36.51-63.38,38.06-63.77a8,8,0,0,1,3.88,15.53c-.9.25-22.42,6.54-25.56,39.86C81.7,204.48,88,183,88.26,182a8,8,0,0,1,15.51,4Zm93-67.4L192,123.31v58.33A15.91,15.91,0,0,1,187.32,193L153,227.3A15.91,15.91,0,0,1,141.7,232a16.11,16.11,0,0,1-5.1-.83,15.94,15.94,0,0,1-10.78-12.92l-5.37-38.49L76.24,135.55l-38.47-5.37A16,16,0,0,1,28.7,103L63,68.68A15.91,15.91,0,0,1,74.36,64h58.33l4.77-4.77c26.68-26.67,58.83-27.82,71.41-27.07a16,16,0,0,1,15,15C224.6,59.71,223.45,91.86,196.78,118.54ZM40,114.34l37.15,5.18L116.69,80H74.36ZM91.32,128,128,164.68l57.45-57.45a76.46,76.46,0,0,0,22.42-59.16,76.64,76.64,0,0,0-59.11,22.47ZM176,139.31l-39.53,39.53L141.67,216,176,181.64Z" />
+  </g>
+    <text x="1090" y="324" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" font-weight="800" fill="#182026">交付运行</text>
+    <text font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57" x="1044" y="382">OpenAPI 导出、</text><text font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57" x="1044" y="405">Docker Compose、</text><text font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57" x="1044" y="428">迁移和构建检查</text><path fill="#EAF7EF" d="M1050,432 H1142 A14,14 0 0 1 1156,446 V446 A14,14 0 0 1 1142,460 H1050 A14,14 0 0 1 1036,446 V446 A14,14 0 0 1 1050,432 Z" />
+    <text x="1096" y="451" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="12" font-weight="800" fill="#3A86FF">可部署包</text>
+  </g>
+  <g id="pipeline-arrows">
+    <line x1="292" y1="350" x2="328" y2="350" stroke="#1F8A70" stroke-width="3" marker-end="url(#arrowPrimary)" />
+    <line x1="520" y1="350" x2="556" y2="350" stroke="#1F8A70" stroke-width="3" marker-end="url(#arrowPrimary)" />
+    <line x1="748" y1="350" x2="784" y2="350" stroke="#1F8A70" stroke-width="3" marker-end="url(#arrowPrimary)" />
+    <line x1="976" y1="350" x2="1012" y2="350" stroke="#1F8A70" stroke-width="3" marker-end="url(#arrowPrimary)" />
+  </g>
+  <g id="bottom-artifacts">
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" d="M149,586 H1131 A29,29 0 0 1 1160,615 V615 A29,29 0 0 1 1131,644 H149 A29,29 0 0 1 120,615 V615 A29,29 0 0 1 149,586 Z" />
+    
+  <g transform="translate(154, 600) scale(0.117188)" fill="#22A06B">
+    <path d="M224,128a96,96,0,1,1-96-96A96,96,0,0,1,224,128Z" opacity="0.2" />
+    <path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z" />
+  </g>
+    <text x="204" y="624" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" font-weight="800" fill="#182026">验收交付：</text>
+    <text x="304" y="624" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" fill="#4D5A57">测试报告、静态审计结果、OpenAPI 文档、Docker 本地联调环境</text>
+  </g>
+</svg>

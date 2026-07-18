@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <g id="background">
+    <rect x="0" y="0" width="1280" height="720" fill="#FBFFF7"/>
+    <circle cx="468" cy="394" r="270" fill="#EAF7EF"/>
+    <circle cx="1012" cy="210" r="150" fill="#3A86FF" fill-opacity="0.10"/>
+  </g>
+  <g id="header">
+    <text x="56" y="74" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="34" font-weight="800" fill="#182026">评价不是结束，是闭环开始</text>
+    <text x="56" y="108" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="700" fill="#4D5A57">用户评价经过规则、AI 和人工审核后，回到公开评分和影响统计。</text>
+    <text x="1224" y="72" text-anchor="end" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="11" fill="#74807C">11 / 16</text>
+  </g>
+  <g id="cycle-arrows">
+    <path d="M 480 188 C 618 212, 702 326, 668 466" fill="none" stroke="#1F8A70" stroke-width="4" stroke-linecap="round" stroke-opacity="0.45"/>
+    <polygon points="665,478 658,460 676,466" fill="#1F8A70" fill-opacity="0.55"/>
+    <path d="M 632 526 C 522 630, 346 626, 252 514" fill="none" stroke="#3A86FF" stroke-width="4" stroke-linecap="round" stroke-opacity="0.45"/>
+    <polygon points="244,504 262,512 248,523" fill="#3A86FF" fill-opacity="0.55"/>
+    <path d="M 214 448 C 152 304, 256 190, 402 184" fill="none" stroke="#FFB703" stroke-width="4" stroke-linecap="round" stroke-opacity="0.55"/>
+    <polygon points="414,184 397,194 397,174" fill="#FFB703" fill-opacity="0.65"/>
+  </g>
+  <g id="center-governance">
+    <circle cx="468" cy="394" r="96" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="2"/>
+    <use data-icon="phosphor-duotone/shield-check" x="426" y="334" width="84" height="84" fill="#1F8A70"/>
+    <text x="468" y="446" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="26" font-weight="800" fill="#182026">内容治理</text>
+    <text x="468" y="478" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" fill="#4D5A57">可审、可回退、可追踪</text>
+  </g>
+  <g id="stage-image-check">
+    <circle cx="468" cy="172" r="54" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="2"/>
+    <use data-icon="phosphor-duotone/check-circle" x="442" y="146" width="52" height="52" fill="#22A06B"/>
+    <text x="468" y="250" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="800" fill="#182026">图片校验</text>
+  </g>
+  <g id="stage-local-rule">
+    <circle cx="680" cy="320" r="54" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="2"/>
+    <use data-icon="phosphor-duotone/list-checks" x="654" y="294" width="52" height="52" fill="#1F8A70"/>
+    <text x="754" y="326" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="800" fill="#182026">本地规则</text>
+  </g>
+  <g id="stage-ai">
+    <circle cx="600" cy="568" r="54" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="2"/>
+    <use data-icon="phosphor-duotone/brain" x="574" y="542" width="52" height="52" fill="#3A86FF"/>
+    <text x="600" y="646" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="800" fill="#182026">AI 辅助</text>
+  </g>
+  <g id="stage-human">
+    <circle cx="286" cy="568" r="54" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="2"/>
+    <use data-icon="phosphor-duotone/clipboard-text" x="260" y="542" width="52" height="52" fill="#FFB703"/>
+    <text x="286" y="646" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="800" fill="#182026">人工审核</text>
+  </g>
+  <g id="stage-publish">
+    <circle cx="246" cy="320" r="54" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="2"/>
+    <use data-icon="phosphor-duotone/chat-circle" x="220" y="294" width="52" height="52" fill="#1F8A70"/>
+    <text x="126" y="326" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="800" fill="#182026">发布聚合</text>
+  </g>
+  <g id="right-thesis">
+    <rect x="820" y="244" width="354" height="232" rx="30" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
+    <text x="858" y="302" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="44" font-weight="800" fill="#1F8A70">Review loop</text>
+    <text x="858" y="356" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="22" font-weight="800" fill="#182026">真实评价进入公共信息池</text>
+    <text x="858" y="402" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" fill="#4D5A57">
+      <tspan x="858" dy="0">不确定时不误发布，转交人工；</tspan>
+      <tspan x="858" dy="32">发布后参与评分和阅读影响力。</tspan>
+    </text>
+  </g>
+</svg>

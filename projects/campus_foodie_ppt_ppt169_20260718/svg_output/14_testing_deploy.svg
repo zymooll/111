@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <defs>
+    <marker id="arrowPrimary" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#1F8A70"/>
+    </marker>
+  </defs>
+  <g id="background">
+    <rect x="0" y="0" width="1280" height="720" fill="#FBFFF7"/>
+    <rect x="44" y="124" width="1192" height="486" rx="28" fill="#EAF7EF"/>
+  </g>
+  <g id="header">
+    <text x="56" y="64" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="34" font-weight="800" fill="#182026">从能跑到可信</text>
+    <text x="56" y="96" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="700" fill="#4D5A57">分层测试、静态审计、构建检查和容器化部署支撑可验收交付。</text>
+    <text x="1224" y="72" text-anchor="end" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="11" fill="#74807C">14 / 16</text>
+  </g>
+  <g id="pipeline-frame">
+    <rect x="78" y="154" width="1124" height="386" rx="22" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
+    <text x="640" y="188" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" font-weight="800" fill="#4D5A57" letter-spacing="1.5">QUALITY PIPELINE · EACH STAGE LEAVES AN ARTIFACT</text>
+  </g>
+  <g id="stage-backend">
+    <rect x="104" y="226" width="188" height="250" rx="18" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
+    <rect x="104" y="226" width="188" height="56" rx="18" fill="#1F8A70"/>
+    <text x="128" y="262" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" font-weight="800" fill="#FFFFFF">01 Pytest</text>
+    <use data-icon="phosphor-duotone/test-tube" x="132" y="314" width="36" height="36" fill="#1F8A70"/>
+    <text x="178" y="324" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" font-weight="800" fill="#182026">后端测试</text>
+    <text x="132" y="382" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57">
+      <tspan x="132" dy="0">认证、校园隔离、</tspan>
+      <tspan x="132" dy="23">评分、幂等、分页、</tspan>
+      <tspan x="132" dy="23">上传和管理 API</tspan>
+    </text>
+    <rect x="126" y="432" width="144" height="28" rx="14" fill="#EAF7EF"/>
+    <text x="198" y="451" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="12" font-weight="800" fill="#1F8A70">测试报告</text>
+  </g>
+  <g id="stage-frontend">
+    <rect x="332" y="226" width="188" height="250" rx="18" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
+    <rect x="332" y="226" width="188" height="56" rx="18" fill="#3A86FF"/>
+    <text x="356" y="262" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" font-weight="800" fill="#FFFFFF">02 Vitest</text>
+    <use data-icon="phosphor-duotone/device-mobile" x="360" y="314" width="36" height="36" fill="#3A86FF"/>
+    <text x="406" y="324" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" font-weight="800" fill="#182026">前端组件</text>
+    <text x="360" y="382" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57">
+      <tspan x="360" dy="0">页面渲染、状态、</tspan>
+      <tspan x="360" dy="23">HTTP 映射、表单、</tspan>
+      <tspan x="360" dy="23">交互行为</tspan>
+    </text>
+    <rect x="354" y="432" width="144" height="28" rx="14" fill="#EAF7EF"/>
+    <text x="426" y="451" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="12" font-weight="800" fill="#3A86FF">组件结果</text>
+  </g>
+  <g id="stage-e2e">
+    <rect x="560" y="226" width="188" height="250" rx="18" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
+    <rect x="560" y="226" width="188" height="56" rx="18" fill="#FFB703"/>
+    <text x="584" y="262" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" font-weight="800" fill="#182026">03 E2E</text>
+    <use data-icon="phosphor-duotone/path" x="588" y="314" width="36" height="36" fill="#FFB703"/>
+    <text x="634" y="324" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" font-weight="800" fill="#182026">端到端</text>
+    <text x="588" y="382" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57">
+      <tspan x="588" dy="0">用户评价到管理审核、</tspan>
+      <tspan x="588" dy="23">游客阅读、地图星标、</tspan>
+      <tspan x="588" dy="23">管理 CRUD 与审计</tspan>
+    </text>
+    <rect x="582" y="432" width="144" height="28" rx="14" fill="#EAF7EF"/>
+    <text x="654" y="451" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="12" font-weight="800" fill="#1F8A70">演示闭环</text>
+  </g>
+  <g id="stage-contract">
+    <rect x="788" y="226" width="188" height="250" rx="18" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
+    <rect x="788" y="226" width="188" height="56" rx="18" fill="#1F8A70"/>
+    <text x="812" y="262" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" font-weight="800" fill="#FFFFFF">04 Audit</text>
+    <use data-icon="phosphor-duotone/code-block" x="816" y="314" width="36" height="36" fill="#1F8A70"/>
+    <text x="862" y="324" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" font-weight="800" fill="#182026">静态契约</text>
+    <text x="816" y="382" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57">
+      <tspan x="816" dy="0">static_audit 检查</tspan>
+      <tspan x="816" dy="23">路由边界、核心文件、</tspan>
+      <tspan x="816" dy="23">关键 UI/API 契约</tspan>
+    </text>
+    <rect x="810" y="432" width="144" height="28" rx="14" fill="#EAF7EF"/>
+    <text x="882" y="451" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="12" font-weight="800" fill="#1F8A70">审计结果</text>
+  </g>
+  <g id="stage-deploy">
+    <rect x="1016" y="226" width="160" height="250" rx="18" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
+    <rect x="1016" y="226" width="160" height="56" rx="18" fill="#3A86FF"/>
+    <text x="1040" y="262" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" font-weight="800" fill="#FFFFFF">05 Deploy</text>
+    <use data-icon="phosphor-duotone/rocket-launch" x="1044" y="314" width="36" height="36" fill="#3A86FF"/>
+    <text x="1090" y="324" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" font-weight="800" fill="#182026">交付运行</text>
+    <text x="1044" y="382" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57">
+      <tspan x="1044" dy="0">OpenAPI 导出、</tspan>
+      <tspan x="1044" dy="23">Docker Compose、</tspan>
+      <tspan x="1044" dy="23">迁移和构建检查</tspan>
+    </text>
+    <rect x="1036" y="432" width="120" height="28" rx="14" fill="#EAF7EF"/>
+    <text x="1096" y="451" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="12" font-weight="800" fill="#3A86FF">可部署包</text>
+  </g>
+  <g id="pipeline-arrows">
+    <line x1="292" y1="350" x2="328" y2="350" stroke="#1F8A70" stroke-width="3" marker-end="url(#arrowPrimary)"/>
+    <line x1="520" y1="350" x2="556" y2="350" stroke="#1F8A70" stroke-width="3" marker-end="url(#arrowPrimary)"/>
+    <line x1="748" y1="350" x2="784" y2="350" stroke="#1F8A70" stroke-width="3" marker-end="url(#arrowPrimary)"/>
+    <line x1="976" y1="350" x2="1012" y2="350" stroke="#1F8A70" stroke-width="3" marker-end="url(#arrowPrimary)"/>
+  </g>
+  <g id="bottom-artifacts">
+    <rect x="120" y="586" width="1040" height="58" rx="29" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
+    <use data-icon="phosphor-duotone/check-circle" x="154" y="600" width="30" height="30" fill="#22A06B"/>
+    <text x="204" y="624" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" font-weight="800" fill="#182026">验收交付：</text>
+    <text x="304" y="624" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" fill="#4D5A57">测试报告、静态审计结果、OpenAPI 文档、Docker 本地联调环境</text>
+  </g>
+</svg>
