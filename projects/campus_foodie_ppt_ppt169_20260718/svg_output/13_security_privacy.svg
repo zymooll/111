@@ -45,7 +45,7 @@
     <rect x="842" y="494" width="290" height="92" rx="20" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
     <use data-icon="phosphor-duotone/check-circle" x="870" y="520" width="38" height="38" fill="#22A06B"/>
     <text x="924" y="530" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="17" font-weight="800" fill="#182026">图片重编码</text>
-    <text x="924" y="556" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57">校验真实格式、像素并清除 EXIF</text>
+    <text x="924" y="556" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57">检查图片并去掉隐藏信息</text>
   </g>
   <g id="spoke-ai-data">
     <rect x="148" y="494" width="298" height="92" rx="20" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
@@ -56,7 +56,7 @@
   <g id="spoke-cache">
     <rect x="142" y="220" width="306" height="92" rx="20" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
     <use data-icon="phosphor-duotone/cloud-check" x="170" y="246" width="38" height="38" fill="#1F8A70"/>
-    <text x="224" y="256" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="17" font-weight="800" fill="#182026">PWA 缓存边界</text>
+    <text x="224" y="256" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="17" font-weight="800" fill="#182026">个人信息不缓存</text>
     <text x="224" y="282" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57">公开应用壳可缓存，个人响应不持久化</text>
   </g>
   <g id="bottom-rule">

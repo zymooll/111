@@ -19,7 +19,7 @@
   </g>
     <text x="206" y="216" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="26" font-weight="800" fill="#182026">首页推荐</text>
     <text x="206" y="250" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#1F8A70">打开即回答“今天吃什么”</text>
-    <text font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" fill="#4D5A57" x="112" y="302">搜索、品类、地点和预算筛选一起服务推荐流，</text><text font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" fill="#4D5A57" x="112" y="332">卡片展示菜名、商家、评分、价格和理由。</text></g>
+    <text fill="#4D5A57" font-size="18" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" x="112" y="302">搜索、品类、地点和预算筛选一起服务推荐流，</text><text fill="#4D5A57" font-size="18" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" x="112" y="332">卡片展示菜名、商家、评分、价格和理由。</text></g>
   <g id="card-map">
     <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" d="M684,150 H1176 A24,24 0 0 1 1200,174 V346 A24,24 0 0 1 1176,370 H684 A24,24 0 0 1 660,346 V174 A24,24 0 0 1 684,150 Z" />
     <text x="1162" y="210" text-anchor="end" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="56" font-weight="800" fill="#3A86FF" fill-opacity="0.12">02</text>
@@ -30,8 +30,8 @@
     <path d="M128,64a40,40,0,1,0,40,40A40,40,0,0,0,128,64Zm0,64a24,24,0,1,1,24-24A24,24,0,0,1,128,128Zm0-112a88.1,88.1,0,0,0-88,88c0,31.4,14.51,64.68,42,96.25a254.19,254.19,0,0,0,41.45,38.3,8,8,0,0,0,9.18,0A254.19,254.19,0,0,0,174,200.25c27.45-31.57,42-64.85,42-96.25A88.1,88.1,0,0,0,128,16Zm0,206c-16.53-13-72-60.75-72-118a72,72,0,0,1,144,0C200,161.23,144.53,209,128,222Z" />
   </g>
     <text x="786" y="216" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="26" font-weight="800" fill="#182026">地图发现</text>
-    <text x="786" y="250" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#3A86FF">找得到、筛得动、可降级</text>
-    <text font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" fill="#4D5A57" x="692" y="302">商家点位、收藏星标和聚合星标帮助学生理解</text><text font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" fill="#4D5A57" x="692" y="332">距离；无地图 Key 时仍保留示意地图语义。</text></g>
+    <text x="786" y="250" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#3A86FF">找得到、筛得动、也看得清</text>
+    <text fill="#4D5A57" font-size="18" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" x="692" y="302">商家位置、收藏标记和合并显示帮助学生理解</text><text fill="#4D5A57" font-size="18" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" x="692" y="332">距离；没有地图服务时也保留校园示意图。</text></g>
   <g id="card-review">
     <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" d="M104,410 H596 A24,24 0 0 1 620,434 V606 A24,24 0 0 1 596,630 H104 A24,24 0 0 1 80,606 V434 A24,24 0 0 1 104,410 Z" />
     <text x="582" y="470" text-anchor="end" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="56" font-weight="800" fill="#FFB703" fill-opacity="0.18">03</text>
@@ -43,7 +43,7 @@
   </g>
     <text x="206" y="476" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="26" font-weight="800" fill="#182026">我也吃过</text>
     <text x="206" y="510" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#1F8A70">体验回流成公共信息</text>
-    <text font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" fill="#4D5A57" x="112" y="562">评价入口独立存在；游客可以先写草稿，提交时</text><text font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" fill="#4D5A57" x="112" y="592">再登录，图片和审核状态都可追踪。</text></g>
+    <text fill="#4D5A57" font-size="18" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" x="112" y="562">评价入口独立存在；游客可以先写草稿，提交时</text><text fill="#4D5A57" font-size="18" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" x="112" y="592">再登录，图片和审核状态都可追踪。</text></g>
   <g id="card-admin">
     <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" d="M684,410 H1176 A24,24 0 0 1 1200,434 V606 A24,24 0 0 1 1176,630 H684 A24,24 0 0 1 660,606 V434 A24,24 0 0 1 684,410 Z" />
     <text x="1162" y="470" text-anchor="end" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="56" font-weight="800" fill="#1F8A70" fill-opacity="0.12">04</text>
@@ -54,8 +54,8 @@
     <path d="M208,40H48A24,24,0,0,0,24,64V176a24,24,0,0,0,24,24h72v16H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16H136V200h72a24,24,0,0,0,24-24V64A24,24,0,0,0,208,40ZM48,56H208a8,8,0,0,1,8,8v80H40V64A8,8,0,0,1,48,56ZM208,184H48a8,8,0,0,1-8-8V160H216v16A8,8,0,0,1,208,184Z" />
   </g>
     <text x="786" y="476" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="26" font-weight="800" fill="#182026">管理端</text>
-    <text x="786" y="510" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#1F8A70">商家、菜品、评价和审计可治理</text>
-    <text font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" fill="#4D5A57" x="692" y="562">独立端口与登录态支撑管理员维护数据、审核</text><text font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" fill="#4D5A57" x="692" y="592">评价、预校验 CSV，并留下审计日志。</text></g>
+    <text x="786" y="510" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#1F8A70">商家、菜品、评价都能维护</text>
+    <text fill="#4D5A57" font-size="18" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" x="692" y="562">管理员可以维护数据、审核评价、导入资料，</text><text fill="#4D5A57" font-size="18" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" x="692" y="592">每一次操作都有记录可查。</text></g>
   <g id="loop-label">
     <path fill="#1F8A70" d="M486,374 H794 A16,16 0 0 1 810,390 V390 A16,16 0 0 1 794,406 H486 A16,16 0 0 1 470,390 V390 A16,16 0 0 1 486,374 Z" />
     

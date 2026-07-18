@@ -21,7 +21,7 @@
     <text x="76" y="398" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="22" fill="#4D5A57">
       <tspan x="76" dy="0">Campus Foodie 已形成</tspan>
       <tspan x="76" dy="38">从推荐、决策、评价、审核</tspan>
-      <tspan x="76" dy="38">到影响统计的 MVP 闭环。</tspan>
+      <tspan x="76" dy="38">到影响统计的完整流程。</tspan>
     </text>
     <rect x="78" y="536" width="318" height="56" rx="28" fill="url(#heroGreen)" />
     <use data-icon="phosphor-duotone/rocket-launch" x="110" y="550" width="28" height="28" fill="#FFFFFF" />
@@ -38,8 +38,8 @@
     <path d="M 668,204 L 674,210 L 686,196" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
     <text x="642" y="210" text-anchor="end" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" font-weight="800" fill="#1F8A70">NOW</text>
     <rect x="716" y="170" width="406" height="68" rx="18" fill="#EAF7EF" stroke="#BFD9CC" stroke-width="1" />
-    <text x="742" y="198" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="17" font-weight="800" fill="#182026">MVP 闭环完成</text>
-    <text x="742" y="222" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57">推荐、地图、评价、审核、降级链路可路演</text>
+    <text x="742" y="198" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="17" font-weight="800" fill="#182026">完整流程已跑通</text>
+    <text x="742" y="222" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57">推荐、地图、评价、审核都能演示</text>
   </g>
   <g id="roadmap-identity">
     <circle cx="676" cy="292" r="15" fill="#FFFFFF" stroke="#3A86FF" stroke-width="4" />
