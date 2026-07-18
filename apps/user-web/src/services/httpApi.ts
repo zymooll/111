@@ -5,6 +5,8 @@ import type {
   DishCardData,
   FeedFilters,
   FoodieApi,
+  FoodPreferences,
+  InteractionEventInput,
   MapFilters,
   Merchant,
   Review,
@@ -529,6 +531,67 @@ class HttpFoodieApi implements FoodieApi {
     await request('/auth/password/reset', { method: 'POST', body: JSON.stringify({ token, new_password: password }) }, false)
   }
 
+  async getPreferences(): Promise<FoodPreferences> {
+    const value = await request<{
+      tastes: string[]
+      avoid: string[]
+      budget_max_cents?: number | null
+      frequent_area_ids: string[]
+    }>('/me/preferences')
+    return {
+      tastes: value.tastes,
+      avoid: value.avoid,
+      budgetMaxCents: value.budget_max_cents ?? undefined,
+      frequentAreaIds: value.frequent_area_ids
+    }
+  }
+
+  async updatePreferences(preferences: FoodPreferences): Promise<FoodPreferences> {
+    const value = await request<{
+      tastes: string[]
+      avoid: string[]
+      budget_max_cents?: number | null
+      frequent_area_ids: string[]
+    }>('/me/preferences', {
+      method: 'PUT',
+      body: JSON.stringify({
+        tastes: preferences.tastes,
+        avoid: preferences.avoid,
+        budget_max_cents: preferences.budgetMaxCents ?? null,
+        frequent_area_ids: preferences.frequentAreaIds
+      })
+    })
+    return {
+      tastes: value.tastes,
+      avoid: value.avoid,
+      budgetMaxCents: value.budget_max_cents ?? undefined,
+      frequentAreaIds: value.frequent_area_ids
+    }
+  }
+
+  async recordInteractions(events: InteractionEventInput[]) {
+    if (!events.length) return
+    await request('/interactions', {
+      method: 'POST',
+      body: JSON.stringify({
+        events: events.map((event) => ({
+          event_id: event.eventId,
+          event_type: event.eventType,
+          menu_item_id: event.dishId,
+          merchant_id: event.merchantId,
+          metadata: event.metadata ?? {}
+        }))
+      })
+    })
+  }
+
+  async viewReview(reviewId: string, eventId: string) {
+    await request(`/reviews/${reviewId}/view`, {
+      method: 'POST',
+      body: JSON.stringify({ event_id: eventId })
+    })
+  }
+
   private async uploadImage(dataUrl: string) {
     const blob = await (await fetch(dataUrl)).blob()
     const extension = blob.type === 'image/png' ? 'png' : blob.type === 'image/webp' ? 'webp' : 'jpg'
@@ -570,6 +633,10 @@ export function createFallbackFoodieApi(primary: FoodieApi, secondary: FoodieApi
     requestEmailVerification: () => attempt(() => primary.requestEmailVerification(), () => secondary.requestEmailVerification()),
     confirmEmailVerification: (token) => attempt(() => primary.confirmEmailVerification(token), () => secondary.confirmEmailVerification(token)),
     forgotPassword: (email) => attempt(() => primary.forgotPassword(email), () => secondary.forgotPassword(email)),
-    resetPassword: (token, password) => attempt(() => primary.resetPassword(token, password), () => secondary.resetPassword(token, password))
+    resetPassword: (token, password) => attempt(() => primary.resetPassword(token, password), () => secondary.resetPassword(token, password)),
+    getPreferences: () => attempt(() => primary.getPreferences(), () => secondary.getPreferences()),
+    updatePreferences: (preferences) => attempt(() => primary.updatePreferences(preferences), () => secondary.updatePreferences(preferences)),
+    recordInteractions: (events) => attempt(() => primary.recordInteractions(events), () => secondary.recordInteractions(events)),
+    viewReview: (reviewId, eventId) => attempt(() => primary.viewReview(reviewId, eventId), () => secondary.viewReview(reviewId, eventId))
   }
 }

@@ -1,6 +1,6 @@
 # Campus Foodie 用户端
 
-移动优先的 React + TypeScript + Vite PWA。包含首页推荐、菜品详情、地图筛选、游客收藏、账号与邮箱流程、评价发布和个人中心，并可在本地演示数据与 FastAPI 之间切换。
+移动优先的 React + TypeScript + Vite PWA。包含首页推荐、菜品详情、地图筛选、游客收藏、口味画像、账号与邮箱流程、评价发布和个人中心，并可在本地演示数据与 FastAPI 之间切换。
 
 ## 本地运行
 

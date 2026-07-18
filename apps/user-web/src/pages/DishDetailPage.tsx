@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Toast } from 'antd-mobile'
 import { ArrowLeft, Clock3, Flame, Heart, MapPin, MessageCircleMore, Navigation, Share2, Sparkles, Star, Store, ThumbsUp } from 'lucide-react'
@@ -6,6 +6,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { EmptyState, FeedSkeleton } from '../components/States'
 import { Stars } from '../components/Stars'
 import { api } from '../services/api'
+import { newEventId } from '../services/interactions'
 import { useAppState } from '../store/AppState'
 
 export function DishDetailPage() {
@@ -13,9 +14,31 @@ export function DishDetailPage() {
   const navigate = useNavigate()
   const { favorites, toggleFavorite } = useAppState()
   const [photoIndex, setPhotoIndex] = useState(0)
+  const viewedDish = useRef<string | null>(null)
+  const viewedReviews = useRef(new Set<string>())
   const dishQuery = useQuery({ queryKey: ['dish', dishId, favorites], queryFn: () => api.getDish(dishId, favorites) })
   const reviewsQuery = useQuery({ queryKey: ['dish-reviews', dishId], queryFn: () => api.getDishReviews(dishId) })
   const dish = dishQuery.data
+
+  useEffect(() => {
+    if (!dish || viewedDish.current === dish.id) return
+    viewedDish.current = dish.id
+    void api.recordInteractions([{
+      eventId: newEventId('view'),
+      eventType: 'view',
+      dishId: dish.id,
+      merchantId: dish.merchantId,
+      metadata: { source: 'dish_detail' }
+    }]).catch(() => undefined)
+  }, [dish])
+
+  useEffect(() => {
+    const fresh = (reviewsQuery.data ?? []).filter((review) => !viewedReviews.current.has(review.id))
+    fresh.forEach((review) => {
+      viewedReviews.current.add(review.id)
+      void api.viewReview(review.id, newEventId('review-view')).catch(() => undefined)
+    })
+  }, [reviewsQuery.data])
 
   if (dishQuery.isLoading) return <div className="page subpage"><FeedSkeleton /></div>
   if (!dish) return <div className="page subpage"><EmptyState title="这道菜暂时下架了" description="返回首页看看其他同学喜欢的味道。" /></div>

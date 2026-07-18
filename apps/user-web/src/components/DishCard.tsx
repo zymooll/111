@@ -2,10 +2,10 @@ import { Clock3, MapPin, Sparkles, Star } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import type { DishCardData } from '../types'
 
-export function DishCard({ item, onFavorite }: { item: DishCardData; onFavorite: (merchantId: string) => void }) {
+export function DishCard({ item, onFavorite, onOpen }: { item: DishCardData; onFavorite: (merchantId: string) => void; onOpen?: (item: DishCardData) => void }) {
   const navigate = useNavigate()
   return (
-    <article className="dish-card" onClick={() => navigate(`/dish/${item.id}`)}>
+    <article className="dish-card" onClick={() => { onOpen?.(item); navigate(`/dish/${item.id}`) }}>
       <div className="dish-card__media">
         <img src={item.image} alt={item.name} loading="lazy" />
         <span className="match-badge"><Sparkles size={12} /> {item.match}% 匹配</span>

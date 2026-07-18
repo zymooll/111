@@ -23,7 +23,6 @@ from app.models import (
     Review,
     ReviewStatus,
     Tag,
-    UserProfile,
 )
 from app.schemas import (
     CampusRead,
@@ -39,6 +38,7 @@ from app.schemas import (
 )
 from app.services.deepseek import DeepSeekClient
 from app.services.hierarchy import area_with_descendants, category_with_descendants
+from app.services.profiles import recommendation_profile
 
 
 router = APIRouter(tags=["发现与餐饮"])
@@ -71,15 +71,7 @@ def _actor(principal: object | None) -> tuple[str | None, str | None]:
 
 
 def _preferences_for(db, principal: object | None) -> dict[str, object]:
-    if principal and principal.is_user:
-        profile = db.scalar(select(UserProfile).where(UserProfile.user_id == principal.id))
-        return dict(profile.preferences or {}) if profile else {}
-    if principal and principal.is_guest:
-        from app.models import GuestSession
-
-        guest = db.get(GuestSession, principal.id)
-        return dict(guest.preferences or {}) if guest else {}
-    return {}
+    return recommendation_profile(db, principal)
 
 
 def _decode_cursor(value: str | None) -> int:

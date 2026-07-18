@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Button, Toast } from 'antd-mobile'
 import { ChevronDown, History, LocateFixed, Search, SlidersHorizontal, Sparkles, TrendingUp } from 'lucide-react'
@@ -7,6 +7,7 @@ import { DishCard } from '../components/DishCard'
 import { EmptyState, ErrorState, FeedSkeleton } from '../components/States'
 import { areaTree, categoryTree, findTreeLabel } from '../data/mockData'
 import { api } from '../services/api'
+import { newEventId } from '../services/interactions'
 import { useAppState } from '../store/AppState'
 
 const quickCategories = categoryTree.flatMap((group) => group.children ?? []).slice(0, 5)
@@ -16,6 +17,7 @@ export function HomePage() {
   const [params, setParams] = useSearchParams()
   const { user, favorites, toggleFavorite } = useAppState()
   const [search, setSearch] = useState(params.get('q') ?? '')
+  const impressedItems = useRef(new Set<string>())
   const categoryId = params.get('category') ?? undefined
   const areaId = params.get('area') ?? undefined
 
@@ -30,12 +32,32 @@ export function HomePage() {
   const areaLabel = findTreeLabel(areaTree, areaId) ?? '南校区附近'
   const insight = useMemo(() => query.data?.items[0]?.reason ?? '正在分析你最近的口味偏好', [query.data])
 
+  useEffect(() => {
+    const freshItems = (query.data?.items ?? []).filter((item) => !impressedItems.current.has(item.id))
+    if (!freshItems.length) return
+    freshItems.forEach((item) => impressedItems.current.add(item.id))
+    void api.recordInteractions(freshItems.map((item) => ({
+      eventId: newEventId('impression'),
+      eventType: 'impression' as const,
+      dishId: item.id,
+      merchantId: item.merchantId,
+      metadata: { source: 'home_feed' }
+    }))).catch(() => undefined)
+  }, [query.data])
+
   const submitSearch = (event: FormEvent) => {
     event.preventDefault()
     const next = new URLSearchParams(params)
     if (search.trim()) next.set('q', search.trim())
     else next.delete('q')
     setParams(next)
+    if (search.trim()) {
+      void api.recordInteractions([{
+        eventId: newEventId('search'),
+        eventType: 'search',
+        metadata: { query: search.trim(), source: 'home_search' }
+      }]).catch(() => undefined)
+    }
   }
 
   const setCategory = (id?: string) => {
@@ -104,7 +126,15 @@ export function HomePage() {
       {query.isError && <ErrorState retry={() => query.refetch()} />}
       {query.data && query.data.items.length > 0 && (
         <div className="feed-list">
-          {query.data.items.map((item) => <DishCard key={item.id} item={item} onFavorite={favorite} />)}
+          {query.data.items.map((item) => <DishCard key={item.id} item={item} onFavorite={favorite} onOpen={(selected) => {
+            void api.recordInteractions([{
+              eventId: newEventId('click'),
+              eventType: 'click',
+              dishId: selected.id,
+              merchantId: selected.merchantId,
+              metadata: { source: 'home_feed' }
+            }]).catch(() => undefined)
+          }} />)}
           <div className="feed-end"><span /><p>已经帮你看完附近的好味道</p><span /></div>
         </div>
       )}

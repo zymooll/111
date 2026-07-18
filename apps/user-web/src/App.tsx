@@ -7,6 +7,7 @@ import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
 import { MapPage } from './pages/MapPage'
 import { MinePage } from './pages/MinePage'
+import { PreferencesPage } from './pages/PreferencesPage'
 import { RegisterPage } from './pages/RegisterPage'
 import { ResetPasswordPage } from './pages/ResetPasswordPage'
 import { ReviewPage } from './pages/ReviewPage'
@@ -19,6 +20,7 @@ export default function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/map" element={<MapPage />} />
         <Route path="/mine" element={<MinePage />} />
+        <Route path="/preferences" element={<PreferencesPage />} />
         <Route path="/dish/:dishId" element={<DishDetailPage />} />
         <Route path="/filter/:kind" element={<FilterPage />} />
         <Route path="/login" element={<LoginPage />} />

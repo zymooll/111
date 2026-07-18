@@ -66,3 +66,70 @@ def test_problem_details_and_cursor_validation(client):
     missing = client.get("/api/v1/menu-items/not-found")
     assert missing.status_code == 404
     assert missing.json()["title"] == "资源不存在"
+
+
+def test_recent_behavior_builds_guest_profile_and_changes_fallback_ranking(client, demo_ids):
+    guest = client.post("/api/v1/auth/guest").json()
+    headers = {"Authorization": f"Bearer {guest['access_token']}"}
+
+    recorded = client.post(
+        "/api/v1/interactions",
+        headers=headers,
+        json={
+            "events": [
+                {
+                    "event_id": "behavior-click-item-three",
+                    "event_type": "click",
+                    "menu_item_id": demo_ids["item_three"],
+                    "metadata": {"source": "home_feed"},
+                }
+            ]
+        },
+    )
+    assert recorded.status_code == 200, recorded.text
+
+    feed = client.get(
+        "/api/v1/recommendations/feed",
+        headers=headers,
+        params={"campus_id": demo_ids["campus"]},
+    )
+    assert feed.status_code == 200, feed.text
+    first = feed.json()["items"][0]
+    assert first["id"] == demo_ids["item_three"]
+    assert "清淡" in first["recommendation_reason"]
+
+
+def test_deepseek_profile_excludes_raw_search_text(client, demo_ids, monkeypatch):
+    captured: dict[str, object] = {}
+
+    async def capture_profile(_adapter, _candidates, preferences):
+        captured.update(preferences)
+        return None
+
+    monkeypatch.setattr("app.api.catalog.DeepSeekClient.rerank", capture_profile)
+    guest = client.post("/api/v1/auth/guest").json()
+    headers = {"Authorization": f"Bearer {guest['access_token']}"}
+    raw_search = "student-private@example.com"
+    client.post(
+        "/api/v1/interactions",
+        headers=headers,
+        json={
+            "events": [
+                {
+                    "event_id": "private-search-event-0001",
+                    "event_type": "search",
+                    "metadata": {"query": raw_search},
+                }
+            ]
+        },
+    )
+
+    response = client.get(
+        "/api/v1/recommendations/feed",
+        headers=headers,
+        params={"campus_id": demo_ids["campus"]},
+    )
+
+    assert response.status_code == 200
+    assert raw_search not in str(captured)
+    assert captured["behavior_profile"]["search_signal_count"] == 1

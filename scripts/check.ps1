@@ -11,8 +11,11 @@ Push-Location $root
 try {
     & $python -m compileall -q backend\app backend\tests
     & $python -m pytest backend\tests
-    pnpm build
+    & $python scripts\static_audit.py
+    & $python -m pip check
+    pnpm typecheck
     pnpm test
+    pnpm build
 } finally {
     Pop-Location
 }

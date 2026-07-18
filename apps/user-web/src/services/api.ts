@@ -1,9 +1,15 @@
 import { areaTree, categoryTree, demoUser, dishes, initialReviews, merchants } from '../data/mockData'
-import type { DishCardData, FoodieApi, MapFilters, Review, ReviewDraft, User } from '../types'
+import type { DishCardData, FoodieApi, FoodPreferences, MapFilters, Review, ReviewDraft, User } from '../types'
 import { createFallbackFoodieApi, httpApi } from './httpApi'
 
 const wait = (ms = 180) => new Promise((resolve) => window.setTimeout(resolve, ms))
 const reviews = [...initialReviews]
+let mockPreferences: FoodPreferences = {
+  tastes: ['清淡', '高蛋白'],
+  avoid: [],
+  budgetMaxCents: 3000,
+  frequentAreaIds: []
+}
 
 function matchesCategory(itemCategory: string, selected?: string) {
   if (!selected) return true
@@ -122,6 +128,17 @@ class MockFoodieApi implements FoodieApi {
     return { message: '如果邮箱已注册，重置邮件将很快送达', debugToken: 'mock-password-reset-token' }
   }
   async resetPassword(_token: string, _password: string) { await wait(80) }
+  async getPreferences() {
+    await wait(60)
+    return { ...mockPreferences, tastes: [...mockPreferences.tastes], avoid: [...mockPreferences.avoid], frequentAreaIds: [...mockPreferences.frequentAreaIds] }
+  }
+  async updatePreferences(preferences: FoodPreferences) {
+    await wait(100)
+    mockPreferences = { ...preferences, tastes: [...preferences.tastes], avoid: [...preferences.avoid], frequentAreaIds: [...preferences.frequentAreaIds] }
+    return this.getPreferences()
+  }
+  async recordInteractions() { await wait(10) }
+  async viewReview() { await wait(10) }
 }
 
 export const mockApi: FoodieApi = new MockFoodieApi()

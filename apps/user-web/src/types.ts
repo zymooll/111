@@ -105,6 +105,21 @@ export interface ReviewDraft {
   images: string[]
 }
 
+export interface FoodPreferences {
+  tastes: string[]
+  avoid: string[]
+  budgetMaxCents?: number
+  frequentAreaIds: string[]
+}
+
+export interface InteractionEventInput {
+  eventId: string
+  eventType: 'impression' | 'click' | 'search' | 'favorite' | 'view'
+  dishId?: string
+  merchantId?: string
+  metadata?: Record<string, unknown>
+}
+
 export interface RecommendationPage {
   items: DishCardData[]
   nextCursor?: string
@@ -127,4 +142,8 @@ export interface FoodieApi {
   confirmEmailVerification(token: string): Promise<User>
   forgotPassword(email: string): Promise<AccountActionResult>
   resetPassword(token: string, password: string): Promise<void>
+  getPreferences(): Promise<FoodPreferences>
+  updatePreferences(preferences: FoodPreferences): Promise<FoodPreferences>
+  recordInteractions(events: InteractionEventInput[]): Promise<void>
+  viewReview(reviewId: string, eventId: string): Promise<void>
 }

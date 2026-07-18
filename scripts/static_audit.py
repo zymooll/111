@@ -30,11 +30,13 @@ def main() -> None:
         "backend/app/admin/routes.py",
         "backend/app/services/accounts.py",
         "backend/app/services/deepseek.py",
+        "backend/app/services/profiles.py",
         "apps/user-web/src/pages/HomePage.tsx",
         "apps/user-web/src/pages/MapPage.tsx",
         "apps/user-web/src/pages/MinePage.tsx",
         "apps/user-web/src/pages/DishDetailPage.tsx",
         "apps/user-web/src/pages/ReviewPage.tsx",
+        "apps/user-web/src/pages/PreferencesPage.tsx",
         "apps/user-web/src/pages/ForgotPasswordPage.tsx",
         "apps/user-web/src/pages/ResetPasswordPage.tsx",
         "apps/user-web/src/pages/VerifyEmailPage.tsx",
@@ -83,6 +85,13 @@ def main() -> None:
         "response_format",
     )
     require_terms(
+        "backend/app/services/profiles.py",
+        "EVENT_WEIGHTS",
+        "behavior_profile",
+        "search_signal_count",
+        "Impressions are intentionally excluded",
+    )
+    require_terms(
         "backend/app/admin/routes.py",
         '"/users"',
         '"/merchants"',
@@ -100,6 +109,7 @@ def main() -> None:
     require_terms("apps/user-web/src/pages/HomePage.tsx", "品类", "地点", "AI 推荐")
     require_terms("apps/user-web/src/pages/MapPage.tsx", "价格", "口味", "收藏")
     require_terms("apps/user-web/src/pages/MinePage.tsx", "累计阅读", "我的收藏", "我的评价")
+    require_terms("apps/user-web/src/pages/PreferencesPage.tsx", "喜欢的口味", "希望避开", "隐私说明")
     require_terms(
         "apps/user-web/src/services/httpApi.ts",
         "/auth/refresh",

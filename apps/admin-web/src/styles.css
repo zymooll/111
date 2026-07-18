@@ -16,6 +16,8 @@ body {
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 
+.route-loading { display: grid; min-height: 100vh; place-items: center; color: #64748b; font-size: 14px; }
+
 button, input, textarea, select { font: inherit; }
 
 .admin-shell { min-height: 100vh; background: #f4f7fb; }

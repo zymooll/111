@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { api, apiMode } from '../services/api'
+import { newEventId } from '../services/interactions'
 import type { ThemeMode, User } from '../types'
 
 const FAVORITES_KEY = 'campus-foodie:favorites'
@@ -78,6 +79,14 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
           ? latest.filter((id) => id !== merchantId)
           : latest.includes(merchantId) ? latest : [...latest, merchantId])
       })
+      if (favorite) {
+        void api.recordInteractions([{
+          eventId: newEventId('favorite'),
+          eventType: 'favorite',
+          merchantId,
+          metadata: { source: 'favorite_toggle' }
+        }]).catch(() => undefined)
+      }
       return next
     })
   }, [])

@@ -86,7 +86,7 @@ export function MinePage() {
       </section>
 
       <div className="mine-links">
-        <button type="button"><span><Sparkles size={19} />口味偏好</span><ChevronRight size={18} /></button>
+        <button type="button" onClick={() => navigate('/preferences')}><span><Sparkles size={19} />口味偏好</span><ChevronRight size={18} /></button>
         <button type="button"><span><Bookmark size={19} />关于校园食刻</span><ChevronRight size={18} /></button>
       </div>
 
