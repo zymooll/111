@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { Button, Toast } from 'antd-mobile'
-import { ArrowRight, ChevronDown, History, LocateFixed, Search, SlidersHorizontal, Sparkles, TrendingUp } from 'lucide-react'
+import { ChevronDown, History, LocateFixed, Search, SlidersHorizontal, Sparkles, TrendingUp } from 'lucide-react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { DishCard } from '../components/DishCard'
 import { EmptyState, ErrorState, FeedSkeleton } from '../components/States'
@@ -102,11 +102,6 @@ export function HomePage() {
 
   return (
     <div className="page home-page">
-      <div className="apple-global-nav">
-        <span className="apple-global-nav__mark">⌘</span>
-        <span>Campus Foodie</span>
-        <Link to="/mine" aria-label="进入个人中心">我的</Link>
-      </div>
       <header className="home-header">
         <Link to="/mine" className="avatar-button" aria-label="进入个人中心">
           <span>{user?.displayName.slice(0, 1) ?? '食'}</span>
@@ -121,12 +116,10 @@ export function HomePage() {
 
       <section className="welcome-row">
         <div>
-          <p>{user ? `${user.displayName}，今天想吃点什么？` : '校园饮食推荐'}</p>
+          <p>{user ? `${user.displayName}，今天想吃点什么？` : '嗨，校园美食探索家'}</p>
           <h1>把每一餐，都选得刚刚好</h1>
-          <p className="apple-hero-copy">从真实菜品开始，为你留出更从容的选择。</p>
-          <div className="apple-hero-actions"><button type="button" onClick={() => navigate('/filter/category')}>开始探索 <ArrowRight size={15} /></button><button type="button" onClick={() => navigate('/map')}>查看地图</button></div>
         </div>
-        <span className="weather-pill">今日 · 28°</span>
+        <span className="weather-pill">☀️ 28°</span>
       </section>
 
       <section className="filter-row" aria-label="推荐筛选">
@@ -149,13 +142,6 @@ export function HomePage() {
         <span className="ai-insight__icon"><Sparkles size={20} /></span>
         <div><strong>食刻懂你</strong><p>{insight}</p></div>
         <span className="ai-insight__tag">AI 推荐</span>
-      </section>
-
-      <section className="apple-ai-tile">
-        <p>Campus Foodie intelligence</p>
-        <h2>今天吃什么，<br />有了更好的答案。</h2>
-        <span>AI 只帮助排序，真实菜品与评价始终来自校园。</span>
-        <button type="button" onClick={() => navigate('/filter/category')}>了解推荐方式 <ArrowRight size={15} /></button>
       </section>
 
       <section className="section-heading">
