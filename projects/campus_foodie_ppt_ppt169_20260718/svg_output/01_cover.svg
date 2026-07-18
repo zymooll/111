@@ -1,58 +1,62 @@
+<?xml version='1.0' encoding='UTF-8'?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
   <defs>
     <linearGradient id="campusWash" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#EAF7EF"/>
-      <stop offset="100%" stop-color="#FBFFF7"/>
+      <stop offset="0%" stop-color="#EAF7EF" />
+      <stop offset="100%" stop-color="#FBFFF7" />
     </linearGradient>
     <linearGradient id="heroGreen" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#1F8A70"/>
-      <stop offset="100%" stop-color="#3A86FF"/>
+      <stop offset="0%" stop-color="#1F8A70" />
+      <stop offset="100%" stop-color="#3A86FF" />
     </linearGradient>
   </defs>
   <g id="background">
-    <rect x="0" y="0" width="1280" height="720" fill="url(#campusWash)"/>
-    <circle cx="1090" cy="120" r="170" fill="#FFB703" fill-opacity="0.16"/>
-    <circle cx="170" cy="620" r="210" fill="#3A86FF" fill-opacity="0.10"/>
-    <path d="M 830 0 C 1030 82 1180 236 1280 438 L 1280 0 Z" fill="#1F8A70" fill-opacity="0.08"/>
+    <rect x="0" y="0" width="1280" height="720" fill="url(#campusWash)" />
+    <circle cx="1090" cy="120" r="170" fill="#FFB703" fill-opacity="0.16" />
+    <circle cx="170" cy="620" r="210" fill="#3A86FF" fill-opacity="0.10" />
+    <path d="M 830 0 C 1030 82 1180 236 1280 438 L 1280 0 Z" fill="#1F8A70" fill-opacity="0.08" />
   </g>
   <g id="decor-product-triangle">
-    <path d="M 806 208 L 1058 356 L 832 526 Z" fill="#FFFFFF" fill-opacity="0.72" stroke="#BFD9CC" stroke-width="2"/>
-    <circle cx="806" cy="208" r="56" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="2"/>
-    <use data-icon="phosphor-duotone/fork-knife" x="778" y="180" width="56" height="56" fill="#1F8A70"/>
+    <path d="M 806 208 L 1058 356 L 832 526 Z" fill="#FFFFFF" fill-opacity="0.72" stroke="#BFD9CC" stroke-width="2" />
+    <circle cx="806" cy="208" r="56" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="2" />
+    <use data-icon="phosphor-duotone/fork-knife" x="778" y="180" width="56" height="56" fill="#1F8A70" />
     <text x="806" y="282" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" fill="#4D5A57">吃什么</text>
-    <circle cx="1058" cy="356" r="56" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="2"/>
-    <use data-icon="phosphor-duotone/map-pin" x="1030" y="328" width="56" height="56" fill="#3A86FF"/>
+    <circle cx="1058" cy="356" r="56" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="2" />
+    <use data-icon="phosphor-duotone/map-pin" x="1030" y="328" width="56" height="56" fill="#3A86FF" />
     <text x="1058" y="430" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" fill="#4D5A57">在哪吃</text>
-    <circle cx="832" cy="526" r="56" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="2"/>
-    <use data-icon="phosphor-duotone/sparkle" x="804" y="498" width="56" height="56" fill="#FFB703"/>
+    <circle cx="832" cy="526" r="56" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="2" />
+    <use data-icon="phosphor-duotone/sparkle" x="804" y="498" width="56" height="56" fill="#FFB703" />
     <text x="832" y="600" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" fill="#4D5A57">为什么推荐</text>
   </g>
   <g id="title-block">
-    <rect x="56" y="96" width="218" height="40" rx="20" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
+    <rect x="56" y="96" width="218" height="40" rx="20" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" />
     <text x="165" y="122" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="700" fill="#1F8A70">黑客松路演</text>
-    <text x="56" y="246" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="72" font-weight="800" fill="#182026">Campus</text>
-    <text x="56" y="326" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="72" font-weight="800" fill="url(#heroGreen)">Foodie</text>
-    <text x="60" y="384" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="28" font-weight="700" fill="#182026">从“去哪吃”到“今天吃什么”</text>
-    <text x="60" y="430" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="20" fill="#4D5A57">
+    <text x="56" y="238" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="66" font-weight="800" fill="#182026">Campus</text>
+    <text x="56" y="310" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="66" font-weight="800" fill="url(#heroGreen)">Foodie</text>
+    <text x="60" y="372" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="28" font-weight="700" fill="#182026">从“去哪吃”到“今天吃什么”</text>
+    <text x="60" y="418" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="20" fill="#4D5A57">
       <tspan x="60" dy="0">面向校园场景的菜品级推荐、地图发现、真实评价与后台治理闭环</tspan>
       <tspan x="60" dy="34">DeepSeek 只做受约束重排，核心体验可验证、可降级、可演示</tspan>
     </text>
   </g>
   <g id="hero-device-card">
-    <rect x="568" y="138" width="178" height="352" rx="34" fill="#182026"/>
-    <rect x="584" y="158" width="146" height="312" rx="24" fill="#FFFFFF"/>
-    <rect x="608" y="184" width="98" height="18" rx="9" fill="#DCEBE3"/>
-    <rect x="604" y="226" width="106" height="28" rx="14" fill="#EAF7EF"/>
-    <rect x="604" y="270" width="106" height="74" rx="16" fill="#FBFFF7" stroke="#BFD9CC" stroke-width="1"/>
-    <use data-icon="phosphor-duotone/bowl-food" x="616" y="286" width="36" height="36" fill="#FFB703"/>
-    <text x="660" y="304" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" font-weight="700" fill="#182026">藤椒鸡双拼饭</text>
-    <text x="660" y="326" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="11" fill="#4D5A57">微辣 · 20 元以内</text>
-    <rect x="604" y="356" width="106" height="58" rx="14" fill="#EAF7EF"/>
+    <rect x="568" y="138" width="178" height="352" rx="34" fill="#182026" />
+    <rect x="584" y="158" width="146" height="312" rx="24" fill="#FFFFFF" />
+    <rect x="608" y="184" width="98" height="18" rx="9" fill="#DCEBE3" />
+    <rect x="604" y="226" width="106" height="28" rx="14" fill="#EAF7EF" />
+    <rect x="604" y="270" width="106" height="74" rx="16" fill="#FBFFF7" stroke="#BFD9CC" stroke-width="1" />
+    <use data-icon="phosphor-duotone/bowl-food" x="616" y="286" width="36" height="36" fill="#FFB703" />
+    <text x="660" y="298" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="11" font-weight="800" fill="#182026">
+      <tspan x="660" dy="0">藤椒鸡</tspan>
+      <tspan x="660" dy="16">双拼饭</tspan>
+    </text>
+    <text x="660" y="333" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="10" fill="#4D5A57">微辣 · 20 元内</text>
+    <rect x="604" y="356" width="106" height="58" rx="14" fill="#EAF7EF" />
     <text x="618" y="383" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="12" font-weight="700" fill="#1F8A70">推荐理由</text>
     <text x="618" y="403" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="10" fill="#4D5A57">近图书馆，口味匹配</text>
   </g>
   <g id="footer">
-    <line x1="56" y1="652" x2="1224" y2="652" stroke="#BFD9CC" stroke-width="1"/>
+    <line x1="56" y1="652" x2="1224" y2="652" stroke="#BFD9CC" stroke-width="1" />
     <text x="56" y="682" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" fill="#74807C">Campus Foodie MVP · Product Pitch</text>
     <text x="1224" y="682" text-anchor="end" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" fill="#74807C">01 / 16</text>
   </g>

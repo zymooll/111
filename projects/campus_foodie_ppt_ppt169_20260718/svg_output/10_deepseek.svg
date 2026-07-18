@@ -1,15 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
   <defs>
     <marker id="arrowPrimary" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="strokeWidth">
-      <path d="M0,0 L10,5 L0,10 Z" fill="#1F8A70"/>
+      <path d="M0,0 L10,5 L0,10 Z" fill="#1F8A70" />
     </marker>
     <marker id="arrowWarn" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="strokeWidth">
-      <path d="M0,0 L10,5 L0,10 Z" fill="#E45858"/>
+      <path d="M0,0 L10,5 L0,10 Z" fill="#E45858" />
     </marker>
   </defs>
   <g id="background">
-    <rect x="0" y="0" width="1280" height="720" fill="#FBFFF7"/>
-    <rect x="50" y="132" width="1180" height="430" rx="30" fill="#EAF7EF"/>
+    <rect x="0" y="0" width="1280" height="720" fill="#FBFFF7" />
+    <rect x="50" y="132" width="1180" height="430" rx="30" fill="#EAF7EF" />
   </g>
   <g id="header">
     <text x="56" y="64" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="34" font-weight="800" fill="#182026">AI 只重排，不凭空创造</text>
@@ -17,58 +18,61 @@
     <text x="1224" y="72" text-anchor="end" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="11" fill="#74807C">10 / 16</text>
   </g>
   <g id="main-flow-arrows">
-    <line x1="218" y1="300" x2="300" y2="300" stroke="#1F8A70" stroke-width="4" marker-end="url(#arrowPrimary)"/>
-    <line x1="458" y1="300" x2="540" y2="300" stroke="#1F8A70" stroke-width="4" marker-end="url(#arrowPrimary)"/>
-    <line x1="698" y1="300" x2="780" y2="300" stroke="#1F8A70" stroke-width="4" marker-end="url(#arrowPrimary)"/>
-    <line x1="938" y1="300" x2="1020" y2="300" stroke="#1F8A70" stroke-width="4" marker-end="url(#arrowPrimary)"/>
+    <line x1="218" y1="300" x2="300" y2="300" stroke="#1F8A70" stroke-width="4" marker-end="url(#arrowPrimary)" />
+    <line x1="458" y1="300" x2="540" y2="300" stroke="#1F8A70" stroke-width="4" marker-end="url(#arrowPrimary)" />
+    <line x1="698" y1="300" x2="780" y2="300" stroke="#1F8A70" stroke-width="4" marker-end="url(#arrowPrimary)" />
+    <line x1="938" y1="300" x2="1020" y2="300" stroke="#1F8A70" stroke-width="4" marker-end="url(#arrowPrimary)" />
   </g>
   <g id="step-candidates">
-    <rect x="72" y="214" width="146" height="172" rx="22" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
-    <rect x="103" y="238" width="56" height="56" rx="18" fill="#EAF7EF"/>
-    <use data-icon="phosphor-duotone/database" x="117" y="252" width="28" height="28" fill="#1F8A70"/>
+    <rect x="72" y="214" width="146" height="172" rx="22" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" />
+    <rect x="103" y="238" width="56" height="56" rx="18" fill="#EAF7EF" />
+    <use data-icon="phosphor-duotone/database" x="117" y="252" width="28" height="28" fill="#1F8A70" />
     <text x="145" y="326" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" font-weight="800" fill="#182026">数据库召回</text>
     <text x="145" y="356" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57">校园、上架、筛选</text>
   </g>
   <g id="step-profile">
-    <rect x="312" y="214" width="146" height="172" rx="22" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
-    <rect x="343" y="238" width="56" height="56" rx="18" fill="#EAF7EF"/>
-    <use data-icon="phosphor-duotone/student" x="357" y="252" width="28" height="28" fill="#3A86FF"/>
+    <rect x="312" y="214" width="146" height="172" rx="22" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" />
+    <rect x="343" y="238" width="56" height="56" rx="18" fill="#EAF7EF" />
+    <use data-icon="phosphor-duotone/student" x="357" y="252" width="28" height="28" fill="#3A86FF" />
     <text x="385" y="326" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" font-weight="800" fill="#182026">去标识画像</text>
     <text x="385" y="356" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57">偏好、预算、区域</text>
   </g>
   <g id="step-deterministic">
-    <rect x="552" y="214" width="146" height="172" rx="22" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
-    <rect x="583" y="238" width="56" height="56" rx="18" fill="#EAF7EF"/>
-    <use data-icon="phosphor-duotone/list-checks" x="597" y="252" width="28" height="28" fill="#1F8A70"/>
+    <rect x="552" y="214" width="146" height="172" rx="22" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" />
+    <rect x="583" y="238" width="56" height="56" rx="18" fill="#EAF7EF" />
+    <use data-icon="phosphor-duotone/list-checks" x="597" y="252" width="28" height="28" fill="#1F8A70" />
     <text x="625" y="326" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" font-weight="800" fill="#182026">确定性排序</text>
     <text x="625" y="356" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57">基础可用路径</text>
   </g>
   <g id="step-deepseek">
-    <rect x="792" y="198" width="146" height="204" rx="22" fill="#FFFFFF" stroke="#3A86FF" stroke-width="2.5"/>
-    <rect x="823" y="226" width="56" height="56" rx="18" fill="#EAF7EF"/>
-    <use data-icon="phosphor-duotone/brain" x="837" y="240" width="28" height="28" fill="#3A86FF"/>
+    <rect x="792" y="198" width="146" height="204" rx="22" fill="#FFFFFF" stroke="#3A86FF" stroke-width="2.5" />
+    <rect x="823" y="226" width="56" height="56" rx="18" fill="#EAF7EF" />
+    <use data-icon="phosphor-duotone/brain" x="837" y="240" width="28" height="28" fill="#3A86FF" />
     <text x="865" y="316" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" font-weight="800" fill="#182026">DeepSeek 重排</text>
     <text x="865" y="346" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57">只返回候选 ID</text>
-    <rect x="820" y="362" width="90" height="24" rx="12" fill="#EAF7EF"/>
+    <rect x="820" y="362" width="90" height="24" rx="12" fill="#EAF7EF" />
     <text x="865" y="379" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="11" font-weight="800" fill="#3A86FF">增强层</text>
   </g>
   <g id="step-validate">
-    <rect x="1032" y="214" width="146" height="172" rx="22" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
-    <rect x="1063" y="238" width="56" height="56" rx="18" fill="#EAF7EF"/>
-    <use data-icon="phosphor-duotone/shield-check" x="1077" y="252" width="28" height="28" fill="#22A06B"/>
+    <rect x="1032" y="214" width="146" height="172" rx="22" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" />
+    <rect x="1063" y="238" width="56" height="56" rx="18" fill="#EAF7EF" />
+    <use data-icon="phosphor-duotone/shield-check" x="1077" y="252" width="28" height="28" fill="#22A06B" />
     <text x="1105" y="326" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" font-weight="800" fill="#182026">合法性验证</text>
     <text x="1105" y="356" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57">候选内、无重复</text>
   </g>
   <g id="fallback-lane">
-    <path d="M 1105 400 L 1105 492 L 625 492 L 625 390" fill="none" stroke="#E45858" stroke-width="3" stroke-dasharray="8,4" marker-end="url(#arrowWarn)"/>
-    <rect x="720" y="454" width="314" height="76" rx="22" fill="#FFFFFF" stroke="#E45858" stroke-width="2"/>
-    <use data-icon="phosphor-duotone/warning" x="748" y="474" width="34" height="34" fill="#E45858"/>
+    <path d="M 1105 400 L 1105 492 L 625 492 L 625 390" fill="none" stroke="#E45858" stroke-width="3" stroke-dasharray="8,4" marker-end="url(#arrowWarn)" />
+    <rect x="720" y="454" width="314" height="76" rx="22" fill="#FFFFFF" stroke="#E45858" stroke-width="2" />
+    <use data-icon="phosphor-duotone/warning" x="748" y="474" width="34" height="34" fill="#E45858" />
     <text x="798" y="484" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" font-weight="800" fill="#182026">异常回退</text>
-    <text x="798" y="512" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" fill="#4D5A57">超时、限流、坏 JSON、虚构 ID 都丢弃模型结果</text>
+    <text x="798" y="506" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57">
+      <tspan x="798" dy="0">超时/限流/坏 JSON 先回退</tspan>
+      <tspan x="798" dy="19">虚构 ID 丢弃，保留基础排序</tspan>
+    </text>
   </g>
   <g id="output-card">
-    <rect x="272" y="592" width="736" height="58" rx="29" fill="#1F8A70"/>
-    <use data-icon="phosphor-duotone/bowl-food" x="310" y="606" width="30" height="30" fill="#FFFFFF"/>
+    <rect x="272" y="592" width="736" height="58" rx="29" fill="#1F8A70" />
+    <use data-icon="phosphor-duotone/bowl-food" x="310" y="606" width="30" height="30" fill="#FFFFFF" />
     <text x="362" y="628" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" font-weight="800" fill="#FFFFFF">最终返回：真实存在的菜品 / 套餐推荐卡片与简短推荐理由</text>
   </g>
 </svg>

@@ -1,14 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
   <defs>
     <linearGradient id="heroGreen" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#1F8A70"/>
-      <stop offset="100%" stop-color="#3A86FF"/>
+      <stop offset="0%" stop-color="#1F8A70" />
+      <stop offset="100%" stop-color="#3A86FF" />
     </linearGradient>
   </defs>
   <g id="background">
-    <rect x="0" y="0" width="1280" height="720" fill="#FBFFF7"/>
-    <circle cx="240" cy="530" r="280" fill="#EAF7EF"/>
-    <circle cx="1080" cy="140" r="170" fill="#FFB703" fill-opacity="0.15"/>
+    <rect x="0" y="0" width="1280" height="720" fill="#FBFFF7" />
+    <circle cx="240" cy="530" r="280" fill="#EAF7EF" />
+    <circle cx="1080" cy="140" r="170" fill="#FFB703" fill-opacity="0.15" />
   </g>
   <g id="header">
     <text x="56" y="74" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" font-weight="800" fill="#1F8A70" letter-spacing="2">DIFFERENTIATION</text>
@@ -24,32 +25,38 @@
     <text x="184" y="438" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="20" fill="#4D5A57">不是套壳推荐页，而是一个能解释、能回退、能治理的 MVP 闭环。</text>
   </g>
   <g id="highlight-dish">
-    <rect x="690" y="150" width="456" height="116" rx="28" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
-    <rect x="722" y="180" width="58" height="58" rx="18" fill="#EAF7EF"/>
-    <use data-icon="phosphor-duotone/bowl-food" x="736" y="194" width="30" height="30" fill="#FFB703"/>
+    <rect x="690" y="150" width="456" height="116" rx="28" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" />
+    <rect x="722" y="180" width="58" height="58" rx="18" fill="#EAF7EF" />
+    <use data-icon="phosphor-duotone/bowl-food" x="736" y="194" width="30" height="30" fill="#FFB703" />
     <text x="806" y="198" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="24" font-weight="800" fill="#182026">菜品级推荐</text>
     <text x="806" y="234" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#4D5A57">直接回答“吃什么”，比商家级推荐少一步决策。</text>
     <text x="1120" y="230" text-anchor="end" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="48" font-weight="800" fill="#FFB703" fill-opacity="0.35">01</text>
   </g>
   <g id="highlight-ai">
-    <rect x="624" y="306" width="522" height="116" rx="28" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
-    <rect x="656" y="336" width="58" height="58" rx="18" fill="#EAF7EF"/>
-    <use data-icon="phosphor-duotone/brain" x="670" y="350" width="30" height="30" fill="#3A86FF"/>
+    <rect x="624" y="306" width="522" height="116" rx="28" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" />
+    <rect x="656" y="336" width="58" height="58" rx="18" fill="#EAF7EF" />
+    <use data-icon="phosphor-duotone/brain" x="670" y="350" width="30" height="30" fill="#3A86FF" />
     <text x="740" y="354" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="24" font-weight="800" fill="#182026">受约束 AI</text>
-    <text x="740" y="390" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#4D5A57">DeepSeek 只重排合法候选，坏 JSON、虚构 ID 都会回退。</text>
+    <text x="740" y="386" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" fill="#4D5A57">
+      <tspan x="740" dy="0">DeepSeek 只重排合法候选；</tspan>
+      <tspan x="740" dy="24">坏 JSON / 虚构 ID 自动回退。</tspan>
+    </text>
     <text x="1120" y="386" text-anchor="end" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="48" font-weight="800" fill="#3A86FF" fill-opacity="0.30">02</text>
   </g>
   <g id="highlight-governance">
-    <rect x="690" y="462" width="456" height="116" rx="28" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
-    <rect x="722" y="492" width="58" height="58" rx="18" fill="#EAF7EF"/>
-    <use data-icon="phosphor-duotone/shield-check" x="736" y="506" width="30" height="30" fill="#1F8A70"/>
+    <rect x="690" y="462" width="456" height="116" rx="28" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" />
+    <rect x="722" y="492" width="58" height="58" rx="18" fill="#EAF7EF" />
+    <use data-icon="phosphor-duotone/shield-check" x="736" y="506" width="30" height="30" fill="#1F8A70" />
     <text x="806" y="510" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="24" font-weight="800" fill="#182026">可靠降级与治理</text>
-    <text x="806" y="546" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#4D5A57">没有 AI 或地图 Key，浏览、推荐、提交和管理仍可演示。</text>
+    <text x="806" y="542" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" fill="#4D5A57">
+      <tspan x="806" dy="0">无 AI / 地图 Key 也能演示；</tspan>
+      <tspan x="806" dy="24">浏览、推荐、提交、管理不掉线。</tspan>
+    </text>
     <text x="1120" y="542" text-anchor="end" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="48" font-weight="800" fill="#1F8A70" fill-opacity="0.30">03</text>
   </g>
   <g id="small-footer">
-    <rect x="82" y="588" width="430" height="50" rx="25" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
-    <use data-icon="phosphor-duotone/chart-bar" x="112" y="600" width="28" height="28" fill="#1F8A70"/>
+    <rect x="82" y="588" width="430" height="50" rx="25" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" />
+    <use data-icon="phosphor-duotone/chart-bar" x="112" y="600" width="28" height="28" fill="#1F8A70" />
     <text x="154" y="623" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="800" fill="#182026">游客优先、多校园基础、内容治理闭环</text>
   </g>
 </svg>
