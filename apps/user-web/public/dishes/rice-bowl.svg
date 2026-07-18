@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="藤椒鸡双拼饭插画">
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff3d4"/><stop offset="1" stop-color="#ffc86b"/></linearGradient><radialGradient id="rice"><stop stop-color="#fffef7"/><stop offset="1" stop-color="#e9dfc5"/></radialGradient></defs>
+  <rect width="800" height="600" fill="url(#bg)"/><circle cx="650" cy="90" r="130" fill="#ffb43a" opacity=".28"/>
+  <ellipse cx="400" cy="430" rx="270" ry="62" fill="#b76535" opacity=".22"/><path d="M150 250h500l-55 230c-10 42-48 70-92 70H297c-44 0-82-28-92-70z" fill="#f8f3e6" stroke="#3d2c22" stroke-width="14"/>
+  <ellipse cx="400" cy="250" rx="250" ry="90" fill="#fff" stroke="#3d2c22" stroke-width="14"/><ellipse cx="400" cy="250" rx="218" ry="68" fill="url(#rice)"/>
+  <g stroke="#5b3525" stroke-width="6"><path d="M236 243c35-72 126-62 139 7-42 46-103 53-139-7z" fill="#d97a3f"/><path d="M424 208c55-44 137-8 141 58-48 36-113 24-141-58z" fill="#e69b47"/><path d="M339 224c30-45 83-34 98 18-21 44-76 52-98-18z" fill="#8bbf55"/></g>
+  <g fill="#2f8c55"><circle cx="280" cy="200" r="12"/><circle cx="455" cy="278" r="11"/><circle cx="520" cy="220" r="10"/></g>
+</svg>
