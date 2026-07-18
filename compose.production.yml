@@ -1,0 +1,98 @@
+name: campus-foodie
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+
+  redis:
+    image: redis:8-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ./backend
+    environment:
+      APP_NAME: Campus Foodie API
+      ENVIRONMENT: production
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: ${SECRET_KEY}
+      AUTO_SEED: ${AUTO_SEED:-true}
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      USER_WEB_ORIGIN: ${USER_WEB_ORIGIN}
+      UPLOAD_DIR: /app/runtime/uploads
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
+      DEEPSEEK_BASE_URL: ${DEEPSEEK_BASE_URL:-https://api.deepseek.com}
+      DEEPSEEK_MODEL: ${DEEPSEEK_MODEL:-deepseek-chat}
+      DEEPSEEK_TIMEOUT_SECONDS: ${DEEPSEEK_TIMEOUT_SECONDS:-8}
+    ports:
+      - "7993:8000"
+    volumes:
+      - uploads:/app/runtime/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
+      interval: 15s
+      timeout: 5s
+      start_period: 20s
+      retries: 10
+    restart: unless-stopped
+
+  user-web:
+    build:
+      context: .
+      dockerfile: apps/user-web/Dockerfile
+      args:
+        VITE_API_MODE: remote
+        VITE_API_BASE_URL: ${PUBLIC_API_BASE_URL}
+        VITE_AMAP_KEY: ${AMAP_KEY}
+        VITE_AMAP_SECURITY_CODE: ${AMAP_SECURITY_CODE:-}
+    ports:
+      - "7991:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  admin-web:
+    build:
+      context: .
+      dockerfile: apps/admin-web/Dockerfile
+      args:
+        VITE_API_MODE: remote
+        VITE_ADMIN_API_BASE_URL: ${PUBLIC_ADMIN_API_BASE_URL}
+    ports:
+      - "7992:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  uploads:
