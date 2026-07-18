@@ -8,8 +8,11 @@ Campus Foodie 是一个面向校园场景的菜品与套餐推荐系统。用户
 - `apps/user-web/`：移动端 React PWA，开发端口 `5173`。
 - `apps/admin-web/`：独立管理端 React 应用，开发端口 `5174`。
 - `docs/`：架构、API 使用说明和验收记录。
-- `data/`、`assets/merchant-images/`：远端仓库原有的中南林业科技大学历史调研档案，仅作为待核验的数据来源。
 - `docker-compose.yml`：PostgreSQL/PostGIS、Redis、Mailpit 和 API 的本地联调环境。
+- `data/merchants.csv`、`data/images.csv`、`assets/merchant-images/`：中南林业科技大学历史调研档案。
+- `data/csut_merchants.csv`、`data/csut_images.csv`、`assets/csut-images/`：长沙理工大学金盆岭、云塘两校区历史调研档案。
+- `docs/research-report.md`、`docs/sources.md`：中南林业科技大学调研说明与来源。
+- `docs/csut-research-report.md`、`docs/csut-sources.md`：长沙理工大学专项调研说明与来源。
 
 ## 本地开发
 
@@ -42,7 +45,7 @@ pnpm dev:admin
 
 ## 历史调研数据
 
-仓库原有的 `data/merchants.csv`、`data/images.csv`、`assets/merchant-images/`、`docs/research-report.md` 和 `docs/sources.md` 保持为历史研究档案。这批资料主要来自 2018、2019 年公开文章，42 条商家记录均标记为“待实地核验”，且缺少可直接用于地图的精确经纬度。
+仓库中的两组调研资料均保持为历史研究档案：中南林业科技大学资料主要来自 2018、2019 年公开文章，包含 42 条待核验商家记录；长沙理工大学资料覆盖金盆岭、云塘两校区，包含 43 条结构化记录和 25 条图片索引。两组资料均不能直接视为 2026 年实时营业数据，且部分记录缺少可直接用于地图的精确经纬度。
 
 归档图片的许可证均为未知，部分带有平台水印或二维码，因此不会复制到用户端 `public`、通过 `/media` 对外提供或用于公开推荐卡片。当前界面使用项目原创 SVG 占位插画；正式上线前应由管理端替换为商家授权照片，并记录来源与许可。
 
