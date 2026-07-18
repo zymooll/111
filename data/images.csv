@@ -1,0 +1,20 @@
+image_id,merchant_ids,file_path,description,source_id,original_url,source_date,collected_at,license,notes
+IMG001,C001,assets/merchant-images/campus-canteen-guide-cover.jpeg,校内食堂指南封面,SRC001,https://5b0988e595225.cdn.sohucs.com/images/20190816/ec945b8f2a9d4fb6a6c2dd9d19959ac8.jpeg,2019-08-15,2026-07-18,未知,"与 IMG002 内容相同，保留封面语义"
+IMG002,C001,assets/merchant-images/canteen-linhai.jpeg,林海食堂代表图,SRC001,https://5b0988e595225.cdn.sohucs.com/images/20190816/ec945b8f2a9d4fb6a6c2dd9d19959ac8.jpeg,2019-08-15,2026-07-18,未知,原文章图像
+IMG003,S001,assets/merchant-images/stall-zhengzhengriishang.jpeg,蒸蒸日上档口相关图,SRC001,https://5b0988e595225.cdn.sohucs.com/images/20190816/9e48189ab37a447299ed9c7f3cf9d8c8.jpeg,2019-08-15,2026-07-18,未知,按文章图文顺序关联
+IMG004,S002,assets/merchant-images/stall-bandema.jpeg,拌的码粉面馆相关图,SRC001,https://5b0988e595225.cdn.sohucs.com/images/20190816/e5485d7791254fe8ba7b2d75f7ece5e4.jpeg,2019-08-15,2026-07-18,未知,按文章图文顺序关联
+IMG005,C002,assets/merchant-images/canteen-linyu.jpeg,林语食堂代表图,SRC001,https://5b0988e595225.cdn.sohucs.com/images/20190816/e4008857dc4246bbbb1aa82ade589904.jpeg,2019-08-15,2026-07-18,未知,原文章图像
+IMG006,S003,assets/merchant-images/stall-chongqing-noodles.jpeg,重庆小面相关图,SRC001,https://5b0988e595225.cdn.sohucs.com/images/20190816/4618fdfcaf414abf9d043a0de618a4f8.jpeg,2019-08-15,2026-07-18,未知,按文章图文顺序关联
+IMG007,S004,assets/merchant-images/stall-xianglaike.jpeg,香来客铁板烧相关图,SRC001,https://5b0988e595225.cdn.sohucs.com/images/20190816/d9d1c5ffedbd47b1b918583015b8f472.jpeg,2019-08-15,2026-07-18,未知,按文章图文顺序关联
+IMG008,C003,assets/merchant-images/canteen-linyuan.jpeg,林苑食堂代表图,SRC001,https://5b0988e595225.cdn.sohucs.com/images/20190816/b5006af4cb614b7396f78519d4754a68.jpeg,2019-08-15,2026-07-18,未知,原文章图像
+IMG009,S005,assets/merchant-images/stall-lotus-rice.jpeg,清香荷叶饭相关图,SRC001,https://5b0988e595225.cdn.sohucs.com/images/20190816/422da78345e44ea29e444698ae71574f.jpeg,2019-08-15,2026-07-18,未知,按文章图文顺序关联
+IMG010,S006,assets/merchant-images/stall-henan-roujiamo.jpeg,林苑食堂河南肉夹馍相关图,SRC001,https://5b0988e595225.cdn.sohucs.com/images/20190816/c8f7b205fddc4bbea29f5bf7e43405be.jpeg,2019-08-15,2026-07-18,未知,按文章图文顺序关联
+IMG011,C004,assets/merchant-images/canteen-lintao.jpeg,林涛食堂代表图,SRC001,https://5b0988e595225.cdn.sohucs.com/images/20190816/1de4cbe44ddc49c0a814e556a7df6c1f.jpeg,2019-08-15,2026-07-18,未知,原文章图像
+IMG012,S007,assets/merchant-images/stall-qianlixiang-wonton.jpeg,千里香馄饨相关图,SRC001,https://5b0988e595225.cdn.sohucs.com/images/20190816/e3c6d0b921f24b24bb854534711557c6.jpeg,2019-08-15,2026-07-18,未知,按文章图文顺序关联
+IMG013,S008,assets/merchant-images/stall-chicken-rice.jpeg,鸡扒饭相关图,SRC001,https://5b0988e595225.cdn.sohucs.com/images/20190816/cad8441436a5401da053f16af171a19b.jpeg,2019-08-15,2026-07-18,未知,按文章图文顺序关联
+IMG014,C005,assets/merchant-images/canteen-linguan.jpeg,林冠食堂代表图,SRC001,https://5b0988e595225.cdn.sohucs.com/images/20190816/a1b436786ac64ed392feace27302e9d5.jpeg,2019-08-15,2026-07-18,未知,原文章图像
+IMG015,S009,assets/merchant-images/stall-xiaomingjia.jpeg,小明家麻辣烫相关图,SRC001,https://5b0988e595225.cdn.sohucs.com/images/20190816/7f38ff03c5ad40d49a59d9be4f7c7d3b.jpeg,2019-08-15,2026-07-18,未知,按文章图文顺序关联
+IMG016,S010,assets/merchant-images/stall-fuzhou-soup.jpeg,福州煨汤相关图,SRC001,https://5b0988e595225.cdn.sohucs.com/images/20190816/f376539a8a7b490aab4a309d338a3136.jpeg,2019-08-15,2026-07-18,未知,按文章图文顺序关联
+IMG017,S011,assets/merchant-images/stall-luodingji-luosifen.jpeg,螺鼎记螺蛳粉相关图,SRC001,https://5b0988e595225.cdn.sohucs.com/images/20190816/e044b6333f174f07acf11e23d70b085f.jpeg,2019-08-15,2026-07-18,未知,按文章图文顺序关联
+IMG018,C001|C002|C003|C004|C005,assets/merchant-images/campus-food-map.jpeg,林科大手绘食堂地图,SRC001,https://5b0988e595225.cdn.sohucs.com/images/20190816/2d3389c39994487085791c7ee4ce9d9e.jpeg,2019-08-15,2026-07-18,未知,原文章图像
+IMG019,N002|N003|N004|N005|N006|N007|N008|N009|N010|N011|N012|N013|N014|N015|N016|N017|N018|N019|N020|N021|N022,assets/merchant-images/nearby-food-map-cover.jpeg,后街与东门美食地图文章封面,SRC002,https://5b0988e595225.cdn.sohucs.com/images/20180608/242163aa1db348879b343070f45cbd08.jpeg,2018-06-08,2026-07-18,未知,仅作文章级视觉索引
