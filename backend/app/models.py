@@ -88,9 +88,12 @@ class CampusArea(Base, TimestampMixin):
 
 class Category(Base, TimestampMixin):
     __tablename__ = "categories"
-    __table_args__ = (UniqueConstraint("parent_id", "name"),)
+    __table_args__ = (UniqueConstraint("campus_id", "parent_id", "name"),)
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    campus_id: Mapped[str] = mapped_column(
+        ForeignKey("campuses.id", ondelete="CASCADE"), index=True, nullable=False
+    )
     parent_id: Mapped[str | None] = mapped_column(
         ForeignKey("categories.id", ondelete="CASCADE"), nullable=True
     )
@@ -101,9 +104,12 @@ class Category(Base, TimestampMixin):
 
 class Tag(Base, TimestampMixin):
     __tablename__ = "tags"
-    __table_args__ = (UniqueConstraint("kind", "name"),)
+    __table_args__ = (UniqueConstraint("campus_id", "kind", "name"),)
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    campus_id: Mapped[str] = mapped_column(
+        ForeignKey("campuses.id", ondelete="CASCADE"), index=True, nullable=False
+    )
     name: Mapped[str] = mapped_column(String(60), nullable=False)
     kind: Mapped[str] = mapped_column(String(30), default="taste", nullable=False)
 
@@ -217,6 +223,9 @@ class MenuItem(Base, TimestampMixin):
     )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    campus_id: Mapped[str] = mapped_column(
+        ForeignKey("campuses.id", ondelete="CASCADE"), index=True, nullable=False
+    )
     merchant_id: Mapped[str] = mapped_column(
         ForeignKey("merchants.id", ondelete="CASCADE"), index=True, nullable=False
     )
@@ -247,6 +256,9 @@ class Favorite(Base, TimestampMixin):
     )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    campus_id: Mapped[str] = mapped_column(
+        ForeignKey("campuses.id", ondelete="CASCADE"), index=True, nullable=False
+    )
     user_id: Mapped[str | None] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=True
     )
@@ -266,6 +278,9 @@ class Review(Base, TimestampMixin):
     )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    campus_id: Mapped[str] = mapped_column(
+        ForeignKey("campuses.id", ondelete="CASCADE"), index=True, nullable=False
+    )
     user_id: Mapped[str] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False
     )
@@ -287,6 +302,9 @@ class ReviewView(Base):
     __tablename__ = "review_views"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    campus_id: Mapped[str] = mapped_column(
+        ForeignKey("campuses.id", ondelete="CASCADE"), index=True, nullable=False
+    )
     event_id: Mapped[str] = mapped_column(String(80), unique=True, nullable=False)
     review_id: Mapped[str] = mapped_column(
         ForeignKey("reviews.id", ondelete="CASCADE"), index=True, nullable=False
@@ -306,6 +324,9 @@ class InteractionEvent(Base):
     __tablename__ = "interaction_events"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    campus_id: Mapped[str] = mapped_column(
+        ForeignKey("campuses.id", ondelete="CASCADE"), index=True, nullable=False
+    )
     event_id: Mapped[str] = mapped_column(String(80), unique=True, nullable=False)
     actor_type: Mapped[str] = mapped_column(String(20), nullable=False)
     actor_id: Mapped[str] = mapped_column(String(36), nullable=False)
@@ -326,6 +347,9 @@ class AdminAuditLog(Base):
     __tablename__ = "admin_audit_logs"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    campus_id: Mapped[str] = mapped_column(
+        ForeignKey("campuses.id", ondelete="CASCADE"), index=True, nullable=False
+    )
     admin_user_id: Mapped[str] = mapped_column(
         ForeignKey("users.id", ondelete="RESTRICT"), index=True, nullable=False
     )
@@ -342,6 +366,9 @@ class ImportJob(Base):
     __tablename__ = "import_jobs"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    campus_id: Mapped[str] = mapped_column(
+        ForeignKey("campuses.id", ondelete="CASCADE"), index=True, nullable=False
+    )
     file_name: Mapped[str] = mapped_column(String(255), nullable=False)
     import_type: Mapped[str] = mapped_column("type", String(30), nullable=False)
     status: Mapped[str] = mapped_column(String(30), default="processing", nullable=False)
@@ -354,6 +381,27 @@ class ImportJob(Base):
         ForeignKey("users.id", ondelete="RESTRICT"), index=True, nullable=False
     )
     created_by_name: Mapped[str] = mapped_column(String(50), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, nullable=False
+    )
+
+
+class IdempotencyRecord(Base):
+    __tablename__ = "idempotency_records"
+    __table_args__ = (
+        UniqueConstraint("scope", "idempotency_key", name="uq_idempotency_scope_key"),
+        Index("ix_idempotency_created_at", "created_at"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    scope: Mapped[str] = mapped_column(String(160), nullable=False)
+    idempotency_key: Mapped[str] = mapped_column(String(120), nullable=False)
+    request_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    response_status: Mapped[int] = mapped_column(Integer, nullable=False)
+    response_body: Mapped[str] = mapped_column(Text, nullable=False)
+    content_type: Mapped[str] = mapped_column(
+        String(120), default="application/json", nullable=False
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow, nullable=False
     )

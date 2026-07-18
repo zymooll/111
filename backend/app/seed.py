@@ -72,27 +72,42 @@ def seed_demo_data(db: Session) -> None:
         ),
     ]
     categories = [
-        Category(id=DEMO_IDS["cat_chinese"], name="中式餐饮", icon="bowl"),
+        Category(
+            id=DEMO_IDS["cat_chinese"],
+            campus_id=campus.id,
+            name="中式餐饮",
+            icon="bowl",
+        ),
         Category(
             id=DEMO_IDS["cat_rice"],
+            campus_id=campus.id,
             parent_id=DEMO_IDS["cat_chinese"],
             name="米饭套餐",
             icon="rice",
         ),
         Category(
             id=DEMO_IDS["cat_noodle"],
+            campus_id=campus.id,
             parent_id=DEMO_IDS["cat_chinese"],
             name="面食",
             icon="noodle",
         ),
-        Category(id=DEMO_IDS["cat_light"], name="轻食饮品", icon="leaf"),
+        Category(
+            id=DEMO_IDS["cat_light"],
+            campus_id=campus.id,
+            name="轻食饮品",
+            icon="leaf",
+        ),
     ]
     tags = [
-        Tag(name="微辣", kind="taste"),
-        Tag(name="酸甜", kind="taste"),
-        Tag(name="清淡", kind="taste"),
-        Tag(name="高蛋白", kind="diet"),
-        Tag(name="素食友好", kind="diet"),
+        Tag(campus_id=campus.id, name="微辣", kind="taste"),
+        Tag(campus_id=campus.id, name="酸甜", kind="taste"),
+        Tag(campus_id=campus.id, name="清淡", kind="taste"),
+        Tag(campus_id=campus.id, name="高蛋白", kind="diet"),
+        Tag(campus_id=campus.id, name="素食友好", kind="diet"),
+        Tag(campus_id=campus.id, name="米饭", kind="category"),
+        Tag(campus_id=campus.id, name="汤面", kind="category"),
+        Tag(campus_id=campus.id, name="清爽", kind="taste"),
     ]
     merchants = [
         Merchant(
@@ -144,6 +159,7 @@ def seed_demo_data(db: Session) -> None:
     items = [
         MenuItem(
             id=DEMO_IDS["item_one"],
+            campus_id=campus.id,
             merchant_id=DEMO_IDS["merchant_one"],
             category_id=DEMO_IDS["cat_rice"],
             name="番茄牛腩饭",
@@ -155,6 +171,7 @@ def seed_demo_data(db: Session) -> None:
         ),
         MenuItem(
             id=DEMO_IDS["item_two"],
+            campus_id=campus.id,
             merchant_id=DEMO_IDS["merchant_one"],
             category_id=DEMO_IDS["cat_rice"],
             name="香辣鸡腿套餐",
@@ -166,6 +183,7 @@ def seed_demo_data(db: Session) -> None:
         ),
         MenuItem(
             id=DEMO_IDS["item_three"],
+            campus_id=campus.id,
             merchant_id=DEMO_IDS["merchant_two"],
             category_id=DEMO_IDS["cat_noodle"],
             name="菌菇鸡汤面",
@@ -177,6 +195,7 @@ def seed_demo_data(db: Session) -> None:
         ),
         MenuItem(
             id=DEMO_IDS["item_four"],
+            campus_id=campus.id,
             merchant_id=DEMO_IDS["merchant_three"],
             category_id=DEMO_IDS["cat_light"],
             name="照烧鸡能量碗",
@@ -271,6 +290,7 @@ def seed_demo_data(db: Session) -> None:
     ]
     reviews = [
         Review(
+            campus_id=campus.id,
             user_id=reviewer.id,
             menu_item_id=menu_item_id,
             rating=rating,
@@ -317,5 +337,15 @@ def seed_demo_data(db: Session) -> None:
     for item in items:
         recalculate_item_rating(db, item.id)
 
-    db.add(UserProfile(user_id=demo_user.id, preferences={"tastes": ["清淡", "高蛋白"]}))
+    db.add(
+        UserProfile(
+            user_id=demo_user.id,
+            preferences={
+                "campus_id": campus.id,
+                "tastes": ["清淡", "高蛋白"],
+                "avoid": [],
+                "frequent_area_ids": [],
+            },
+        )
+    )
     db.commit()

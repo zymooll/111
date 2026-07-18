@@ -1,14 +1,43 @@
-import { useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Popup, Switch, Toast } from 'antd-mobile'
 import { ChevronDown, Layers3, LocateFixed, MapPin, Navigation, Search, SlidersHorizontal, Star, X } from 'lucide-react'
-import { categoryTree } from '../data/mockData'
 import { api } from '../services/api'
 import { useAppState } from '../store/AppState'
 import type { MapFilters, Merchant } from '../types'
 
 type MerchantWithFavorite = Merchant & { favorite: boolean }
 type MapGroup = { id: string; items: MerchantWithFavorite[]; x: number; y: number; favorite: boolean }
+
+const amapKey = import.meta.env.VITE_AMAP_KEY?.trim()
+const amapSecurityCode = import.meta.env.VITE_AMAP_SECURITY_CODE?.trim()
+let amapLoader: Promise<any> | null = null
+
+function loadAmap() {
+  if (window.AMap) return Promise.resolve(window.AMap)
+  if (!amapKey) return Promise.reject(new Error('AMap key is not configured'))
+  if (amapLoader) return amapLoader
+  amapLoader = new Promise((resolve, reject) => {
+    if (amapSecurityCode) window._AMapSecurityConfig = { securityJsCode: amapSecurityCode }
+    const callback = '__campusFoodieAmapReady'
+    const target = window as unknown as Record<string, unknown>
+    target[callback] = () => {
+      delete target[callback]
+      if (window.AMap) resolve(window.AMap)
+      else reject(new Error('AMap failed to initialize'))
+    }
+    const script = document.createElement('script')
+    script.src = `https://webapi.amap.com/maps?v=2.0&key=${encodeURIComponent(amapKey)}&plugin=AMap.MarkerCluster&callback=${callback}`
+    script.async = true
+    script.onerror = () => {
+      delete target[callback]
+      amapLoader = null
+      reject(new Error('AMap script failed to load'))
+    }
+    document.head.appendChild(script)
+  })
+  return amapLoader
+}
 
 function makeGroups(items: MerchantWithFavorite[]): MapGroup[] {
   const groups: MapGroup[] = []
@@ -27,21 +56,26 @@ function makeGroups(items: MerchantWithFavorite[]): MapGroup[] {
   return groups
 }
 
-const categoryOptions = categoryTree.flatMap((group) => group.children ?? [])
-const tastes = ['麻辣', '酸辣', '清爽', '高蛋白', '夜宵', '早餐']
-
 export function MapPage() {
   const { favorites, toggleFavorite } = useAppState()
   const [filters, setFilters] = useState<MapFilters>({})
   const [search, setSearch] = useState('')
   const [sheetOpen, setSheetOpen] = useState(false)
   const [selectedGroup, setSelectedGroup] = useState<MapGroup | null>(null)
+  const [amapFailed, setAmapFailed] = useState(false)
+  const [amapLoading, setAmapLoading] = useState(Boolean(amapKey))
+  const amapRoot = useRef<HTMLDivElement>(null)
+  const amapInstance = useRef<any>(null)
+  const catalogQuery = useQuery({ queryKey: ['catalog'], queryFn: () => api.getCatalog() })
+  const categoryOptions = useMemo(() => catalogQuery.data?.categories.flatMap((group) => group.children?.length ? group.children : [group]) ?? [], [catalogQuery.data])
+  const tastes = useMemo(() => catalogQuery.data?.tags.filter((tag) => tag.kind === 'taste' || tag.kind === 'diet').map((tag) => tag.name) ?? [], [catalogQuery.data])
 
   const query = useQuery({
     queryKey: ['map-merchants', filters, favorites],
     queryFn: () => api.getMerchants(filters, favorites)
   })
   const groups = useMemo(() => makeGroups(query.data ?? []), [query.data])
+  const useAmap = Boolean(amapKey) && !amapFailed
   const activeFilterCount = [filters.priceLevel, filters.categoryId, filters.taste, filters.favoriteOnly].filter(Boolean).length
 
   const update = <K extends keyof MapFilters>(key: K, value: MapFilters[K]) => setFilters((current) => ({ ...current, [key]: value }))
@@ -59,6 +93,100 @@ export function MapPage() {
     } : null)
     Toast.show({ icon: 'success', content: wasFavorite ? '已取消收藏' : '已收藏商家' })
   }
+
+  useEffect(() => {
+    if (!useAmap || !amapRoot.current) return
+    let disposed = false
+    let cluster: any
+    let map: any
+    setAmapLoading(true)
+    void loadAmap().then((AMap) => {
+      if (disposed || !amapRoot.current) return
+      const merchants = (query.data ?? []).filter((merchant) => merchant.longitude !== undefined && merchant.latitude !== undefined)
+      const center = merchants.length
+        ? [merchants.reduce((sum, merchant) => sum + Number(merchant.longitude), 0) / merchants.length, merchants.reduce((sum, merchant) => sum + Number(merchant.latitude), 0) / merchants.length]
+        : [121.4782, 31.2285]
+      map = new AMap.Map(amapRoot.current, {
+        center,
+        zoom: 17,
+        mapStyle: 'amap://styles/fresh',
+        viewMode: '2D',
+        resizeEnable: true
+      })
+      amapInstance.current = map
+      const openMerchants = (items: MerchantWithFavorite[]) => setSelectedGroup({
+        id: items.map((merchant) => merchant.id).join('-'),
+        items,
+        x: 50,
+        y: 50,
+        favorite: items.some((merchant) => merchant.favorite)
+      })
+      const points = merchants.map((merchant) => ({
+        lnglat: [Number(merchant.longitude), Number(merchant.latitude)],
+        merchant
+      }))
+      if (AMap.MarkerCluster && points.length > 1) {
+        cluster = new AMap.MarkerCluster(map, points, {
+          gridSize: 64,
+          renderMarker: (context: any) => {
+            const point = Array.isArray(context.data) ? context.data[0] : context.data
+            const merchant = point?.merchant as MerchantWithFavorite | undefined
+            if (!merchant) return
+            const content = document.createElement('button')
+            content.type = 'button'
+            content.className = `amap-food-marker ${merchant.favorite ? 'is-favorite' : ''}`
+            content.setAttribute('aria-label', merchant.name)
+            content.textContent = merchant.favorite ? '★' : '●'
+            context.marker.setContent(content)
+            context.marker.setExtData?.(merchant)
+            context.marker.off?.('click')
+            context.marker.on?.('click', () => openMerchants([merchant]))
+          },
+          renderClusterMarker: (context: any) => {
+            const clusterMerchants = (context.clusterData ?? [])
+              .map((entry: any) => entry?.merchant)
+              .filter(Boolean) as MerchantWithFavorite[]
+            const containsFavorite = clusterMerchants.some((merchant) => merchant.favorite)
+            const count = clusterMerchants.length || Number(context.count) || 0
+            context.marker.setContent(`<button class="amap-cluster-marker ${containsFavorite ? 'has-star' : ''}" aria-label="附近 ${count} 家商家${containsFavorite ? '，含收藏商家' : ''}">${containsFavorite ? '<b>★</b>' : ''}<span>${count}</span></button>`)
+            context.marker.off?.('click')
+            context.marker.on?.('click', () => openMerchants(clusterMerchants))
+          }
+        })
+      } else {
+        const markers = merchants.map((merchant) => {
+          const content = document.createElement('button')
+          content.type = 'button'
+          content.className = `amap-food-marker ${merchant.favorite ? 'is-favorite' : ''}`
+          content.setAttribute('aria-label', merchant.name)
+          content.textContent = merchant.favorite ? '★' : '●'
+          const marker = new AMap.Marker({
+            position: [merchant.longitude, merchant.latitude],
+            anchor: 'center',
+            extData: merchant,
+            content
+          })
+          marker.on('click', () => openMerchants([merchant]))
+          return marker
+        })
+        map.add(markers)
+        if (markers.length) map.setFitView(markers, false, [80, 36, 100, 36], 18)
+      }
+      setAmapLoading(false)
+    }).catch(() => {
+      if (!disposed) {
+        setAmapFailed(true)
+        setAmapLoading(false)
+        Toast.show({ content: '高德地图加载失败，已切换校园示意地图' })
+      }
+    })
+    return () => {
+      disposed = true
+      cluster?.setMap?.(null)
+      map?.destroy?.()
+      if (amapInstance.current === map) amapInstance.current = null
+    }
+  }, [query.data, useAmap])
 
   return (
     <div className="page map-page">
@@ -79,33 +207,37 @@ export function MapPage() {
         <button type="button" className={filters.favoriteOnly ? 'is-active' : ''} onClick={() => update('favoriteOnly', !filters.favoriteOnly)}><Star size={14} fill={filters.favoriteOnly ? 'currentColor' : 'none'} /> 已收藏</button>
       </div>
 
-      <section className="campus-map" aria-label="校园商家地图">
-        <div className="map-grid" />
-        <div className="map-water water-one" />
-        <div className="map-water water-two" />
-        <div className="map-road road-a" /><div className="map-road road-b" /><div className="map-road road-c" />
-        <span className="map-label label-library">图书馆</span>
-        <span className="map-label label-sports">体育馆</span>
-        <span className="map-label label-dorm">学生宿舍</span>
-        <span className="map-label label-south">南苑食堂</span>
-        {groups.map((group) => group.items.length > 1 ? (
-          <button key={group.id} type="button" className={`map-marker cluster ${group.favorite ? 'has-star' : ''}`} style={{ left: `${group.x}%`, top: `${group.y}%` }} onClick={() => setSelectedGroup(group)}>
-            {group.favorite && <Star className="marker-star" size={14} fill="currentColor" />}
-            <span>{group.items.length}</span>
-          </button>
-        ) : (
-          <button key={group.id} type="button" className={`map-marker pin ${group.favorite ? 'is-favorite' : ''}`} style={{ left: `${group.x}%`, top: `${group.y}%` }} onClick={() => setSelectedGroup(group)} aria-label={group.items[0].name}>
-            {group.favorite ? <Star size={17} fill="currentColor" /> : <MapPin size={18} fill="currentColor" />}
-          </button>
-        ))}
+      <section className={`campus-map ${useAmap ? 'amap-live' : ''}`} aria-label="校园商家地图">
+        {useAmap ? <>
+          <div className="amap-canvas" ref={amapRoot} />
+          {amapLoading && <div className="amap-loading">正在加载高德地图…</div>}
+        </> : <>
+          <div className="map-grid" />
+          <div className="map-water water-one" />
+          <div className="map-water water-two" />
+          <div className="map-road road-a" /><div className="map-road road-b" /><div className="map-road road-c" />
+          <span className="map-label label-library">图书馆</span>
+          <span className="map-label label-sports">体育馆</span>
+          <span className="map-label label-dorm">学生宿舍</span>
+          <span className="map-label label-south">南苑食堂</span>
+          {groups.map((group) => group.items.length > 1 ? (
+            <button key={group.id} type="button" className={`map-marker cluster ${group.favorite ? 'has-star' : ''}`} style={{ left: `${group.x}%`, top: `${group.y}%` }} onClick={() => setSelectedGroup(group)} aria-label={`附近 ${group.items.length} 家商家${group.favorite ? '，含收藏商家' : ''}`} data-testid="merchant-cluster-marker">
+              {group.favorite && <Star className="marker-star" size={14} fill="currentColor" />}
+              <span>{group.items.length}</span>
+            </button>
+          ) : (
+            <button key={group.id} type="button" className={`map-marker pin ${group.favorite ? 'is-favorite' : ''}`} style={{ left: `${group.x}%`, top: `${group.y}%` }} onClick={() => setSelectedGroup(group)} aria-label={group.items[0].name} data-testid="merchant-pin-marker">
+              {group.favorite ? <Star size={17} fill="currentColor" /> : <MapPin size={18} fill="currentColor" />}
+            </button>
+          ))}
+        </>}
 
         {query.data?.length === 0 && <div className="map-empty"><span>🗺️</span><strong>没有符合条件的商家</strong><small>试试放宽筛选条件</small></div>}
         <div className="map-side-tools">
           <button type="button" aria-label="地图图层"><Layers3 size={20} /></button>
-          <button type="button" aria-label="定位到当前位置" onClick={() => Toast.show('已定位到南校区')}><LocateFixed size={20} /></button>
+          <button type="button" aria-label="定位到当前位置" onClick={() => { amapInstance.current?.setZoomAndCenter?.(17, [121.4782, 31.2285]); Toast.show('已定位到校园中心') }}><LocateFixed size={20} /></button>
         </div>
-        <div className="my-location" style={{ left: '54%', top: '72%' }}><span /></div>
-        <div className="map-attribution">Campus Foodie · 示意地图</div>
+        {!useAmap && <><div className="my-location" style={{ left: '54%', top: '72%' }}><span /></div><div className="map-attribution">Campus Foodie · 示意地图</div></>}
       </section>
 
       <div className="map-summary"><span>{query.data?.length ?? 0} 家符合条件</span><small>点击地图标记查看详情</small></div>
@@ -135,7 +267,7 @@ export function MapPage() {
           <div className="sheet-group"><strong>人均价格</strong><div className="option-grid price-options">{[
             { value: undefined, label: '不限' }, { value: 1, label: '¥ 20 以下' }, { value: 2, label: '¥¥ 20–40' }, { value: 3, label: '¥¥¥ 40 以上' }
           ].map((option) => <button type="button" className={filters.priceLevel === option.value ? 'is-active' : ''} key={option.label} onClick={() => update('priceLevel', option.value)}>{option.label}</button>)}</div></div>
-          <div className="sheet-group"><strong>餐饮类别</strong><div className="option-grid">{categoryOptions.map((option) => <button type="button" className={filters.categoryId === option.id ? 'is-active' : ''} key={option.id} onClick={() => update('categoryId', filters.categoryId === option.id ? undefined : option.id)}>{option.icon} {option.label}</button>)}</div></div>
+          <div className="sheet-group"><strong>餐饮类别</strong><div className="option-grid">{categoryOptions.map((option) => <button type="button" className={filters.categoryId === option.id ? 'is-active' : ''} key={option.id} onClick={() => update('categoryId', filters.categoryId === option.id ? undefined : option.id)}>{option.icon} {option.label}</button>)}{catalogQuery.isLoading && <span className="catalog-inline-state">正在读取…</span>}{catalogQuery.isError && <button type="button" onClick={() => catalogQuery.refetch()}>目录加载失败，重试</button>}</div></div>
           <div className="sheet-group"><strong>口味与场景</strong><div className="option-grid">{tastes.map((taste) => <button type="button" className={filters.taste === taste ? 'is-active' : ''} key={taste} onClick={() => update('taste', filters.taste === taste ? undefined : taste)}>{taste}</button>)}</div></div>
           <label className="favorite-switch"><span><Star size={19} fill="currentColor" /><span><strong>只看我的收藏</strong><small>地图标记会以星星突出显示</small></span></span><Switch checked={Boolean(filters.favoriteOnly)} onChange={(value) => update('favoriteOnly', value)} /></label>
           <button type="button" className="primary-action" onClick={() => setSheetOpen(false)}>查看 {query.data?.length ?? 0} 家商家</button>

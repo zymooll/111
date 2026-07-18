@@ -17,7 +17,7 @@ export function RatingInput({ value, onChange }: { value: number; onChange: (val
   return (
     <div className="rating-input" role="radiogroup" aria-label="评分">
       {[1, 2, 3, 4, 5].map((star) => (
-        <button key={star} type="button" role="radio" aria-checked={value === star} onClick={() => onChange(star)}>
+        <button key={star} type="button" role="radio" aria-label={`${star} 星`} aria-checked={value === star} onClick={() => onChange(star)}>
           <Star size={34} fill={value >= star ? 'currentColor' : 'none'} strokeWidth={1.7} />
         </button>
       ))}

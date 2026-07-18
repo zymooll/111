@@ -26,10 +26,20 @@ export function MinePage() {
   const { user, favorites, themeMode, setThemeMode, logout, toggleFavorite } = useAppState()
   const favoriteQuery = useQuery({ queryKey: ['favorite-merchants', favorites], queryFn: () => api.getFavoriteMerchants(favorites) })
   const reviewQuery = useQuery({ queryKey: ['my-reviews', user?.id], queryFn: () => api.getMyReviews(user!.id), enabled: Boolean(user) })
+  const statsQuery = useQuery({
+    queryKey: ['my-stats', user?.id],
+    queryFn: () => api.getMyStats(),
+    enabled: Boolean(user),
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    refetchInterval: 5_000,
+    refetchIntervalInBackground: false
+  })
 
   const signOut = async () => {
-    const confirmed = await Dialog.confirm({ content: '退出后仍会保留当前设备上的收藏，确定退出吗？', confirmText: '退出登录' })
-    if (confirmed) { logout(); Toast.show('已安全退出') }
+    const confirmed = await Dialog.confirm({ content: '退出后会清除账号派生的收藏与个人缓存，并切换为新的游客会话。确定退出吗？', confirmText: '退出登录' })
+    if (confirmed) { await logout(); Toast.show('已安全退出') }
   }
 
   return (
@@ -41,8 +51,8 @@ export function MinePage() {
           <div className="profile-card__glow" />
           <div className="profile-card__main"><span className="profile-avatar">{user.displayName.slice(0, 1)}<i /></span><div><h2>{user.displayName}</h2><p>@{user.username} · 校园吃货 Lv.4</p><span><ShieldCheck size={13} /> {user.emailVerified === false ? '邮箱待验证' : '邮箱已验证'}</span></div><button type="button" onClick={() => user.emailVerified === false ? navigate('/verify-email') : undefined}><ChevronRight size={20} /></button></div>
           <div className="profile-stats">
-            <div><strong>{user.publishedReviews}</strong><span>发表推荐</span></div>
-            <div><strong>{user.views.toLocaleString()}</strong><span>累计阅读 <Eye size={12} /></span></div>
+            <div><strong data-testid="published-review-count">{statsQuery.data?.publishedReviews ?? '—'}</strong><span>发表推荐</span></div>
+            <div><strong data-testid="total-review-views">{statsQuery.data ? statsQuery.data.totalViews.toLocaleString() : '—'}</strong><span>累计阅读 <Eye size={12} /></span></div>
             <div><strong>{favorites.length}</strong><span>收藏商家</span></div>
           </div>
         </section>

@@ -1,6 +1,7 @@
 import type {
   AccountActionResult,
   AuthProvider,
+  CatalogData,
   Dish,
   DishCardData,
   FeedFilters,
@@ -11,40 +12,28 @@ import type {
   Merchant,
   Review,
   ReviewDraft,
-  User
+  TreeOption,
+  User,
+  UserStats
 } from '../types'
 
 const baseUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1').replace(/\/$/, '')
 const accessTokenKey = 'campus-foodie:access-token'
 const refreshTokenKey = 'campus-foodie:refresh-token'
 const guestTokenKey = 'campus-foodie:guest-token'
-const campusId = '00000000-0000-0000-0000-000000000001'
 const authExpiredEvent = 'campus-foodie:auth-expired'
 const apiOrigin = new URL(baseUrl, window.location.origin).origin
+const configuredCampusId = import.meta.env.VITE_CAMPUS_ID
 
 let guestTokenPromise: Promise<void> | null = null
 let refreshPromise: Promise<boolean> | null = null
+let catalogPromise: Promise<CatalogData> | null = null
 
 export class HttpApiError extends Error {
   constructor(message: string, readonly status: number) {
     super(message)
     this.name = 'HttpApiError'
   }
-}
-
-const categoryAliases: Record<string, string> = {
-  staple: '00000000-0000-0000-0000-000000000021',
-  rice: '00000000-0000-0000-0000-000000000022',
-  noodle: '00000000-0000-0000-0000-000000000023',
-  healthy: '00000000-0000-0000-0000-000000000024',
-  salad: '00000000-0000-0000-0000-000000000024'
-}
-
-const areaAliases: Record<string, string> = {
-  north: '00000000-0000-0000-0000-000000000011',
-  'north-canteen': '00000000-0000-0000-0000-000000000012',
-  south: '00000000-0000-0000-0000-000000000013',
-  'south-canteen': '00000000-0000-0000-0000-000000000013'
 }
 
 interface ApiUser {
@@ -59,6 +48,26 @@ interface TokenPair {
   access_token: string
   refresh_token: string
   user: ApiUser
+}
+
+interface ApiCampus {
+  id: string
+  name: string
+  is_active: boolean
+}
+
+interface ApiTreeNode {
+  id: string
+  name: string
+  level?: number | null
+  icon?: string | null
+  children?: ApiTreeNode[]
+}
+
+interface ApiTag {
+  id: string
+  name: string
+  kind: string
 }
 
 interface ApiMerchant {
@@ -111,6 +120,7 @@ interface ApiReview {
 interface ApiStats {
   published_reviews: number
   total_views: number
+  favorite_merchants: number
 }
 
 interface Page<T> { items: T[]; next_cursor?: string | null; total?: number }
@@ -128,19 +138,45 @@ function params(values: Record<string, string | number | boolean | undefined>) {
   return encoded ? `?${encoded}` : ''
 }
 
+function pageItems<T>(value: Page<T> | T[]): T[] {
+  return Array.isArray(value) ? value : value.items
+}
+
 function localAsset(url: string) {
   if (!url) return '/dishes/rice-bowl.svg'
   return url.startsWith('/media/') ? new URL(url, apiOrigin).toString() : url
 }
 
-function categoryName(id?: string | null) {
-  const names: Record<string, string> = {
-    '00000000-0000-0000-0000-000000000021': '中式餐饮',
-    '00000000-0000-0000-0000-000000000022': '米饭套餐',
-    '00000000-0000-0000-0000-000000000023': '面食粉类',
-    '00000000-0000-0000-0000-000000000024': '沙拉轻食'
+const categoryIcons: Record<string, string> = {
+  bowl: '🍚',
+  rice: '🍱',
+  noodle: '🍜',
+  leaf: '🥗',
+  drink: '🧋',
+  snack: '🥟'
+}
+
+function toTreeOption(value: ApiTreeNode, kind: 'area' | 'category'): TreeOption {
+  return {
+    id: value.id,
+    label: value.name,
+    icon: value.icon ? categoryIcons[value.icon] || value.icon : kind === 'area' ? (value.level === 1 ? '🏫' : '📍') : '🍽️',
+    children: value.children?.map((child) => toTreeOption(child, kind))
   }
-  return (id && names[id]) || '校园餐饮'
+}
+
+function treeLabel(tree: TreeOption[], id?: string | null): string | undefined {
+  if (!id) return undefined
+  for (const parent of tree) {
+    if (parent.id === id) return parent.label
+    const nested: string | undefined = treeLabel(parent.children ?? [], id)
+    if (nested) return nested
+  }
+  return undefined
+}
+
+function categoryName(catalog: CatalogData, id?: string | null) {
+  return treeLabel(catalog.categories, id) || '校园餐饮'
 }
 
 function mapPosition(longitude: number, latitude: number) {
@@ -166,7 +202,7 @@ function normalizedMapPositions(features: MerchantFeature[]) {
   })
 }
 
-function toMerchant(value: ApiMerchant): Merchant {
+function toMerchant(value: ApiMerchant, catalog: CatalogData): Merchant {
   const hours = value.business_hours.split('-')
   return {
     id: value.id,
@@ -174,19 +210,21 @@ function toMerchant(value: ApiMerchant): Merchant {
     areaId: value.area_id || '',
     area: value.address,
     categoryId: value.category_id || '',
-    category: categoryName(value.category_id),
+    category: categoryName(catalog, value.category_id),
     priceLevel: Math.max(1, Math.min(3, value.price_level)) as 1 | 2 | 3,
     averagePrice: value.price_level * 12,
     rating: value.rating_avg || 0,
     reviewCount: 0,
     openUntil: hours[1] || value.business_hours,
     distance: 400,
+    longitude: value.gcj02_longitude,
+    latitude: value.gcj02_latitude,
     position: mapPosition(value.gcj02_longitude, value.gcj02_latitude),
-    tags: [categoryName(value.category_id)]
+    tags: [categoryName(catalog, value.category_id)]
   }
 }
 
-function toDish(value: ApiMenuItem, merchant: Merchant): DishCardData {
+function toDish(value: ApiMenuItem, merchant: Merchant, catalog: CatalogData): DishCardData {
   return {
     id: value.id,
     merchantId: value.merchant_id,
@@ -198,7 +236,7 @@ function toDish(value: ApiMenuItem, merchant: Merchant): DishCardData {
     rating: value.rating_avg,
     reviewCount: value.review_count,
     categoryId: value.category_id || '',
-    category: categoryName(value.category_id),
+    category: categoryName(catalog, value.category_id),
     tags: value.tags,
     reason: value.recommendation_reason || '结合评分、距离与校园热度为你推荐',
     match: Math.max(72, Math.min(98, Math.round(72 + value.rating_avg * 5))),
@@ -316,6 +354,36 @@ async function request<T>(
   return await response.json() as T
 }
 
+async function loadCatalog(): Promise<CatalogData> {
+  const campuses = await request<ApiCampus[]>('/campuses', {}, false)
+  const campus = campuses.find((item) => item.id === configuredCampusId)
+    ?? campuses.find((item) => item.is_active)
+    ?? campuses[0]
+  if (!campus) throw new HttpApiError('暂无可用校区', 503)
+  const [areas, categories, tags] = await Promise.all([
+    request<ApiTreeNode[]>(`/areas${params({ campus_id: campus.id })}`, {}, false),
+    request<ApiTreeNode[]>(`/categories${params({ campus_id: campus.id })}`, {}, false),
+    request<ApiTag[]>(`/tags${params({ campus_id: campus.id })}`, {}, false)
+  ])
+  return {
+    campusId: campus.id,
+    campusName: campus.name,
+    areas: areas.map((item) => toTreeOption(item, 'area')),
+    categories: categories.map((item) => toTreeOption(item, 'category')),
+    tags
+  }
+}
+
+function catalog() {
+  if (!catalogPromise) {
+    catalogPromise = loadCatalog().catch((error) => {
+      catalogPromise = null
+      throw error
+    })
+  }
+  return catalogPromise
+}
+
 function savePair(pair: TokenPair) {
   localStorage.setItem(accessTokenKey, pair.access_token)
   localStorage.setItem(refreshTokenKey, pair.refresh_token)
@@ -323,9 +391,12 @@ function savePair(pair: TokenPair) {
 }
 
 async function toUser(value: ApiUser): Promise<User> {
-  let stats: ApiStats = { published_reviews: 0, total_views: 0 }
+  let stats: ApiStats = { published_reviews: 0, total_views: 0, favorite_merchants: 0 }
   if (localStorage.getItem(accessTokenKey)) {
-    try { stats = await request<ApiStats>('/me/stats') } catch { /* Profile remains usable. */ }
+    try {
+      const catalogData = await catalog()
+      stats = await request<ApiStats>(`/me/stats${params({ campus_id: catalogData.campusId })}`)
+    } catch { /* Profile remains usable. */ }
   }
   return {
     id: value.id,
@@ -339,17 +410,23 @@ async function toUser(value: ApiUser): Promise<User> {
 }
 
 class HttpFoodieApi implements FoodieApi {
-  async getRecommendations(filters: FeedFilters, favorites: string[]) {
+  async getCatalog() {
+    return catalog()
+  }
+
+  async getRecommendations(filters: FeedFilters, favorites: string[], cursor?: string) {
+    const catalogData = await this.getCatalog()
     const [page, merchantRows] = await Promise.all([
       request<Page<ApiMenuItem>>(`/recommendations/feed${params({
-        campus_id: campusId,
-        category_id: filters.categoryId ? categoryAliases[filters.categoryId] || filters.categoryId : undefined,
-        area_id: filters.areaId ? areaAliases[filters.areaId] || filters.areaId : undefined,
-        search: filters.query
+        campus_id: catalogData.campusId,
+        category_id: filters.categoryId,
+        area_id: filters.areaId,
+        search: filters.query,
+        cursor
       })}`),
-      request<ApiMerchant[]>(`/merchants${params({ campus_id: campusId, limit: 100 })}`)
+      request<Page<ApiMerchant> | ApiMerchant[]>(`/merchants${params({ campus_id: catalogData.campusId, limit: 100 })}`)
     ])
-    const merchants = new Map(merchantRows.map((item) => [item.id, toMerchant(item)]))
+    const merchants = new Map(pageItems(merchantRows).map((item) => [item.id, toMerchant(item, catalogData)]))
     const items = page.items.map((item) => {
       const merchant = merchants.get(item.merchant_id) || toMerchant({
         id: item.merchant_id,
@@ -364,8 +441,8 @@ class HttpFoodieApi implements FoodieApi {
         business_hours: '07:00-21:00',
         is_favorite: favorites.includes(item.merchant_id),
         rating_avg: item.rating_avg
-      })
-      const dish = toDish(item, merchant)
+      }, catalogData)
+      const dish = toDish(item, merchant, catalogData)
       dish.favorite = favorites.includes(item.merchant_id) || Boolean(item.is_merchant_favorite)
       return dish
     })
@@ -373,46 +450,53 @@ class HttpFoodieApi implements FoodieApi {
   }
 
   async getDish(id: string, favorites: string[]) {
-    const item = await request<ApiMenuItem>(`/menu-items/${id}`)
-    const merchantValue = item.merchant || await request<ApiMerchant>(`/merchants/${item.merchant_id}`)
-    const resolved = toMerchant(merchantValue)
-    const dish = toDish(item, resolved)
+    const catalogData = await this.getCatalog()
+    const item = await request<ApiMenuItem>(`/menu-items/${id}${params({ campus_id: catalogData.campusId })}`)
+    const merchantValue = item.merchant || await request<ApiMerchant>(`/merchants/${item.merchant_id}${params({ campus_id: catalogData.campusId })}`)
+    const resolved = toMerchant(merchantValue, catalogData)
+    const dish = toDish(item, resolved, catalogData)
     dish.favorite = favorites.includes(item.merchant_id) || Boolean(item.is_merchant_favorite)
     return dish
   }
 
   async getDishReviews(id: string) {
-    const page = await request<Page<ApiReview>>(`/menu-items/${id}/reviews`)
+    const catalogData = await this.getCatalog()
+    const page = await request<Page<ApiReview>>(`/menu-items/${id}/reviews${params({ campus_id: catalogData.campusId })}`)
     return page.items.map(toReview)
   }
 
   async getMerchants(filters: MapFilters, favorites: string[]) {
-    const query = new URLSearchParams({ campus_id: campusId, zoom: '18' })
+    const catalogData = await this.getCatalog()
+    const query = new URLSearchParams({ campus_id: catalogData.campusId, zoom: '18' })
     if (filters.priceLevel) query.append('price_level', String(filters.priceLevel))
-    if (filters.categoryId) query.set('category_id', categoryAliases[filters.categoryId] || filters.categoryId)
+    if (filters.categoryId) query.set('category_id', filters.categoryId)
     if (filters.taste) query.set('taste', filters.taste)
     if (filters.query) query.set('search', filters.query)
+    if (filters.favoriteOnly) query.set('favorite_only', 'true')
     const collection = await request<{ features: MerchantFeature[] }>(`/map/merchants?${query}`)
     const features = collection.features.filter((feature) => feature.properties.kind === 'merchant')
     const positions = normalizedMapPositions(features)
     return features
       .map((feature, index) => {
         const id = String(feature.properties.id)
+        const [longitude, latitude] = feature.geometry.coordinates
         return {
           id,
           name: String(feature.properties.name),
           areaId: '',
           area: String(feature.properties.address || '校园内'),
           categoryId: String(feature.properties.category_id || ''),
-          category: categoryName(String(feature.properties.category_id || '')),
+          category: categoryName(catalogData, String(feature.properties.category_id || '')),
           priceLevel: Math.max(1, Math.min(3, Number(feature.properties.price_level || 2))) as 1 | 2 | 3,
           averagePrice: Number(feature.properties.price_level || 2) * 12,
           rating: Number(feature.properties.rating_avg || 0),
           reviewCount: 0,
           openUntil: '21:00',
           distance: 400,
+          longitude,
+          latitude,
           position: positions[index],
-          tags: [categoryName(String(feature.properties.category_id || ''))],
+          tags: [categoryName(catalogData, String(feature.properties.category_id || ''))],
           favorite: Boolean(feature.properties.is_favorite) || favorites.includes(id)
         }
       })
@@ -420,15 +504,16 @@ class HttpFoodieApi implements FoodieApi {
   }
 
   async getFavoriteMerchants(ids: string[]) {
-    const values = await request<Array<{ merchant: ApiMerchant }>>('/me/favorites')
-    const merchants = values.map((item) => toMerchant(item.merchant))
+    const catalogData = await this.getCatalog()
+    const response = await request<Page<{ merchant: ApiMerchant }> | Array<{ merchant: ApiMerchant }>>(`/me/favorites${params({ campus_id: catalogData.campusId, limit: 100 })}`)
+    const merchants = pageItems(response).map((item) => toMerchant(item.merchant, catalogData))
     const known = new Set(merchants.map((merchant) => merchant.id))
     const missingIds = ids.filter((id) => !known.has(id))
     if (missingIds.length) {
-      const catalog = await request<ApiMerchant[]>(`/merchants${params({ campus_id: campusId, limit: 100 })}`)
-      catalog.forEach((item) => {
+      const merchantCatalog = await request<Page<ApiMerchant> | ApiMerchant[]>(`/merchants${params({ campus_id: catalogData.campusId, limit: 100 })}`)
+      pageItems(merchantCatalog).forEach((item) => {
         if (missingIds.includes(item.id) && !known.has(item.id)) {
-          merchants.push(toMerchant(item))
+          merchants.push(toMerchant(item, catalogData))
           known.add(item.id)
         }
       })
@@ -437,7 +522,8 @@ class HttpFoodieApi implements FoodieApi {
   }
 
   async getMyReviews(_userId: string) {
-    const page = await request<Page<ApiReview>>('/me/reviews')
+    const catalogData = await this.getCatalog()
+    const page = await request<Page<ApiReview>>(`/me/reviews${params({ campus_id: catalogData.campusId, limit: 100 })}`)
     return page.items.map((value) => ({
       ...toReview(value),
       dish: value.menu_item_name ? {
@@ -460,6 +546,16 @@ class HttpFoodieApi implements FoodieApi {
     }))
   }
 
+  async getMyStats(): Promise<UserStats> {
+    const catalogData = await this.getCatalog()
+    const value = await request<ApiStats>(`/me/stats${params({ campus_id: catalogData.campusId })}`)
+    return {
+      publishedReviews: value.published_reviews,
+      totalViews: value.total_views,
+      favoriteMerchants: value.favorite_merchants
+    }
+  }
+
   async login(account: string, password: string) {
     const pair = await request<TokenPair>('/auth/login', {
       method: 'POST',
@@ -479,9 +575,10 @@ class HttpFoodieApi implements FoodieApi {
   }
 
   async submitReview(user: User, draft: ReviewDraft) {
+    const catalogData = await this.getCatalog()
     const images: string[] = []
     for (const image of draft.images) images.push(image.startsWith('data:') ? await this.uploadImage(image) : image)
-    const value = await request<ApiReview>(`/menu-items/${draft.dishId}/reviews`, {
+    const value = await request<ApiReview>(`/menu-items/${draft.dishId}/reviews${params({ campus_id: catalogData.campusId })}`, {
       method: 'POST',
       body: JSON.stringify({ rating: draft.rating, text: draft.content, images })
     })
@@ -492,15 +589,16 @@ class HttpFoodieApi implements FoodieApi {
   }
 
   async setFavorite(merchantId: string, favorite: boolean) {
-    await request(`/favorites/merchants/${merchantId}`, { method: favorite ? 'PUT' : 'DELETE' })
+    const catalogData = await this.getCatalog()
+    await request(`/favorites/merchants/${merchantId}${params({ campus_id: catalogData.campusId })}`, { method: favorite ? 'PUT' : 'DELETE' })
   }
 
   async logout() {
     const refreshToken = localStorage.getItem(refreshTokenKey)
+    clearUserTokens()
     if (refreshToken) {
       try { await request('/auth/logout', { method: 'POST', body: JSON.stringify({ refresh_token: refreshToken }) }, false) } catch { /* Local logout still succeeds. */ }
     }
-    clearUserTokens()
   }
 
   async getAuthProviders(): Promise<AuthProvider[]> {
@@ -532,12 +630,13 @@ class HttpFoodieApi implements FoodieApi {
   }
 
   async getPreferences(): Promise<FoodPreferences> {
+    const catalogData = await this.getCatalog()
     const value = await request<{
       tastes: string[]
       avoid: string[]
       budget_max_cents?: number | null
       frequent_area_ids: string[]
-    }>('/me/preferences')
+    }>(`/me/preferences${params({ campus_id: catalogData.campusId })}`)
     return {
       tastes: value.tastes,
       avoid: value.avoid,
@@ -547,6 +646,7 @@ class HttpFoodieApi implements FoodieApi {
   }
 
   async updatePreferences(preferences: FoodPreferences): Promise<FoodPreferences> {
+    const catalogData = await this.getCatalog()
     const value = await request<{
       tastes: string[]
       avoid: string[]
@@ -555,6 +655,7 @@ class HttpFoodieApi implements FoodieApi {
     }>('/me/preferences', {
       method: 'PUT',
       body: JSON.stringify({
+        campus_id: catalogData.campusId,
         tastes: preferences.tastes,
         avoid: preferences.avoid,
         budget_max_cents: preferences.budgetMaxCents ?? null,
@@ -571,9 +672,11 @@ class HttpFoodieApi implements FoodieApi {
 
   async recordInteractions(events: InteractionEventInput[]) {
     if (!events.length) return
+    const catalogData = await this.getCatalog()
     await request('/interactions', {
       method: 'POST',
       body: JSON.stringify({
+        campus_id: catalogData.campusId,
         events: events.map((event) => ({
           event_id: event.eventId,
           event_type: event.eventType,
@@ -586,9 +689,10 @@ class HttpFoodieApi implements FoodieApi {
   }
 
   async viewReview(reviewId: string, eventId: string) {
+    const catalogData = await this.getCatalog()
     await request(`/reviews/${reviewId}/view`, {
       method: 'POST',
-      body: JSON.stringify({ event_id: eventId })
+      body: JSON.stringify({ campus_id: catalogData.campusId, event_id: eventId })
     })
   }
 
@@ -618,12 +722,14 @@ async function attempt<T>(primary: () => Promise<T>, fallback: () => Promise<T>)
 
 export function createFallbackFoodieApi(primary: FoodieApi, secondary: FoodieApi): FoodieApi {
   return {
-    getRecommendations: (filters, favorites) => attempt(() => primary.getRecommendations(filters, favorites), () => secondary.getRecommendations(filters, favorites)),
+    getCatalog: () => attempt(() => primary.getCatalog(), () => secondary.getCatalog()),
+    getRecommendations: (filters, favorites, cursor) => attempt(() => primary.getRecommendations(filters, favorites, cursor), () => secondary.getRecommendations(filters, favorites, cursor)),
     getDish: (id, favorites) => attempt(() => primary.getDish(id, favorites), () => secondary.getDish(id, favorites)),
     getDishReviews: (id) => attempt(() => primary.getDishReviews(id), () => secondary.getDishReviews(id)),
     getMerchants: (filters, favorites) => attempt(() => primary.getMerchants(filters, favorites), () => secondary.getMerchants(filters, favorites)),
     getFavoriteMerchants: (ids) => attempt(() => primary.getFavoriteMerchants(ids), () => secondary.getFavoriteMerchants(ids)),
     getMyReviews: (userId) => attempt(() => primary.getMyReviews(userId), () => secondary.getMyReviews(userId)),
+    getMyStats: () => attempt(() => primary.getMyStats(), () => secondary.getMyStats()),
     login: (account, password) => attempt(() => primary.login(account, password), () => secondary.login(account, password)),
     register: (username, email, password) => attempt(() => primary.register(username, email, password), () => secondary.register(username, email, password)),
     submitReview: (user, draft) => attempt(() => primary.submitReview(user, draft), () => secondary.submitReview(user, draft)),
@@ -639,4 +745,10 @@ export function createFallbackFoodieApi(primary: FoodieApi, secondary: FoodieApi
     recordInteractions: (events) => attempt(() => primary.recordInteractions(events), () => secondary.recordInteractions(events)),
     viewReview: (reviewId, eventId) => attempt(() => primary.viewReview(reviewId, eventId), () => secondary.viewReview(reviewId, eventId))
   }
+}
+
+export function resetHttpApiCacheForTests() {
+  guestTokenPromise = null
+  refreshPromise = null
+  catalogPromise = null
 }

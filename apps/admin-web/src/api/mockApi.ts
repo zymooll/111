@@ -16,6 +16,7 @@ import type {
   Review,
   ReviewQuery,
   ReviewStatus,
+  TagDefinition,
 } from '../types';
 
 const admin: AdminUser = {
@@ -53,6 +54,14 @@ const seedItems: MenuItem[] = [
   { id: 'D006', name: '双人小面套餐', merchantId: 'M002', merchantName: '北门重庆小面', type: 'combo', category: '套餐', price: 35, rating: 4.7, reviewCount: 46, status: 'online', tags: ['双人', '实惠'], updatedAt: '2026-07-15 15:20' },
 ];
 
+const seedTags: TagDefinition[] = [
+  { id: 'T001', campusId: 'campus-main', name: '微辣', kind: 'taste', usageCount: 0 },
+  { id: 'T002', campusId: 'campus-main', name: '酸甜', kind: 'taste', usageCount: 0 },
+  { id: 'T003', campusId: 'campus-main', name: '清淡', kind: 'taste', usageCount: 0 },
+  { id: 'T004', campusId: 'campus-main', name: '高蛋白', kind: 'diet', usageCount: 0 },
+  { id: 'T005', campusId: 'campus-main', name: '素食友好', kind: 'diet', usageCount: 0 },
+];
+
 const seedReviews: Review[] = [
   { id: 'R26071801', userName: '小林今天吃什么', userId: 'U10001', itemName: '招牌酸汤肥牛饭', merchantName: '学苑一食堂·风味档口', rating: 5, content: '酸汤很开胃，肥牛量也足。午饭高峰排队大约十分钟，建议十一点半前去。', images: [], status: 'pending_manual', riskLevel: 'low', createdAt: '2026-07-18 10:36' },
   { id: 'R26071802', userName: '北门干饭王', userId: 'U10003', itemName: '重庆豌杂小面', merchantName: '北门重庆小面', rating: 2, content: '今天出餐太慢了，而且口味明显偏咸，希望商家改善。', images: [], status: 'pending_manual', riskLevel: 'medium', createdAt: '2026-07-18 09:52' },
@@ -80,6 +89,7 @@ interface MockState {
   users: CampusUser[];
   merchants: Merchant[];
   items: MenuItem[];
+  tags: TagDefinition[];
   reviews: Review[];
   imports: ImportJob[];
   audits: AuditLog[];
@@ -92,6 +102,7 @@ function createSeedState(): MockState {
     users: structuredClone(seedUsers),
     merchants: structuredClone(seedMerchants),
     items: structuredClone(seedItems),
+    tags: structuredClone(seedTags),
     reviews: structuredClone(seedReviews),
     imports: structuredClone(seedImports),
     audits: structuredClone(seedAudits),
@@ -102,7 +113,18 @@ function loadState(): MockState {
   if (typeof localStorage === 'undefined') return createSeedState();
   try {
     const value = localStorage.getItem(storageKey);
-    return value ? (JSON.parse(value) as MockState) : createSeedState();
+    if (!value) return createSeedState();
+    const parsed = JSON.parse(value) as Partial<MockState>;
+    const seed = createSeedState();
+    return {
+      users: Array.isArray(parsed.users) ? parsed.users : seed.users,
+      merchants: Array.isArray(parsed.merchants) ? parsed.merchants : seed.merchants,
+      items: Array.isArray(parsed.items) ? parsed.items : seed.items,
+      tags: Array.isArray(parsed.tags) ? parsed.tags : seed.tags,
+      reviews: Array.isArray(parsed.reviews) ? parsed.reviews : seed.reviews,
+      imports: Array.isArray(parsed.imports) ? parsed.imports : seed.imports,
+      audits: Array.isArray(parsed.audits) ? parsed.audits : seed.audits,
+    };
   } catch {
     return createSeedState();
   }
@@ -275,6 +297,52 @@ export const mockApi = {
     saveState();
   },
 
+  async tags(): Promise<TagDefinition[]> {
+    await wait();
+    return structuredClone(state.tags.map((tag) => ({
+      ...tag,
+      usageCount: state.items.filter((item) => item.tags.includes(tag.name)).length,
+    })));
+  },
+
+  async saveTag(input: Partial<TagDefinition> & Pick<TagDefinition, 'name' | 'kind'>): Promise<TagDefinition> {
+    await wait();
+    const duplicate = state.tags.find((tag) =>
+      tag.id !== input.id && tag.kind === input.kind && tag.name === input.name.trim(),
+    );
+    if (duplicate) throw new Error('同一类型下已存在同名标签');
+    const existing = input.id ? state.tags.find((tag) => tag.id === input.id) : undefined;
+    if (existing) {
+      Object.assign(existing, { name: input.name.trim(), kind: input.kind });
+      audit('标签', '更新标签', existing.name, `标签类型更新为 ${existing.kind}。`);
+      saveState();
+      return structuredClone(existing);
+    }
+    const tag: TagDefinition = {
+      id: `T${String(Date.now()).slice(-6)}`,
+      campusId: input.campusId || admin.campusId,
+      name: input.name.trim(),
+      kind: input.kind,
+      usageCount: 0,
+    };
+    state.tags.unshift(tag);
+    audit('标签', '新增标签', tag.name, `标签类型：${tag.kind}。`);
+    saveState();
+    return structuredClone(tag);
+  },
+
+  async deleteTag(id: string): Promise<void> {
+    await wait();
+    const tag = state.tags.find((entry) => entry.id === id);
+    if (!tag) throw new Error('标签不存在');
+    if (state.items.some((item) => item.tags.includes(tag.name))) {
+      throw new Error('标签正被菜品使用，不能删除');
+    }
+    state.tags = state.tags.filter((entry) => entry.id !== id);
+    audit('标签', '删除标签', tag.name, '标签已从校园字典中删除。');
+    saveState();
+  },
+
   async menuItems(query: ListQuery): Promise<PageResult<MenuItem>> {
     await wait();
     const keyword = query.keyword?.trim() ?? '';
@@ -298,6 +366,7 @@ export const mockApi = {
     }
     const item: MenuItem = {
       id: `D${String(Date.now()).slice(-6)}`,
+      campusId: input.campusId || admin.campusId,
       name: input.name,
       description: input.description,
       categoryId: input.categoryId,

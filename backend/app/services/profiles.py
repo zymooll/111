@@ -20,6 +20,7 @@ def recommendation_profile(
     db: Session,
     principal: object | None,
     *,
+    campus_id: str,
     event_limit: int = 120,
 ) -> dict[str, Any]:
     """Build a de-identified profile from explicit preferences and recent behavior.
@@ -30,7 +31,7 @@ def recommendation_profile(
     budget and aggregate signal counts, but no account identifiers or raw review text.
     """
 
-    explicit = _explicit_preferences(db, principal)
+    explicit = _explicit_preferences(db, principal, campus_id)
     if principal is None:
         return explicit
 
@@ -45,6 +46,7 @@ def recommendation_profile(
             .where(
                 InteractionEvent.actor_type == kind,
                 InteractionEvent.actor_id == actor_id,
+                InteractionEvent.campus_id == campus_id,
             )
             .order_by(InteractionEvent.occurred_at.desc())
             .limit(event_limit)
@@ -61,6 +63,7 @@ def recommendation_profile(
             select(MenuItem.id, MenuItem.tags, Merchant.area_id)
             .join(Merchant, Merchant.id == MenuItem.merchant_id)
             .where(MenuItem.id.in_(item_ids))
+            .where(MenuItem.campus_id == campus_id)
         ).all()
         item_context = {
             str(item_id): ([str(tag) for tag in (tags or [])], area_id)
@@ -73,6 +76,7 @@ def recommendation_profile(
             str(merchant_id): area_id
             for merchant_id, area_id in db.execute(
                 select(Merchant.id, Merchant.area_id).where(Merchant.id.in_(merchant_ids))
+                .where(Merchant.campus_id == campus_id)
             ).all()
         }
 
@@ -102,6 +106,7 @@ def recommendation_profile(
             select(MenuItem)
             .where(
                 MenuItem.is_active.is_(True),
+                MenuItem.campus_id == campus_id,
                 or_(
                     MenuItem.name.like(f"%{escaped_query}%", escape="\\"),
                     cast(MenuItem.tags, String).like(f"%{escaped_query}%", escape="\\"),
@@ -133,15 +138,19 @@ def recommendation_profile(
     return profile
 
 
-def _explicit_preferences(db: Session, principal: object | None) -> dict[str, Any]:
+def _explicit_preferences(
+    db: Session, principal: object | None, campus_id: str
+) -> dict[str, Any]:
     if principal and getattr(principal, "is_user", False):
         profile = db.scalar(
             select(UserProfile).where(UserProfile.user_id == getattr(principal, "id", ""))
         )
-        return dict(profile.preferences or {}) if profile else {}
+        preferences = dict(profile.preferences or {}) if profile else {}
+        return preferences if preferences.get("campus_id") == campus_id else {}
     if principal and getattr(principal, "is_guest", False):
         guest = db.get(GuestSession, getattr(principal, "id", ""))
-        return dict(guest.preferences or {}) if guest else {}
+        preferences = dict(guest.preferences or {}) if guest else {}
+        return preferences if preferences.get("campus_id") == campus_id else {}
     return {}
 
 

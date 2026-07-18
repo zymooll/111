@@ -17,9 +17,11 @@ import type {
   Review,
   ReviewQuery,
   ReviewStatus,
+  TagDefinition,
 } from '../types';
 
 const baseUrl = (import.meta.env.VITE_ADMIN_API_BASE_URL || 'http://localhost:8000/admin/api/v1').replace(/\/$/, '');
+const apiOrigin = new URL(baseUrl, window.location.origin).origin;
 export const apiMode = import.meta.env.VITE_API_MODE || 'remote';
 export const adminTokenKey = 'campus-foodie-admin-access-token';
 
@@ -104,6 +106,14 @@ function booleanValue(value: unknown, fallback = false) {
 
 function listValue(value: unknown): unknown[] {
   return Array.isArray(value) ? value : [];
+}
+
+function assetUrl(value: string) {
+  return value.startsWith('/media/') ? new URL(value, apiOrigin).toString() : value;
+}
+
+function collectionValue(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : listValue(object(value).items);
 }
 
 function displayDate(value: unknown) {
@@ -218,6 +228,7 @@ function normalizeMenuItem(value: unknown): MenuItem {
   const status: PublishStatus = statusValue === 'draft' ? 'draft' : booleanValue(raw.is_active, statusValue === 'online') ? 'online' : 'offline';
   return {
     id: stringValue(raw.id),
+    campusId: stringValue(raw.campus_id ?? raw.campusId, defaultCampusId),
     name: stringValue(raw.name, '未命名菜品'),
     description: stringValue(raw.description),
     merchantId: stringValue(raw.merchant_id ?? raw.merchantId),
@@ -231,6 +242,21 @@ function normalizeMenuItem(value: unknown): MenuItem {
     status,
     tags: listValue(raw.tags).map((item) => stringValue(item)).filter(Boolean),
     imageUrl: stringValue(raw.image_url ?? raw.imageUrl),
+    updatedAt: displayDate(raw.updated_at ?? raw.updatedAt),
+  };
+}
+
+function normalizeTag(value: unknown): TagDefinition {
+  const raw = object(value);
+  const rawUsageCount = raw.usage_count ?? raw.usageCount;
+  return {
+    id: stringValue(raw.id),
+    campusId: stringValue(raw.campus_id ?? raw.campusId, defaultCampusId),
+    name: stringValue(raw.name),
+    kind: stringValue(raw.kind, 'taste'),
+    usageCount: typeof rawUsageCount === 'number' && Number.isFinite(rawUsageCount)
+      ? rawUsageCount
+      : undefined,
     updatedAt: displayDate(raw.updated_at ?? raw.updatedAt),
   };
 }
@@ -249,7 +275,7 @@ function normalizeReview(value: unknown): Review {
     merchantName: stringValue(raw.merchant_name ?? raw.merchantName, '—'),
     rating: numberValue(raw.rating),
     content: stringValue(raw.text ?? raw.content),
-    images: listValue(raw.images).map((item) => stringValue(item)).filter(Boolean),
+    images: listValue(raw.images).map((item) => stringValue(item)).filter(Boolean).map(assetUrl),
     status,
     riskLevel: status === 'rejected' ? 'high' : status === 'pending_manual' ? 'medium' : 'low',
     createdAt: displayDate(raw.created_at ?? raw.createdAt),
@@ -260,9 +286,9 @@ function normalizeReview(value: unknown): Review {
 function normalizeAudit(value: unknown): AuditLog {
   const raw = object(value);
   const targetType = stringValue(raw.target_type);
-  const modules: Record<string, AuditLog['module']> = { user: '用户', merchant: '商家', menu_item: '菜品', review: '评价', import: '导入' };
+  const modules: Record<string, AuditLog['module']> = { user: '用户', merchant: '商家', menu_item: '菜品', tag: '标签', review: '评价', import: '导入' };
   const rawModule = stringValue(raw.module);
-  const knownModules: AuditLog['module'][] = ['用户', '商家', '菜品', '评价', '导入', '系统'];
+  const knownModules: AuditLog['module'][] = ['用户', '商家', '菜品', '标签', '评价', '导入', '系统'];
   const moduleName = knownModules.includes(rawModule as AuditLog['module']) ? rawModule as AuditLog['module'] : modules[targetType] ?? '系统';
   const detail = raw.detail;
   return {
@@ -301,8 +327,8 @@ function merchantPayload(input: Partial<Merchant> & Pick<Merchant, 'name'>) {
     name: input.name,
     description: input.description ?? '',
     address: input.address ?? '待补充',
-    latitude: input.latitude ?? 39.9,
-    longitude: input.longitude ?? 116.4,
+    latitude: input.latitude ?? 31.2304,
+    longitude: input.longitude ?? 121.4737,
     price_level: input.priceLevel ?? 2,
     business_hours: input.openingHours ?? '10:00-20:00',
     is_active: input.status === 'online',
@@ -324,6 +350,7 @@ function menuItemPayload(input: Partial<MenuItem> & Pick<MenuItem, 'name' | 'mer
     tags: input.tags ?? [],
     is_active: input.status === 'online',
   };
+  if (!input.id) payload.campus_id = input.campusId ?? defaultCampusId;
   if (input.categoryId) payload.category_id = input.categoryId;
   return payload;
 }
@@ -337,8 +364,8 @@ export const adminApi = {
   },
   dashboard() {
     return execute(async () => {
-      const dashboard = normalizeDashboard(await request<unknown>('/dashboard'));
-      const reviews = await request<unknown>(`/reviews${queryString({ limit: 4 })}`).catch(() => ({ items: [] }));
+      const dashboard = normalizeDashboard(await request<unknown>(`/dashboard${queryString({ campus_id: defaultCampusId })}`));
+      const reviews = await request<unknown>(`/reviews${queryString({ campus_id: defaultCampusId, limit: 4 })}`).catch(() => ({ items: [] }));
       dashboard.recentReviews = listValue(object(reviews).items).map(normalizeReview).slice(0, 4);
       return dashboard;
     }, () => mockApi.dashboard());
@@ -346,33 +373,35 @@ export const adminApi = {
   users(query: ListQuery) {
     return execute(async () => {
       const active = query.status === 'active' ? true : query.status === 'frozen' ? false : undefined;
-      const raw = await request<unknown>(`/users${queryString({ search: query.keyword, active, limit: 100 })}`);
-      let items = listValue(raw).map(normalizeUser);
+      const raw = await request<unknown>(`/users${queryString({ campus_id: defaultCampusId, search: query.keyword, active, limit: 100 })}`);
+      let items = collectionValue(raw).map(normalizeUser);
       if (query.status) items = items.filter((item) => item.status === query.status);
       return localPage(items, query);
     }, () => mockApi.users(query));
   },
   updateUser(id: string, status: EntityStatus): Promise<CampusUser> {
     return execute(
-      () => request<unknown>(`/users/${id}`, { method: 'PATCH', body: JSON.stringify({ is_active: status !== 'frozen' }) }).then(normalizeUser),
+      () => request<unknown>(`/users/${id}${queryString({ campus_id: defaultCampusId })}`, { method: 'PATCH', body: JSON.stringify({ is_active: status !== 'frozen' }) }).then(normalizeUser),
       () => mockApi.updateUser(id, status),
     );
   },
   resetPassword(id: string) {
     return execute(
-      () => request<void>(`/users/${id}/password-reset`, { method: 'POST' }),
+      () => request<void>(`/users/${id}/password-reset${queryString({ campus_id: defaultCampusId })}`, { method: 'POST' }),
       () => mockApi.resetPassword(id),
     );
   },
   catalogMetadata(): Promise<CatalogMetadata> {
     return execute(async () => {
-      const [areasRaw, categoriesRaw] = await Promise.all([
+      const [areasRaw, categoriesRaw, tagsRaw] = await Promise.all([
         request<unknown>(`/areas${queryString({ campus_id: defaultCampusId })}`),
-        request<unknown>('/categories'),
+        request<unknown>(`/categories${queryString({ campus_id: defaultCampusId })}`),
+        request<unknown>(`/tags${queryString({ campus_id: defaultCampusId })}`),
       ]);
       return {
         areas: listValue(areasRaw).map((entry) => object(entry)).map((entry) => ({ id: stringValue(entry.id), name: stringValue(entry.name) })).filter((entry) => entry.id && entry.name),
         categories: listValue(categoriesRaw).map((entry) => object(entry)).map((entry) => ({ id: stringValue(entry.id), name: stringValue(entry.name) })).filter((entry) => entry.id && entry.name),
+        tags: collectionValue(tagsRaw).map(normalizeTag).filter((entry) => entry.id && entry.name),
       };
     }, async () => ({
       areas: [
@@ -380,40 +409,65 @@ export const adminApi = {
         { id: 'mock-area-south', name: '南苑生活区' }, { id: 'mock-area-east', name: '东区图书馆' }, { id: 'mock-area-lake', name: '湖畔餐厅' },
       ],
       categories: ['校园食堂', '中式快餐', '米饭', '面食', '轻食', '饮品', '小吃', '套餐', '其他'].map((name, index) => ({ id: `mock-category-${index}`, name })),
+      tags: await mockApi.tags(),
     }));
+  },
+  tags(): Promise<TagDefinition[]> {
+    return execute(
+      () => request<unknown>(`/tags${queryString({ campus_id: defaultCampusId })}`).then((value) => collectionValue(value).map(normalizeTag)),
+      () => mockApi.tags(),
+    );
+  },
+  saveTag(input: Partial<TagDefinition> & Pick<TagDefinition, 'name' | 'kind'>): Promise<TagDefinition> {
+    const body = input.id
+      ? { name: input.name, kind: input.kind }
+      : { campus_id: input.campusId || defaultCampusId, name: input.name, kind: input.kind };
+    return execute(
+      () => request<unknown>(input.id ? `/tags/${input.id}${queryString({ campus_id: input.campusId || defaultCampusId })}` : '/tags', {
+        method: input.id ? 'PATCH' : 'POST',
+        body: JSON.stringify(body),
+      }).then(normalizeTag),
+      () => mockApi.saveTag(input),
+    );
+  },
+  deleteTag(id: string) {
+    return execute(
+      () => request<void>(`/tags/${id}${queryString({ campus_id: defaultCampusId })}`, { method: 'DELETE' }),
+      () => mockApi.deleteTag(id),
+    );
   },
   merchants(query: ListQuery) {
     return execute(async () => {
       const active = query.status === 'online' ? true : query.status === 'offline' ? false : undefined;
-      const raw = await request<unknown>(`/merchants${queryString({ search: query.keyword, active })}`);
-      let items = listValue(raw).map(normalizeMerchant);
+      const raw = await request<unknown>(`/merchants${queryString({ campus_id: defaultCampusId, search: query.keyword, active, limit: 100 })}`);
+      let items = collectionValue(raw).map(normalizeMerchant);
       if (query.status) items = items.filter((item) => item.status === query.status);
       return localPage(items, query);
     }, () => mockApi.merchants(query));
   },
   saveMerchant(input: Partial<Merchant> & Pick<Merchant, 'name'>) {
     return execute(
-      () => request<unknown>(input.id ? `/merchants/${input.id}` : '/merchants', { method: input.id ? 'PATCH' : 'POST', body: JSON.stringify(merchantPayload(input)) }).then(normalizeMerchant),
+      () => request<unknown>(input.id ? `/merchants/${input.id}${queryString({ campus_id: input.campusId || defaultCampusId })}` : '/merchants', { method: input.id ? 'PATCH' : 'POST', body: JSON.stringify(merchantPayload(input)) }).then(normalizeMerchant),
       () => mockApi.saveMerchant(input),
     );
   },
   updateMerchantStatus(id: string, status: PublishStatus) {
     return execute(
-      () => request<void>(`/merchants/${id}`, { method: 'PATCH', body: JSON.stringify({ is_active: status === 'online' }) }),
+      () => request<void>(`/merchants/${id}${queryString({ campus_id: defaultCampusId })}`, { method: 'PATCH', body: JSON.stringify({ is_active: status === 'online' }) }),
       () => mockApi.updateMerchantStatus(id, status),
     );
   },
   deleteMerchant(id: string) {
     return execute(
-      () => request<void>(`/merchants/${id}`, { method: 'DELETE' }),
+      () => request<void>(`/merchants/${id}${queryString({ campus_id: defaultCampusId })}`, { method: 'DELETE' }),
       () => mockApi.deleteMerchant(id),
     );
   },
   menuItems(query: ListQuery) {
     return execute(async () => {
       const active = query.status === 'online' ? true : query.status === 'offline' ? false : undefined;
-      const raw = await request<unknown>(`/menu-items${queryString({ active })}`);
-      let items = listValue(raw).map(normalizeMenuItem)
+      const raw = await request<unknown>(`/menu-items${queryString({ campus_id: defaultCampusId, active, limit: 100 })}`);
+      let items = collectionValue(raw).map(normalizeMenuItem)
         .filter((item) => includesKeyword([item.name, item.merchantName, item.category], query.keyword));
       if (query.status) items = items.filter((item) => item.status === query.status);
       return localPage(items, query);
@@ -421,19 +475,19 @@ export const adminApi = {
   },
   saveMenuItem(input: Partial<MenuItem> & Pick<MenuItem, 'name' | 'merchantId'>) {
     return execute(
-      () => request<unknown>(input.id ? `/menu-items/${input.id}` : '/menu-items', { method: input.id ? 'PATCH' : 'POST', body: JSON.stringify(menuItemPayload(input)) }).then(normalizeMenuItem),
+      () => request<unknown>(input.id ? `/menu-items/${input.id}${queryString({ campus_id: input.campusId || defaultCampusId })}` : '/menu-items', { method: input.id ? 'PATCH' : 'POST', body: JSON.stringify(menuItemPayload(input)) }).then(normalizeMenuItem),
       () => mockApi.saveMenuItem(input),
     );
   },
   updateMenuItemStatus(id: string, status: PublishStatus) {
     return execute(
-      () => request<void>(`/menu-items/${id}`, { method: 'PATCH', body: JSON.stringify({ is_active: status === 'online' }) }),
+      () => request<void>(`/menu-items/${id}${queryString({ campus_id: defaultCampusId })}`, { method: 'PATCH', body: JSON.stringify({ is_active: status === 'online' }) }),
       () => mockApi.updateMenuItemStatus(id, status),
     );
   },
   deleteMenuItem(id: string) {
     return execute(
-      () => request<void>(`/menu-items/${id}`, { method: 'DELETE' }),
+      () => request<void>(`/menu-items/${id}${queryString({ campus_id: defaultCampusId })}`, { method: 'DELETE' }),
       () => mockApi.deleteMenuItem(id),
     );
   },
@@ -443,6 +497,7 @@ export const adminApi = {
       const page = query.page ?? 1;
       const pageSize = query.pageSize ?? 10;
       const raw = object(await request<unknown>(`/reviews${queryString({
+        campus_id: defaultCampusId,
         status: query.status,
         offset: needsClientFilter ? 0 : (page - 1) * pageSize,
         limit: needsClientFilter ? 100 : pageSize,
@@ -459,7 +514,7 @@ export const adminApi = {
   reviewAction(id: string, status: ReviewStatus, reason?: string) {
     const action = status === 'published' ? 'publish' : status === 'hidden' ? 'hide' : 'reject';
     return execute(
-      () => request<void>(`/reviews/${id}/moderate`, { method: 'POST', body: JSON.stringify({ action, reason: reason ?? '' }) }),
+      () => request<void>(`/reviews/${id}/moderate${queryString({ campus_id: defaultCampusId })}`, { method: 'POST', body: JSON.stringify({ action, reason: reason ?? '' }) }),
       () => mockApi.reviewAction(id, status, reason),
     );
   },
@@ -467,6 +522,7 @@ export const adminApi = {
     const form = new FormData();
     form.append('file', file);
     form.append('type', type);
+    form.append('campus_id', defaultCampusId);
     return execute(
       () => request<ImportValidation>('/imports/validate', { method: 'POST', body: form }),
       () => mockApi.validateImport(file, type),
@@ -476,18 +532,19 @@ export const adminApi = {
     const form = new FormData();
     form.append('file', file);
     form.append('type', type);
+    form.append('campus_id', defaultCampusId);
     return execute(
       () => request<unknown>('/imports', { method: 'POST', body: form }).then(normalizeImportJob),
       () => mockApi.startImport(file, type, validation),
     );
   },
   importJobs() {
-    return execute(() => request<unknown>('/imports').then((value) => listValue(value).map(normalizeImportJob)), () => mockApi.importJobs());
+    return execute(() => request<unknown>(`/imports${queryString({ campus_id: defaultCampusId })}`).then((value) => collectionValue(value).map(normalizeImportJob)), () => mockApi.importJobs());
   },
   auditLogs(query: AuditQuery) {
     return execute(async () => {
-      const raw = await request<unknown>(`/audit-logs${queryString({ offset: 0, limit: 100 })}`);
-      let items = listValue(raw).map(normalizeAudit).filter((item) => includesKeyword([item.actor, item.action, item.target], query.keyword));
+      const raw = await request<unknown>(`/audit-logs${queryString({ campus_id: defaultCampusId, limit: 100 })}`);
+      let items = collectionValue(raw).map(normalizeAudit).filter((item) => includesKeyword([item.actor, item.action, item.target], query.keyword));
       if (query.module) items = items.filter((item) => item.module === query.module);
       return localPage(items, query);
     }, () => mockApi.auditLogs(query));

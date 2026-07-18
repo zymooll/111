@@ -8,6 +8,7 @@ from sqlalchemy import String, cast, func, or_, select
 from app.api.presenters import favorite_merchant_ids
 from app.dependencies import DbSession, OptionalPrincipal
 from app.models import MenuItem, Merchant
+from app.services.campuses import require_campus, require_category
 from app.services.hierarchy import category_with_descendants
 from app.services.map_clusters import merchant_geojson
 from app.services.ratings import merchant_scores
@@ -43,6 +44,7 @@ def map_merchants(
     search: str | None = Query(default=None, max_length=100),
     favorite_only: bool = False,
 ) -> dict[str, Any]:
+    require_campus(db, campus_id)
     bounds = _bbox(bbox)
     if price_level and any(value < 1 or value > 4 for value in price_level):
         raise HTTPException(status_code=422, detail="价格等级只能是 1 到 4")
@@ -59,12 +61,16 @@ def map_merchants(
     if price_level:
         query = query.where(Merchant.price_level.in_(price_level))
     if category_id:
-        category_ids = category_with_descendants(db, category_id)
+        require_category(db, campus_id, category_id)
+        category_ids = category_with_descendants(db, category_id, campus_id)
         query = query.where(
             or_(
                 Merchant.category_id.in_(category_ids),
                 Merchant.id.in_(
-                    select(MenuItem.merchant_id).where(MenuItem.category_id.in_(category_ids))
+                    select(MenuItem.merchant_id).where(
+                        MenuItem.campus_id == campus_id,
+                        MenuItem.category_id.in_(category_ids),
+                    )
                 ),
             )
         )
@@ -79,6 +85,7 @@ def map_merchants(
         query = query.where(
             Merchant.id.in_(
                 select(MenuItem.merchant_id).where(
+                    MenuItem.campus_id == campus_id,
                     MenuItem.is_active.is_(True),
                     cast(MenuItem.tags, String).like(f"%{taste}%"),
                 )
@@ -86,7 +93,9 @@ def map_merchants(
         )
     kind = principal.kind if principal else None
     actor_id = principal.id if principal else None
-    favorites = favorite_merchant_ids(db, kind=kind, actor_id=actor_id)
+    favorites = favorite_merchant_ids(
+        db, kind=kind, actor_id=actor_id, campus_id=campus_id
+    )
     if favorite_only:
         if not favorites:
             return merchant_geojson([], zoom=zoom)

@@ -53,12 +53,12 @@ export const areaTree: TreeOption[] = [
 ]
 
 export const merchants: Merchant[] = [
-  { id: 'm1', name: '南苑一楼 · 川味窗口', areaId: 'south-canteen', area: '南苑食堂 1F', categoryId: 'rice', category: '米饭套餐', priceLevel: 1, averagePrice: 16, rating: 4.8, reviewCount: 328, openUntil: '21:00', distance: 180, position: { x: 25, y: 36 }, tags: ['麻辣', '下饭', '高性价比'] },
-  { id: 'm2', name: '北苑 · 一碗好面', areaId: 'north-canteen', area: '北苑食堂 2F', categoryId: 'noodle', category: '面食粉类', priceLevel: 1, averagePrice: 14, rating: 4.7, reviewCount: 206, openUntil: '20:30', distance: 420, position: { x: 31, y: 33 }, tags: ['酸辣', '热汤', '出餐快'] },
-  { id: 'm3', name: '图书馆咖啡角', areaId: 'library', area: '图书馆西侧', categoryId: 'tea', category: '茶饮咖啡', priceLevel: 2, averagePrice: 22, rating: 4.9, reviewCount: 152, openUntil: '22:30', distance: 560, position: { x: 49, y: 47 }, tags: ['安静', '低糖', '学习搭子'] },
-  { id: 'm4', name: '元气碗轻食实验室', areaId: 'sports', area: '体育馆南门', categoryId: 'salad', category: '沙拉轻食', priceLevel: 2, averagePrice: 27, rating: 4.6, reviewCount: 96, openUntil: '20:00', distance: 760, position: { x: 77, y: 62 }, tags: ['高蛋白', '低卡', '清爽'] },
-  { id: 'm5', name: '北门深夜食堂', areaId: 'north-gate', area: '北门商业街', categoryId: 'late-night', category: '夜宵烧烤', priceLevel: 2, averagePrice: 34, rating: 4.5, reviewCount: 411, openUntil: '次日 02:00', distance: 890, position: { x: 31, y: 69 }, tags: ['夜宵', '烟火气', '朋友聚餐'] },
-  { id: 'm6', name: '南门 · 麦香烘焙', areaId: 'south-gate', area: '南门生活区', categoryId: 'bakery', category: '烘焙点心', priceLevel: 1, averagePrice: 12, rating: 4.8, reviewCount: 184, openUntil: '22:00', distance: 1040, position: { x: 19, y: 79 }, tags: ['早餐', '现烤', '微甜'] }
+  { id: 'm1', name: '南苑一楼 · 川味窗口', areaId: 'south-canteen', area: '南苑食堂 1F', categoryId: 'rice', category: '米饭套餐', priceLevel: 1, averagePrice: 16, rating: 4.8, reviewCount: 328, openUntil: '21:00', distance: 180, latitude: 31.2292, longitude: 121.4762, position: { x: 25, y: 36 }, tags: ['麻辣', '下饭', '高性价比'] },
+  { id: 'm2', name: '北苑 · 一碗好面', areaId: 'north-canteen', area: '北苑食堂 2F', categoryId: 'noodle', category: '面食粉类', priceLevel: 1, averagePrice: 14, rating: 4.7, reviewCount: 206, openUntil: '20:30', distance: 420, latitude: 31.22922, longitude: 121.47622, position: { x: 31, y: 33 }, tags: ['酸辣', '热汤', '出餐快'] },
+  { id: 'm3', name: '图书馆咖啡角', areaId: 'library', area: '图书馆西侧', categoryId: 'tea', category: '茶饮咖啡', priceLevel: 2, averagePrice: 22, rating: 4.9, reviewCount: 152, openUntil: '22:30', distance: 560, latitude: 31.2295, longitude: 121.479, position: { x: 49, y: 47 }, tags: ['安静', '低糖', '学习搭子'] },
+  { id: 'm4', name: '元气碗轻食实验室', areaId: 'sports', area: '体育馆南门', categoryId: 'salad', category: '沙拉轻食', priceLevel: 2, averagePrice: 27, rating: 4.6, reviewCount: 96, openUntil: '20:00', distance: 760, latitude: 31.226, longitude: 121.482, position: { x: 77, y: 62 }, tags: ['高蛋白', '低卡', '清爽'] },
+  { id: 'm5', name: '北门深夜食堂', areaId: 'north-gate', area: '北门商业街', categoryId: 'late-night', category: '夜宵烧烤', priceLevel: 2, averagePrice: 34, rating: 4.5, reviewCount: 411, openUntil: '次日 02:00', distance: 890, latitude: 31.224, longitude: 121.4765, position: { x: 31, y: 69 }, tags: ['夜宵', '烟火气', '朋友聚餐'] },
+  { id: 'm6', name: '南门 · 麦香烘焙', areaId: 'south-gate', area: '南门生活区', categoryId: 'bakery', category: '烘焙点心', priceLevel: 1, averagePrice: 12, rating: 4.8, reviewCount: 184, openUntil: '22:00', distance: 1040, latitude: 31.222, longitude: 121.474, position: { x: 19, y: 79 }, tags: ['早餐', '现烤', '微甜'] }
 ]
 
 export const dishes: Dish[] = [

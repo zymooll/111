@@ -67,6 +67,7 @@ export interface Merchant {
 
 export interface MenuItem {
   id: string;
+  campusId?: string;
   name: string;
   description?: string;
   categoryId?: string;
@@ -81,6 +82,15 @@ export interface MenuItem {
   status: PublishStatus;
   tags: string[];
   updatedAt: string;
+}
+
+export interface TagDefinition {
+  id: string;
+  campusId: string;
+  name: string;
+  kind: string;
+  usageCount?: number;
+  updatedAt?: string;
 }
 
 export interface Review {
@@ -122,7 +132,7 @@ export interface AuditLog {
   id: string;
   actor: string;
   role: string;
-  module: '用户' | '商家' | '菜品' | '评价' | '导入' | '系统';
+  module: '用户' | '商家' | '菜品' | '标签' | '评价' | '导入' | '系统';
   action: string;
   target: string;
   ip: string;
@@ -133,6 +143,7 @@ export interface AuditLog {
 export interface CatalogMetadata {
   areas: Array<{ id: string; name: string }>;
   categories: Array<{ id: string; name: string }>;
+  tags: TagDefinition[];
 }
 
 export interface PageResult<T> {

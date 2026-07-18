@@ -6,13 +6,23 @@ from sqlalchemy.orm import Session
 from app.models import CampusArea, Category
 
 
-def category_with_descendants(db: Session, category_id: str) -> set[str]:
-    rows = db.execute(select(Category.id, Category.parent_id)).all()
+def category_with_descendants(
+    db: Session, category_id: str, campus_id: str | None = None
+) -> set[str]:
+    query = select(Category.id, Category.parent_id)
+    if campus_id:
+        query = query.where(Category.campus_id == campus_id)
+    rows = db.execute(query).all()
     return _with_descendants(category_id, rows)
 
 
-def area_with_descendants(db: Session, area_id: str) -> set[str]:
-    rows = db.execute(select(CampusArea.id, CampusArea.parent_id)).all()
+def area_with_descendants(
+    db: Session, area_id: str, campus_id: str | None = None
+) -> set[str]:
+    query = select(CampusArea.id, CampusArea.parent_id)
+    if campus_id:
+        query = query.where(CampusArea.campus_id == campus_id)
+    rows = db.execute(query).all()
     return _with_descendants(area_id, rows)
 
 

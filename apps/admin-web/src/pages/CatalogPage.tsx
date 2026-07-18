@@ -1,22 +1,33 @@
-import { DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, SearchOutlined, StopOutlined, UploadOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, SearchOutlined, StopOutlined, TagsOutlined, UploadOutlined } from '@ant-design/icons';
 import { App, Button, Card, Form, Input, InputNumber, Modal, Select, Space, Table, Tabs, Tag, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useCallback, useEffect, useState } from 'react';
 import { adminApi } from '../api/client';
+import { LocationPicker } from '../components/LocationPicker';
 import { PageHeader } from '../components/PageHeader';
 import { StatusTag } from '../components/StatusTag';
-import type { CatalogMetadata, MenuItem, Merchant, PublishStatus } from '../types';
+import type { CatalogMetadata, MenuItem, Merchant, PublishStatus, TagDefinition } from '../types';
+
+const emptyMetadata: CatalogMetadata = { areas: [], categories: [], tags: [] };
+const tagKindOptions = [
+  { value: 'taste', label: '口味' },
+  { value: 'diet', label: '饮食偏好' },
+];
+const tagKindLabels: Record<string, string> = Object.fromEntries(
+  tagKindOptions.map((item) => [item.value, item.label]),
+);
 
 export function CatalogPage() {
   return (
     <div>
       <PageHeader title="商家与菜品" description="维护商家档案、营业状态以及可推荐的菜品和套餐" />
-      <Card bordered={false} className="catalog-card">
+      <Card variant="borderless" className="catalog-card">
         <Tabs
           defaultActiveKey="merchants"
           items={[
             { key: 'merchants', label: '商家管理', children: <MerchantPanel /> },
             { key: 'items', label: '菜品 / 套餐管理', children: <MenuItemPanel /> },
+            { key: 'tags', label: '标签字典', children: <TagPanel /> },
           ]}
         />
       </Card>
@@ -35,8 +46,10 @@ function MerchantPanel() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Merchant>();
   const [saving, setSaving] = useState(false);
-  const [metadata, setMetadata] = useState<CatalogMetadata>({ areas: [], categories: [] });
+  const [metadata, setMetadata] = useState<CatalogMetadata>(emptyMetadata);
   const [form] = Form.useForm<Merchant>();
+  const latitude = Form.useWatch('latitude', form);
+  const longitude = Form.useWatch('longitude', form);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -68,7 +81,7 @@ function MerchantPanel() {
       ...record,
       areaId: record.areaId ?? metadata.areas.find((entry) => entry.name === record.area)?.id,
       categoryId: record.categoryId ?? metadata.categories.find((entry) => entry.name === record.category)?.id,
-    } : ({ status: 'draft', openingHours: '10:00-20:00', latitude: 39.9, longitude: 116.4, priceLevel: 2 } as Merchant));
+    } : ({ status: 'draft', openingHours: '10:00-20:00', latitude: 31.2304, longitude: 121.4737, priceLevel: 2 } as Merchant));
     setOpen(true);
   };
 
@@ -166,6 +179,13 @@ function MerchantPanel() {
           <Form.Item label="初始状态" name="status" rules={[{ required: true }]}><Select options={[{ value: 'draft', label: '草稿' }, { value: 'online', label: '已上架' }, { value: 'offline', label: '已下架' }]} /></Form.Item>
           <Form.Item label="详细地址" name="address" rules={[{ required: true, message: '请输入详细地址' }]} className="form-span-2"><Input placeholder="用于地图定位和地点筛选" /></Form.Item>
           <Form.Item label="商家简介" name="description" className="form-span-2"><Input.TextArea rows={3} maxLength={500} showCount placeholder="介绍主营特色、服务信息等" /></Form.Item>
+          <Form.Item label="地图选点（WGS-84）" className="form-span-2">
+            <LocationPicker
+              latitude={latitude}
+              longitude={longitude}
+              onChange={(location) => form.setFieldsValue(location)}
+            />
+          </Form.Item>
           <Form.Item label="纬度（WGS-84）" name="latitude" rules={[{ required: true, message: '请输入纬度' }]}><InputNumber min={-90} max={90} precision={6} style={{ width: '100%' }} /></Form.Item>
           <Form.Item label="经度（WGS-84）" name="longitude" rules={[{ required: true, message: '请输入经度' }]}><InputNumber min={-180} max={180} precision={6} style={{ width: '100%' }} /></Form.Item>
           <Form.Item label="营业时间" name="openingHours" rules={[{ required: true, message: '请输入营业时间' }]}><Input placeholder="06:30-21:00" /></Form.Item>
@@ -189,7 +209,7 @@ function MenuItemPanel() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<MenuItem>();
   const [saving, setSaving] = useState(false);
-  const [metadata, setMetadata] = useState<CatalogMetadata>({ areas: [], categories: [] });
+  const [metadata, setMetadata] = useState<CatalogMetadata>(emptyMetadata);
   const [form] = Form.useForm<MenuItem>();
 
   const load = useCallback(async () => {
@@ -313,7 +333,198 @@ function MenuItemPanel() {
           <Form.Item label="状态" name="status"><Select options={[{ value: 'draft', label: '草稿' }, { value: 'online', label: '已上架' }, { value: 'offline', label: '已下架' }]} /></Form.Item>
           <Form.Item label="简介" name="description" className="form-span-2"><Input.TextArea rows={3} maxLength={500} showCount placeholder="描述主要食材、分量或口味特点" /></Form.Item>
           <Form.Item label="菜品图片 URL" name="imageUrl" className="form-span-2"><Input placeholder="/images/dish-placeholder.webp" /></Form.Item>
-          <Form.Item label="口味 / 特征标签" name="tags" className="form-span-2"><Select mode="tags" tokenSeparators={[',', '，']} placeholder="输入后回车，例如：微辣、高蛋白" /></Form.Item>
+          <Form.Item label="口味 / 特征标签" name="tags" className="form-span-2">
+            <Select
+              mode="multiple"
+              allowClear
+              showSearch
+              optionFilterProp="label"
+              placeholder="从服务端标签字典中选择"
+              options={metadata.tags.map((entry) => ({
+                value: entry.name,
+                label: `${entry.name} · ${tagKindLabels[entry.kind] ?? entry.kind}`,
+              }))}
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
+    </>
+  );
+}
+
+function TagPanel() {
+  const { message, modal } = App.useApp();
+  const [items, setItems] = useState<TagDefinition[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [keyword, setKeyword] = useState('');
+  const [kind, setKind] = useState('');
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<TagDefinition>();
+  const [saving, setSaving] = useState(false);
+  const [form] = Form.useForm<TagDefinition>();
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      setItems(await adminApi.tags());
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : '标签字典加载失败');
+    } finally {
+      setLoading(false);
+    }
+  }, [message]);
+
+  useEffect(() => { void load(); }, [load]);
+
+  const edit = (record?: TagDefinition) => {
+    setEditing(record);
+    form.resetFields();
+    form.setFieldsValue(record ?? ({ kind: 'taste' } as TagDefinition));
+    setOpen(true);
+  };
+
+  const save = async () => {
+    const values = await form.validateFields();
+    setSaving(true);
+    try {
+      await adminApi.saveTag({ ...editing, ...values });
+      message.success(editing ? '标签已更新' : '标签已创建');
+      setOpen(false);
+      await load();
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : '标签保存失败');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const remove = (record: TagDefinition) => {
+    modal.confirm({
+      title: `删除标签“${record.name}”？`,
+      content: '删除后不能再为菜品选择该标签；已被使用的标签需要先从相关菜品移除。',
+      okText: '确认删除',
+      okButtonProps: { danger: true },
+      async onOk() {
+        await adminApi.deleteTag(record.id);
+        message.success('标签已删除');
+        await load();
+      },
+    });
+  };
+
+  const filtered = items.filter((item) =>
+    (!kind || item.kind === kind)
+    && (!keyword.trim() || item.name.toLowerCase().includes(keyword.trim().toLowerCase())),
+  );
+  const columns: ColumnsType<TagDefinition> = [
+    {
+      title: '标签',
+      key: 'tag',
+      render: (_, record) => (
+        <div className="table-primary"><strong>{record.name}</strong><span>{record.id}</span></div>
+      ),
+    },
+    {
+      title: '类型',
+      dataIndex: 'kind',
+      width: 150,
+      render: (value: string) => (
+        <Tag color={value === 'taste' ? 'blue' : value === 'diet' ? 'green' : 'default'}>
+          {tagKindLabels[value] ?? value}
+        </Tag>
+      ),
+    },
+    {
+      title: '使用情况',
+      dataIndex: 'usageCount',
+      width: 140,
+      render: (value?: number) => typeof value === 'number'
+        ? value ? `${value} 个菜品` : '暂未使用'
+        : '由服务端校验',
+    },
+    {
+      title: '操作',
+      key: 'actions',
+      fixed: 'right',
+      width: 120,
+      render: (_, record) => (
+        <Space size={2}>
+          <Tooltip title="编辑"><Button type="text" icon={<EditOutlined />} onClick={() => edit(record)} /></Tooltip>
+          <Tooltip title={record.usageCount ? '请先从菜品中移除该标签' : '删除'}>
+            <Button
+              danger
+              type="text"
+              disabled={(record.usageCount ?? 0) > 0}
+              icon={<DeleteOutlined />}
+              onClick={() => remove(record)}
+            />
+          </Tooltip>
+        </Space>
+      ),
+    },
+  ];
+
+  return (
+    <>
+      <div className="tag-kind-summary">
+        {tagKindOptions.map((option) => (
+          <Tag key={option.value} color={option.value === 'taste' ? 'blue' : 'green'}>
+            {option.label} {items.filter((item) => item.kind === option.value).length}
+          </Tag>
+        ))}
+      </div>
+      <div className="table-toolbar">
+        <Space wrap>
+          <Input
+            allowClear
+            prefix={<SearchOutlined />}
+            placeholder="搜索标签名称"
+            value={keyword}
+            onChange={(event) => setKeyword(event.target.value)}
+            className="wide-search"
+          />
+          <Select
+            value={kind}
+            onChange={setKind}
+            style={{ width: 140 }}
+            options={[{ value: '', label: '全部类型' }, ...tagKindOptions]}
+          />
+        </Space>
+        <Space>
+          <Button icon={<ReloadOutlined />} onClick={() => void load()}>刷新</Button>
+          <Button type="primary" icon={<TagsOutlined />} onClick={() => edit()}>新增标签</Button>
+        </Space>
+      </div>
+      <Table
+        rowKey="id"
+        columns={columns}
+        dataSource={filtered}
+        loading={loading}
+        pagination={false}
+        scroll={{ x: 720 }}
+      />
+      <Modal
+        title={editing ? '编辑标签' : '新增标签'}
+        open={open}
+        onCancel={() => setOpen(false)}
+        onOk={() => void save()}
+        confirmLoading={saving}
+        okText="保存"
+      >
+        <Form form={form} layout="vertical" requiredMark={false}>
+          <Form.Item
+            label="标签名称"
+            name="name"
+            rules={[
+              { required: true, whitespace: true, message: '请输入标签名称' },
+              { max: 60, message: '标签名称不能超过 60 个字符' },
+            ]}
+          >
+            <Input placeholder="如：微辣、高蛋白" />
+          </Form.Item>
+          <Form.Item label="标签类型" name="kind" rules={[{ required: true, message: '请选择标签类型' }]}>
+            <Select options={tagKindOptions} />
+          </Form.Item>
         </Form>
       </Modal>
     </>

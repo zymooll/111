@@ -12,6 +12,7 @@ const moduleColors: Record<AuditLog['module'], string> = {
   用户: 'blue',
   商家: 'cyan',
   菜品: 'geekblue',
+  标签: 'green',
   评价: 'orange',
   导入: 'purple',
   系统: 'default',

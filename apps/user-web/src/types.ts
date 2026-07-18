@@ -7,6 +7,20 @@ export interface TreeOption {
   children?: TreeOption[]
 }
 
+export interface CatalogTag {
+  id: string
+  name: string
+  kind: string
+}
+
+export interface CatalogData {
+  campusId: string
+  campusName: string
+  areas: TreeOption[]
+  categories: TreeOption[]
+  tags: CatalogTag[]
+}
+
 export interface Merchant {
   id: string
   name: string
@@ -20,6 +34,8 @@ export interface Merchant {
   reviewCount: number
   openUntil: string
   distance: number
+  longitude?: number
+  latitude?: number
   position: { x: number; y: number }
   tags: string[]
 }
@@ -74,6 +90,12 @@ export interface User {
   emailVerified?: boolean
 }
 
+export interface UserStats {
+  publishedReviews: number
+  totalViews: number
+  favoriteMerchants: number
+}
+
 export interface AccountActionResult {
   message: string
   debugToken?: string
@@ -126,12 +148,14 @@ export interface RecommendationPage {
 }
 
 export interface FoodieApi {
-  getRecommendations(filters: FeedFilters, favorites: string[]): Promise<RecommendationPage>
+  getCatalog(): Promise<CatalogData>
+  getRecommendations(filters: FeedFilters, favorites: string[], cursor?: string): Promise<RecommendationPage>
   getDish(id: string, favorites: string[]): Promise<DishCardData | undefined>
   getDishReviews(id: string): Promise<Review[]>
   getMerchants(filters: MapFilters, favorites: string[]): Promise<Array<Merchant & { favorite: boolean }>>
   getFavoriteMerchants(ids: string[]): Promise<Merchant[]>
   getMyReviews(userId: string): Promise<Array<Review & { dish?: Dish }>>
+  getMyStats(): Promise<UserStats>
   login(account: string, password: string): Promise<User>
   register(username: string, email: string, password: string): Promise<User>
   submitReview(user: User, draft: ReviewDraft): Promise<Review>

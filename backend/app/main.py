@@ -1,21 +1,27 @@
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
+import logging
 from pathlib import Path
 from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.exceptions import RequestValidationError
+from fastapi.exceptions import RequestValidationError, ResponseValidationError
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.admin.router import router as admin_router
 from app.api.router import router as api_router
 from app.config import Settings, get_settings
 from app.database import Database
 from app.seed import seed_demo_data
+from app.services.idempotency import idempotency_middleware
+
+
+logger = logging.getLogger(__name__)
 
 
 def create_app(settings: Settings | None = None, database: Database | None = None) -> FastAPI:
@@ -57,6 +63,8 @@ def create_app(settings: Settings | None = None, database: Database | None = Non
         expose_headers=["X-Request-ID"],
     )
 
+    app.middleware("http")(idempotency_middleware)
+
     @app.middleware("http")
     async def request_id_middleware(request: Request, call_next):
         request_id = request.headers.get("X-Request-ID") or str(uuid4())
@@ -65,19 +73,12 @@ def create_app(settings: Settings | None = None, database: Database | None = Non
         response.headers["X-Request-ID"] = request_id
         return response
 
-    @app.exception_handler(HTTPException)
-    async def http_exception_handler(request: Request, exc: HTTPException):
-        return JSONResponse(
+    @app.exception_handler(StarletteHTTPException)
+    async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+        return _problem_response(
+            request,
             status_code=exc.status_code,
-            content={
-                "type": "about:blank",
-                "title": _status_title(exc.status_code),
-                "status": exc.status_code,
-                "detail": exc.detail,
-                "instance": str(request.url.path),
-                "request_id": getattr(request.state, "request_id", None),
-            },
-            media_type="application/problem+json",
+            detail=str(exc.detail),
             headers=exc.headers,
         )
 
@@ -97,6 +98,28 @@ def create_app(settings: Settings | None = None, database: Database | None = Non
             media_type="application/problem+json",
         )
 
+    @app.exception_handler(ResponseValidationError)
+    async def response_validation_exception_handler(
+        request: Request, exc: ResponseValidationError
+    ):
+        logger.exception("Response validation failed for %s", request.url.path, exc_info=exc)
+        return _problem_response(
+            request,
+            status_code=500,
+            detail="服务器响应校验失败",
+            problem_type="https://campus-food.local/problems/response-validation-error",
+        )
+
+    @app.exception_handler(Exception)
+    async def unhandled_exception_handler(request: Request, exc: Exception):
+        logger.exception("Unhandled API error for %s", request.url.path, exc_info=exc)
+        return _problem_response(
+            request,
+            status_code=500,
+            detail="服务器内部错误",
+            problem_type="https://campus-food.local/problems/internal-error",
+        )
+
     @app.get("/health", tags=["系统"])
     def health() -> dict[str, str]:
         return {"status": "ok", "environment": settings.environment}
@@ -113,11 +136,37 @@ def _status_title(status_code: int) -> str:
         401: "未登录或登录已失效",
         403: "没有权限",
         404: "资源不存在",
+        405: "请求方法不支持",
         409: "资源状态冲突",
         413: "上传内容过大",
         422: "请求参数校验失败",
         429: "请求过于频繁",
+        500: "服务器内部错误",
+        501: "功能尚未实现",
     }.get(status_code, "请求处理失败")
+
+
+def _problem_response(
+    request: Request,
+    *,
+    status_code: int,
+    detail: str,
+    problem_type: str = "about:blank",
+    headers: dict[str, str] | None = None,
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=status_code,
+        content={
+            "type": problem_type,
+            "title": _status_title(status_code),
+            "status": status_code,
+            "detail": detail,
+            "instance": str(request.url.path),
+            "request_id": getattr(request.state, "request_id", None),
+        },
+        media_type="application/problem+json",
+        headers=headers,
+    )
 
 
 app = create_app()

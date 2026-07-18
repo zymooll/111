@@ -6,7 +6,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { PageHeader } from '../components/PageHeader'
 import { RatingInput } from '../components/Stars'
 import { dishes } from '../data/mockData'
-import { api } from '../services/api'
+import { api, apiMode } from '../services/api'
 import { useAppState } from '../store/AppState'
 
 const ratingLabels = ['', '不太满意', '有待改进', '还不错', '值得推荐', '好吃到想安利']
@@ -24,10 +24,9 @@ export function ReviewPage() {
   const dishQuery = useQuery({ queryKey: ['dish', dishId, favorites], queryFn: () => api.getDish(dishId, favorites), enabled: Boolean(dishId) })
   const dishOptionsQuery = useQuery({
     queryKey: ['review-dish-options', favorites],
-    queryFn: () => api.getRecommendations({}, favorites),
-    enabled: Boolean(user)
+    queryFn: () => api.getRecommendations({}, favorites)
   })
-  const dishOptions = dishOptionsQuery.data?.items.length ? dishOptionsQuery.data.items : dishes
+  const dishOptions = dishOptionsQuery.data?.items ?? (apiMode === 'mock' ? dishes : [])
   const selectedDish = dishQuery.data ?? dishOptions.find((dish) => dish.id === dishId)
   const draftKey = `campus-foodie:review-draft:${dishId || 'new'}`
 
@@ -49,10 +48,17 @@ export function ReviewPage() {
   }, [content, draftKey, dishId, images, rating])
 
   const mutation = useMutation({
-    mutationFn: () => api.submitReview(user!, { dishId, rating, content: content.trim(), images }),
+    mutationFn: () => {
+      if (!user) throw new Error('请先登录')
+      return api.submitReview(user, { dishId, rating, content: content.trim(), images })
+    },
     onSuccess: async (review) => {
       sessionStorage.removeItem(draftKey)
-      await queryClient.invalidateQueries({ queryKey: ['dish-reviews', dishId] })
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['dish-reviews', dishId] }),
+        queryClient.invalidateQueries({ queryKey: ['my-reviews'] }),
+        queryClient.invalidateQueries({ queryKey: ['my-stats'] })
+      ])
       const message = review.status === 'published'
         ? '评价已发布，感谢你的分享'
         : review.status === 'pending_manual'
@@ -79,27 +85,28 @@ export function ReviewPage() {
     event.target.value = ''
   }
 
-  if (!user) {
-    return (
-      <div className="page subpage login-required-page">
-        <PageHeader title="发表评价" />
-        <section><span className="login-required-icon"><LogIn size={31} /></span><h1>登录后才能发表评价</h1><p>评价会展示在菜品详情中，帮助更多同学做出选择。你的游客收藏会在登录后保留。</p><button type="button" className="primary-action" onClick={() => navigate('/login', { state: { next: routeDishId ? `/dish/${routeDishId}/review` : '/review/new' } })}>去登录</button><button type="button" className="text-button" onClick={() => navigate(-1)}>先逛逛</button></section>
-      </div>
-    )
-  }
-
-  if (user.emailVerified === false) {
-    return (
-      <div className="page subpage login-required-page">
-        <PageHeader title="发表评价" />
-        <section><span className="login-required-icon"><LogIn size={31} /></span><h1>验证邮箱后才能发表评价</h1><p>完成邮箱验证可以保护账号安全，也便于后续找回密码。</p><button type="button" className="primary-action" onClick={() => navigate('/verify-email', { state: { next: routeDishId ? `/dish/${routeDishId}/review` : '/review/new' } })}>去验证邮箱</button><button type="button" className="text-button" onClick={() => navigate(-1)}>稍后再说</button></section>
-      </div>
-    )
+  const submit = () => {
+    if (!canSubmit) return
+    try { sessionStorage.setItem(draftKey, JSON.stringify({ rating, content, images })) } catch { /* The in-memory draft remains available. */ }
+    const next = `/dish/${dishId}/review`
+    if (!user) {
+      Toast.show({ content: '草稿已保留，登录后可继续发布' })
+      navigate('/login', { state: { next } })
+      return
+    }
+    if (user.emailVerified === false) {
+      Toast.show({ content: '草稿已保留，验证邮箱后可继续发布' })
+      navigate('/verify-email', { state: { next } })
+      return
+    }
+    mutation.mutate()
   }
 
   return (
     <div className="page subpage review-page">
-      <PageHeader title="发表评价" subtitle="分享真实体验" action={<button className="header-text-button" type="button" disabled={!canSubmit} onClick={() => mutation.mutate()}><Send size={15} />发布</button>} />
+      <PageHeader title="发表评价" subtitle="分享真实体验" action={<button className="header-text-button" type="button" disabled={!canSubmit} onClick={submit}><Send size={15} />发布</button>} />
+      {!user && <aside className="review-draft-notice"><LogIn size={18} /><span><strong>游客也可以先写草稿</strong>发布时再登录，当前内容会在本次浏览会话中保留。</span></aside>}
+      {user?.emailVerified === false && <aside className="review-draft-notice"><LogIn size={18} /><span><strong>可以先完成草稿</strong>发布前需要验证邮箱，验证后会回到这里。</span></aside>}
       <section className="review-dish-selector">
         <button type="button" onClick={() => setDishPicker((value) => !value)}>
           {selectedDish ? <><img src={selectedDish.image} alt="" /><span><small>正在评价</small><strong>{selectedDish.name}</strong></span></> : <><span className="selector-placeholder">🍜</span><span><small>先选择吃过的菜品</small><strong>选择菜品或套餐</strong></span></>}
@@ -125,7 +132,7 @@ export function ReviewPage() {
       </section>
 
       <div className="review-guideline"><CheckCircle2 size={17} /><span>请分享真实用餐体验；提交后将经过内容审核。</span></div>
-      <button type="button" className="primary-action submit-review" disabled={!canSubmit} onClick={() => mutation.mutate()}>{mutation.isPending ? '正在提交…' : '发布评价'}</button>
+      <button type="button" className="primary-action submit-review" disabled={!canSubmit} onClick={submit}>{mutation.isPending ? '正在提交…' : user ? '发布评价' : '登录并发布'}</button>
     </div>
   )
 }

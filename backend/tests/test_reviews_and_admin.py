@@ -17,11 +17,13 @@ def test_review_manual_fallback_admin_publish_and_stats(client, demo_ids):
     user_pair = login(client)
     user_headers = bearer(user_pair["access_token"])
     seeded_total = client.get(
-        f"/api/v1/menu-items/{demo_ids['item_one']}/reviews"
+        f"/api/v1/menu-items/{demo_ids['item_one']}/reviews",
+        params={"campus_id": demo_ids["campus"]},
     ).json()["total"]
     assert seeded_total > 0
     created = client.post(
         f"/api/v1/menu-items/{demo_ids['item_one']}/reviews",
+        params={"campus_id": demo_ids["campus"]},
         json={"rating": 5, "text": "牛腩很软，番茄味也很足", "images": []},
         headers=user_headers,
     )
@@ -31,7 +33,8 @@ def test_review_manual_fallback_admin_publish_and_stats(client, demo_ids):
     assert "DeepSeek" in review["moderation_reason"]
 
     public_before = client.get(
-        f"/api/v1/menu-items/{demo_ids['item_one']}/reviews"
+        f"/api/v1/menu-items/{demo_ids['item_one']}/reviews",
+        params={"campus_id": demo_ids["campus"]},
     ).json()
     assert public_before["total"] == seeded_total
 
@@ -39,7 +42,7 @@ def test_review_manual_fallback_admin_publish_and_stats(client, demo_ids):
     admin_headers = bearer(admin_pair["access_token"])
     pending = client.get(
         "/admin/api/v1/reviews",
-        params={"status": "pending_manual"},
+        params={"campus_id": demo_ids["campus"], "status": "pending_manual"},
         headers=admin_headers,
     )
     assert pending.status_code == 200
@@ -47,6 +50,7 @@ def test_review_manual_fallback_admin_publish_and_stats(client, demo_ids):
 
     moderated = client.post(
         f"/admin/api/v1/reviews/{review['id']}/moderate",
+        params={"campus_id": demo_ids["campus"]},
         json={"action": "publish", "reason": "人工审核通过"},
         headers=admin_headers,
     )
@@ -54,12 +58,16 @@ def test_review_manual_fallback_admin_publish_and_stats(client, demo_ids):
     assert moderated.json()["status"] == "published"
 
     public_after = client.get(
-        f"/api/v1/menu-items/{demo_ids['item_one']}/reviews"
+        f"/api/v1/menu-items/{demo_ids['item_one']}/reviews",
+        params={"campus_id": demo_ids["campus"]},
     ).json()
     assert public_after["total"] == seeded_total + 1
 
     guest_headers = bearer(client.post("/api/v1/auth/guest").json()["access_token"])
-    event = {"event_id": "review-view-event-0001"}
+    event = {
+        "campus_id": demo_ids["campus"],
+        "event_id": "review-view-event-0001",
+    }
     assert (
         client.post(
             f"/api/v1/reviews/{review['id']}/view", json=event, headers=guest_headers
@@ -72,13 +80,21 @@ def test_review_manual_fallback_admin_publish_and_stats(client, demo_ids):
         ).status_code
         == 200
     )
-    stats = client.get("/api/v1/me/stats", headers=user_headers).json()
+    stats = client.get(
+        "/api/v1/me/stats",
+        params={"campus_id": demo_ids["campus"]},
+        headers=user_headers,
+    ).json()
     assert stats["published_reviews"] == 1
     assert stats["total_views"] == 1
 
-    audit = client.get("/admin/api/v1/audit-logs", headers=admin_headers)
+    audit = client.get(
+        "/admin/api/v1/audit-logs",
+        params={"campus_id": demo_ids["campus"]},
+        headers=admin_headers,
+    )
     assert audit.status_code == 200
-    assert audit.json()[0]["action"] == "review.publish"
+    assert audit.json()["items"][0]["action"] == "review.publish"
 
 
 def test_admin_crud_and_role_separation(client, demo_ids):
@@ -118,6 +134,7 @@ def test_admin_crud_and_role_separation(client, demo_ids):
     item = client.post(
         "/admin/api/v1/menu-items",
         json={
+            "campus_id": demo_ids["campus"],
             "merchant_id": merchant["id"],
             "category_id": demo_ids["cat_light"],
             "name": "鲜橙汁",
@@ -135,6 +152,7 @@ def test_admin_crud_and_role_separation(client, demo_ids):
 
     updated = client.patch(
         f"/admin/api/v1/merchants/{merchant['id']}",
+        params={"campus_id": demo_ids["campus"]},
         json={"name": "测试果汁站"},
         headers=admin_headers,
     )
@@ -142,6 +160,7 @@ def test_admin_crud_and_role_separation(client, demo_ids):
     assert updated.json()["name"] == "测试果汁站"
     offline = client.patch(
         f"/admin/api/v1/merchants/{merchant['id']}/status",
+        params={"campus_id": demo_ids["campus"]},
         json={"status": "offline"},
         headers=admin_headers,
     )
@@ -150,7 +169,12 @@ def test_admin_crud_and_role_separation(client, demo_ids):
 
     category = client.post(
         "/admin/api/v1/categories",
-        json={"name": "测试品类", "icon": "test", "sort_order": 99},
+        json={
+            "campus_id": demo_ids["campus"],
+            "name": "测试品类",
+            "icon": "test",
+            "sort_order": 99,
+        },
         headers=admin_headers,
     )
     assert category.status_code == 201, category.text
@@ -158,6 +182,7 @@ def test_admin_crud_and_role_separation(client, demo_ids):
     assert (
         client.patch(
             f"/admin/api/v1/categories/{category_id}",
+            params={"campus_id": demo_ids["campus"]},
             json={"name": "测试品类已改"},
             headers=admin_headers,
         ).json()["name"]
@@ -165,7 +190,9 @@ def test_admin_crud_and_role_separation(client, demo_ids):
     )
     assert (
         client.delete(
-            f"/admin/api/v1/categories/{category_id}", headers=admin_headers
+            f"/admin/api/v1/categories/{category_id}",
+            params={"campus_id": demo_ids["campus"]},
+            headers=admin_headers,
         ).status_code
         == 200
     )
@@ -175,7 +202,9 @@ def test_map_cluster_and_favorite_star(client, demo_ids):
     guest = client.post("/api/v1/auth/guest").json()
     headers = bearer(guest["access_token"])
     client.put(
-        f"/api/v1/favorites/merchants/{demo_ids['merchant_one']}", headers=headers
+        f"/api/v1/favorites/merchants/{demo_ids['merchant_one']}",
+        params={"campus_id": demo_ids["campus"]},
+        headers=headers,
     )
     low_zoom = client.get(
         "/api/v1/map/merchants",
@@ -213,7 +242,7 @@ def test_admin_csv_validation_and_import(client, demo_ids):
     files = {"file": ("areas.csv", csv_content, "text/csv")}
     validated = client.post(
         "/admin/api/v1/imports/validate",
-        data={"type": "areas"},
+        data={"type": "areas", "campus_id": demo_ids["campus"]},
         files=files,
         headers=admin_headers,
     )
@@ -222,16 +251,20 @@ def test_admin_csv_validation_and_import(client, demo_ids):
 
     imported = client.post(
         "/admin/api/v1/imports",
-        data={"type": "areas"},
+        data={"type": "areas", "campus_id": demo_ids["campus"]},
         files={"file": ("areas.csv", csv_content, "text/csv")},
         headers=admin_headers,
     )
     assert imported.status_code == 201, imported.text
     assert imported.json()["status"] == "completed"
     assert imported.json()["success"] == 1
-    jobs = client.get("/admin/api/v1/imports", headers=admin_headers)
+    jobs = client.get(
+        "/admin/api/v1/imports",
+        params={"campus_id": demo_ids["campus"]},
+        headers=admin_headers,
+    )
     assert jobs.status_code == 200
-    assert jobs.json()[0]["file_name"] == "areas.csv"
+    assert jobs.json()["items"][0]["file_name"] == "areas.csv"
 
 
 def test_image_upload_and_owned_review_reference(client, demo_ids):
@@ -254,6 +287,7 @@ def test_image_upload_and_owned_review_reference(client, demo_ids):
 
     review = client.post(
         f"/api/v1/menu-items/{demo_ids['item_two']}/reviews",
+        params={"campus_id": demo_ids["campus"]},
         json={"rating": 4, "text": "图片评价", "images": [image_url]},
         headers=headers,
     )
@@ -262,7 +296,76 @@ def test_image_upload_and_owned_review_reference(client, demo_ids):
 
     invalid = client.post(
         f"/api/v1/menu-items/{demo_ids['item_three']}/reviews",
+        params={"campus_id": demo_ids["campus"]},
         json={"rating": 4, "text": "非法外链", "images": ["https://example.com/a.jpg"]},
         headers=headers,
     )
     assert invalid.status_code == 422
+
+
+def test_admin_tag_dictionary_validates_and_renames_item_tags(client, demo_ids):
+    admin_headers = bearer(admin_login(client)["access_token"])
+    created = client.post(
+        "/admin/api/v1/tags",
+        json={
+            "campus_id": demo_ids["campus"],
+            "name": "测试清香",
+            "kind": "taste",
+        },
+        headers=admin_headers,
+    )
+    assert created.status_code == 201, created.text
+    tag_id = created.json()["id"]
+
+    item = client.post(
+        "/admin/api/v1/menu-items",
+        json={
+            "campus_id": demo_ids["campus"],
+            "merchant_id": demo_ids["merchant_one"],
+            "category_id": demo_ids["cat_rice"],
+            "name": "标签同步测试菜",
+            "item_type": "dish",
+            "price_cents": 1000,
+            "image_url": "/dishes/rice-bowl.svg",
+            "tags": ["测试清香"],
+        },
+        headers=admin_headers,
+    )
+    assert item.status_code == 201, item.text
+    item_id = item.json()["id"]
+
+    renamed = client.patch(
+        f"/admin/api/v1/tags/{tag_id}",
+        params={"campus_id": demo_ids["campus"]},
+        json={"name": "测试清新"},
+        headers=admin_headers,
+    )
+    assert renamed.status_code == 200, renamed.text
+    menu = client.get(
+        "/admin/api/v1/menu-items",
+        params={"campus_id": demo_ids["campus"], "merchant_id": demo_ids["merchant_one"]},
+        headers=admin_headers,
+    ).json()["items"]
+    renamed_item = next(entry for entry in menu if entry["id"] == item_id)
+    assert renamed_item["tags"] == ["测试清新"]
+
+    referenced = client.delete(
+        f"/admin/api/v1/tags/{tag_id}",
+        params={"campus_id": demo_ids["campus"]},
+        headers=admin_headers,
+    )
+    assert referenced.status_code == 409
+
+    cleared = client.patch(
+        f"/admin/api/v1/menu-items/{item_id}",
+        params={"campus_id": demo_ids["campus"]},
+        json={"tags": []},
+        headers=admin_headers,
+    )
+    assert cleared.status_code == 200
+    deleted = client.delete(
+        f"/admin/api/v1/tags/{tag_id}",
+        params={"campus_id": demo_ids["campus"]},
+        headers=admin_headers,
+    )
+    assert deleted.status_code == 200

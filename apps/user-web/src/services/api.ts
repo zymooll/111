@@ -1,5 +1,5 @@
 import { areaTree, categoryTree, demoUser, dishes, initialReviews, merchants } from '../data/mockData'
-import type { DishCardData, FoodieApi, FoodPreferences, MapFilters, Review, ReviewDraft, User } from '../types'
+import type { CatalogData, DishCardData, FoodieApi, FoodPreferences, MapFilters, Review, ReviewDraft, User } from '../types'
 import { createFallbackFoodieApi, httpApi } from './httpApi'
 
 const wait = (ms = 180) => new Promise((resolve) => window.setTimeout(resolve, ms))
@@ -32,7 +32,28 @@ function dishCard(id: string, favorites: string[]): DishCardData | undefined {
 }
 
 class MockFoodieApi implements FoodieApi {
-  async getRecommendations(filters: { query?: string; categoryId?: string; areaId?: string }, favorites: string[]) {
+  async getCatalog(): Promise<CatalogData> {
+    await wait(40)
+    const dietTags = new Set(['高蛋白', '素食友好', '低糖'])
+    const tags = [...new Set(dishes.flatMap((dish) => dish.tags))].map((name) => ({
+      id: `mock-tag-${name}`,
+      name,
+      kind: dietTags.has(name) ? 'diet' : 'taste'
+    }))
+    const cloneTree = (tree: typeof areaTree) => tree.map((item) => ({
+      ...item,
+      children: item.children?.map((child) => ({ ...child }))
+    }))
+    return {
+      campusId: 'mock-campus',
+      campusName: '演示校园',
+      areas: cloneTree(areaTree),
+      categories: cloneTree(categoryTree),
+      tags
+    }
+  }
+
+  async getRecommendations(filters: { query?: string; categoryId?: string; areaId?: string }, favorites: string[], _cursor?: string) {
     await wait()
     const query = filters.query?.trim().toLowerCase()
     const items = dishes
@@ -77,6 +98,15 @@ class MockFoodieApi implements FoodieApi {
     return reviews
       .filter((review) => review.userId === userId)
       .map((review) => ({ ...review, dish: dishes.find((dish) => dish.id === review.dishId) }))
+  }
+
+  async getMyStats() {
+    await wait(60)
+    return {
+      publishedReviews: demoUser.publishedReviews,
+      totalViews: demoUser.views,
+      favoriteMerchants: 0
+    }
   }
 
   async login(account: string, password: string): Promise<User> {

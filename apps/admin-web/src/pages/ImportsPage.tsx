@@ -76,7 +76,7 @@ export function ImportsPage() {
   const downloadTemplate = () => {
     const rows: Record<ImportJob['type'], string> = {
       areas: 'campus_id,parent_id,name,level,sort_order\n00000000-0000-0000-0000-000000000001,,北门商业街,1,10',
-      merchants: 'campus_id,area_id,category_id,name,description,address,latitude,longitude,gcj02_latitude,gcj02_longitude,price_level,business_hours\n00000000-0000-0000-0000-000000000001,,,示例商家,主营面食,北门 1 号,39.900000,116.400000,,,2,10:00-22:00',
+      merchants: 'campus_id,area_id,category_id,name,description,address,latitude,longitude,gcj02_latitude,gcj02_longitude,price_level,business_hours\n00000000-0000-0000-0000-000000000001,,,示例商家,主营面食,北门 1 号,31.230400,121.473700,,,2,10:00-22:00',
       menu_items: 'merchant_id,category_id,name,description,item_type,price_cents,image_url,tags\n请替换为商家ID,,招牌拌面,微辣大份,dish,1500,/images/dish-placeholder.webp,微辣|人气',
     };
     const url = URL.createObjectURL(new Blob([`\uFEFF${rows[type]}`], { type: 'text/csv;charset=utf-8' }));

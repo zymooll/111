@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { FoodieApi } from '../types'
-import { createFallbackFoodieApi, HttpApiError, httpApi } from './httpApi'
+import { createFallbackFoodieApi, HttpApiError, httpApi, resetHttpApiCacheForTests } from './httpApi'
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -24,13 +24,26 @@ const merchant = {
   rating_avg: 4.8
 }
 
+function catalogResponse(url: string) {
+  if (url.endsWith('/campuses')) return json([{ id: 'campus-1', name: '测试大学', is_active: true }])
+  if (url.includes('/areas?campus_id=campus-1')) return json([{ id: 'area-1', name: '测试食堂', level: 1, children: [] }])
+  if (url.includes('/categories?campus_id=campus-1')) return json([{ id: 'category-1', name: '测试餐饮', icon: 'bowl', children: [] }])
+  if (url.includes('/tags?campus_id=campus-1')) return json([{ id: 'tag-1', name: '清淡', kind: 'taste' }])
+  return undefined
+}
+
 describe('HTTP Foodie API', () => {
-  beforeEach(() => localStorage.clear())
+  beforeEach(() => {
+    localStorage.clear()
+    resetHttpApiCacheForTests()
+  })
   afterEach(() => vi.restoreAllMocks())
 
   it('shares one guest session across concurrent feed requests', async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input)
+      const catalog = catalogResponse(url)
+      if (catalog) return catalog
       if (url.endsWith('/auth/guest')) return json({ access_token: 'guest-token' }, 201)
       if (url.includes('/recommendations/feed')) return json({ items: [], next_cursor: null, has_more: false })
       if (url.includes('/merchants')) return json([])
@@ -48,6 +61,8 @@ describe('HTTP Foodie API', () => {
     let detailCalls = 0
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input)
+      const catalog = catalogResponse(url)
+      if (catalog) return catalog
       if (url.endsWith('/auth/refresh')) {
         return json({
           access_token: 'fresh-access',
@@ -55,7 +70,7 @@ describe('HTTP Foodie API', () => {
           user: { id: 'user-1', username: 'demo', email: 'demo@example.com', role: 'user', email_verified: true }
         })
       }
-      if (url.endsWith('/menu-items/dish-1')) {
+      if (url.includes('/menu-items/dish-1?campus_id=campus-1')) {
         detailCalls += 1
         if (detailCalls === 1) return json({ detail: '访问令牌已过期' }, 401)
         return json({
@@ -85,6 +100,32 @@ describe('HTTP Foodie API', () => {
     expect(detailCalls).toBe(2)
   })
 
+  it('loads server-owned catalog dictionaries and forwards exact IDs with the feed cursor', async () => {
+    const urls: string[] = []
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input)
+      urls.push(url)
+      const catalog = catalogResponse(url)
+      if (catalog) return catalog
+      if (url.endsWith('/auth/guest')) return json({ access_token: 'guest-token' }, 201)
+      if (url.includes('/recommendations/feed')) return json({ items: [], next_cursor: 'next-page', has_more: true })
+      if (url.includes('/merchants')) return json([])
+      return json({ detail: 'unexpected request' }, 500)
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(httpApi.getCatalog()).resolves.toMatchObject({
+      campusId: 'campus-1',
+      campusName: '测试大学',
+      areas: [{ id: 'area-1', label: '测试食堂' }],
+      categories: [{ id: 'category-1', label: '测试餐饮' }],
+      tags: [{ name: '清淡', kind: 'taste' }]
+    })
+    await expect(httpApi.getRecommendations({ categoryId: 'category-1', areaId: 'area-1' }, [], 'page-cursor')).resolves.toEqual({ items: [], nextCursor: 'next-page' })
+
+    expect(urls.some((url) => url.includes('campus_id=campus-1') && url.includes('category_id=category-1') && url.includes('area_id=area-1') && url.includes('cursor=page-cursor'))).toBe(true)
+  })
+
   it('does not hide backend validation or authentication errors with mock success', async () => {
     const secondaryLogin = vi.fn().mockResolvedValue({ id: 'mock-user' })
     const primary = { login: vi.fn().mockRejectedValue(new HttpApiError('账号或密码错误', 401)) } as unknown as FoodieApi
@@ -100,12 +141,15 @@ describe('HTTP Foodie API', () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input)
       requests.push({ url, body: init?.body ? JSON.parse(String(init.body)) : undefined })
+      const catalog = catalogResponse(url)
+      if (catalog) return catalog
       if (url.endsWith('/auth/guest')) return json({ access_token: 'guest-token' }, 201)
       if (url.endsWith('/me/preferences') && init?.method === 'PUT') {
         return json({ tastes: ['清淡'], avoid: ['麻辣'], budget_max_cents: 2500, frequent_area_ids: [] })
       }
       if (url.endsWith('/interactions')) return json({ message: '行为事件已接收' })
       if (url.endsWith('/reviews/review-1/view')) return json({ message: '已记录阅读' })
+      if (url.includes('/me/stats?campus_id=campus-1')) return json({ published_reviews: 3, total_views: 42, favorite_merchants: 2 })
       return json({ detail: 'unexpected request' }, 500)
     })
     vi.stubGlobal('fetch', fetchMock)
@@ -124,11 +168,13 @@ describe('HTTP Foodie API', () => {
       metadata: { source: 'home_feed' }
     }])
     await httpApi.viewReview('review-1', 'review-view-event-0001')
+    await expect(httpApi.getMyStats()).resolves.toEqual({ publishedReviews: 3, totalViews: 42, favoriteMerchants: 2 })
 
     expect(requests.find((entry) => entry.url.endsWith('/me/preferences'))?.body).toMatchObject({
-      tastes: ['清淡'], avoid: ['麻辣'], budget_max_cents: 2500, frequent_area_ids: []
+      campus_id: 'campus-1', tastes: ['清淡'], avoid: ['麻辣'], budget_max_cents: 2500, frequent_area_ids: []
     })
     expect(requests.find((entry) => entry.url.endsWith('/interactions'))?.body).toEqual({
+      campus_id: 'campus-1',
       events: [{
         event_id: 'click-event-0001',
         event_type: 'click',
@@ -137,6 +183,6 @@ describe('HTTP Foodie API', () => {
         metadata: { source: 'home_feed' }
       }]
     })
-    expect(requests.find((entry) => entry.url.endsWith('/reviews/review-1/view'))?.body).toEqual({ event_id: 'review-view-event-0001' })
+    expect(requests.find((entry) => entry.url.endsWith('/reviews/review-1/view'))?.body).toEqual({ campus_id: 'campus-1', event_id: 'review-view-event-0001' })
   })
 })

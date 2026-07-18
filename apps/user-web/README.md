@@ -20,6 +20,7 @@ pnpm --filter @campus-foodie/user-web dev
 - `VITE_API_MODE=mock`：只使用内置演示数据。
 - `VITE_API_MODE=remote`：只使用 FastAPI，适合集成验证。
 - `VITE_API_MODE=fallback`：后端网络不可用或发生服务端故障时回退演示数据；401/403/422 等业务错误仍会原样展示。
+- `VITE_CAMPUS_ID`：可选；留空时读取 `/campuses` 并自动选择首个启用校区。品类、地点和标签均从服务端目录加载。
 
 ## 验证
 

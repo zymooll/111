@@ -1,16 +1,23 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { Button, Toast } from 'antd-mobile'
 import { ChevronDown, History, LocateFixed, Search, SlidersHorizontal, Sparkles, TrendingUp } from 'lucide-react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { DishCard } from '../components/DishCard'
 import { EmptyState, ErrorState, FeedSkeleton } from '../components/States'
-import { areaTree, categoryTree, findTreeLabel } from '../data/mockData'
 import { api } from '../services/api'
 import { newEventId } from '../services/interactions'
 import { useAppState } from '../store/AppState'
 
-const quickCategories = categoryTree.flatMap((group) => group.children ?? []).slice(0, 5)
+function findTreeLabel(tree: Array<{ id: string; label: string; children?: Array<{ id: string; label: string }> }>, id?: string) {
+  if (!id) return undefined
+  for (const parent of tree) {
+    if (parent.id === id) return parent.label
+    const child = parent.children?.find((item) => item.id === id)
+    if (child) return child.label
+  }
+  return undefined
+}
 
 export function HomePage() {
   const navigate = useNavigate()
@@ -18,22 +25,32 @@ export function HomePage() {
   const { user, favorites, toggleFavorite } = useAppState()
   const [search, setSearch] = useState(params.get('q') ?? '')
   const impressedItems = useRef(new Set<string>())
+  const loadMoreRef = useRef<HTMLButtonElement | null>(null)
   const categoryId = params.get('category') ?? undefined
   const areaId = params.get('area') ?? undefined
 
   useEffect(() => setSearch(params.get('q') ?? ''), [params])
 
-  const query = useQuery({
+  const catalogQuery = useQuery({ queryKey: ['catalog'], queryFn: () => api.getCatalog() })
+  const query = useInfiniteQuery({
     queryKey: ['recommendations', params.toString(), favorites],
-    queryFn: () => api.getRecommendations({ query: params.get('q') ?? undefined, categoryId, areaId }, favorites)
+    queryFn: ({ pageParam }) => api.getRecommendations(
+      { query: params.get('q') ?? undefined, categoryId, areaId },
+      favorites,
+      pageParam || undefined
+    ),
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined
   })
 
-  const categoryLabel = findTreeLabel(categoryTree, categoryId) ?? '全部品类'
-  const areaLabel = findTreeLabel(areaTree, areaId) ?? '南校区附近'
-  const insight = useMemo(() => query.data?.items[0]?.reason ?? '正在分析你最近的口味偏好', [query.data])
+  const items = useMemo(() => query.data?.pages.flatMap((page) => page.items) ?? [], [query.data])
+  const quickCategories = useMemo(() => catalogQuery.data?.categories.flatMap((group) => group.children?.length ? group.children : [group]).slice(0, 5) ?? [], [catalogQuery.data])
+  const categoryLabel = findTreeLabel(catalogQuery.data?.categories ?? [], categoryId) ?? '全部品类'
+  const areaLabel = findTreeLabel(catalogQuery.data?.areas ?? [], areaId) ?? catalogQuery.data?.campusName ?? '全部地点'
+  const insight = useMemo(() => items[0]?.reason ?? '正在分析你最近的口味偏好', [items])
 
   useEffect(() => {
-    const freshItems = (query.data?.items ?? []).filter((item) => !impressedItems.current.has(item.id))
+    const freshItems = items.filter((item) => !impressedItems.current.has(item.id))
     if (!freshItems.length) return
     freshItems.forEach((item) => impressedItems.current.add(item.id))
     void api.recordInteractions(freshItems.map((item) => ({
@@ -43,7 +60,17 @@ export function HomePage() {
       merchantId: item.merchantId,
       metadata: { source: 'home_feed' }
     }))).catch(() => undefined)
-  }, [query.data])
+  }, [items])
+
+  useEffect(() => {
+    const target = loadMoreRef.current
+    if (!target || !query.hasNextPage || !('IntersectionObserver' in window)) return
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting) && !query.isFetchingNextPage) void query.fetchNextPage()
+    }, { rootMargin: '180px' })
+    observer.observe(target)
+    return () => observer.disconnect()
+  }, [query.fetchNextPage, query.hasNextPage, query.isFetchingNextPage])
 
   const submitSearch = (event: FormEvent) => {
     event.preventDefault()
@@ -124,9 +151,9 @@ export function HomePage() {
 
       {query.isLoading && <FeedSkeleton />}
       {query.isError && <ErrorState retry={() => query.refetch()} />}
-      {query.data && query.data.items.length > 0 && (
+      {query.data && items.length > 0 && (
         <div className="feed-list">
-          {query.data.items.map((item) => <DishCard key={item.id} item={item} onFavorite={favorite} onOpen={(selected) => {
+          {items.map((item) => <DishCard key={item.id} item={item} onFavorite={favorite} onOpen={(selected) => {
             void api.recordInteractions([{
               eventId: newEventId('click'),
               eventType: 'click',
@@ -135,10 +162,14 @@ export function HomePage() {
               metadata: { source: 'home_feed' }
             }]).catch(() => undefined)
           }} />)}
-          <div className="feed-end"><span /><p>已经帮你看完附近的好味道</p><span /></div>
+          {query.hasNextPage ? (
+            <button ref={loadMoreRef} className="feed-load-more" type="button" disabled={query.isFetchingNextPage} onClick={() => query.fetchNextPage()}>
+              {query.isFetchingNextPage ? '正在加载更多…' : '继续发现更多菜品'}
+            </button>
+          ) : <div className="feed-end"><span /><p>已经帮你看完附近的好味道</p><span /></div>}
         </div>
       )}
-      {query.data?.items.length === 0 && (
+      {query.data && items.length === 0 && (
         <EmptyState
           title="还没找到合适的菜"
           description="换个关键词或清空筛选再看看吧。"

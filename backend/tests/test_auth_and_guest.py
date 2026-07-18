@@ -10,6 +10,7 @@ def test_guest_preferences_favorite_and_login_merge(client, demo_ids):
     headers = bearer(guest_token)
 
     preferences = {
+        "campus_id": demo_ids["campus"],
         "tastes": ["清淡", "高蛋白"],
         "avoid": ["花生"],
         "budget_max_cents": 2500,
@@ -19,6 +20,7 @@ def test_guest_preferences_favorite_and_login_merge(client, demo_ids):
     assert (
         client.put(
             f"/api/v1/favorites/merchants/{demo_ids['merchant_one']}", headers=headers
+            , params={"campus_id": demo_ids["campus"]}
         ).status_code
         == 200
     )
@@ -33,14 +35,26 @@ def test_guest_preferences_favorite_and_login_merge(client, demo_ids):
     )
     assert login_response.status_code == 200, login_response.text
     user_headers = bearer(login_response.json()["access_token"])
-    favorites = client.get("/api/v1/me/favorites", headers=user_headers).json()
+    favorites = client.get(
+        "/api/v1/me/favorites",
+        params={"campus_id": demo_ids["campus"]},
+        headers=user_headers,
+    ).json()["items"]
     assert [item["merchant"]["id"] for item in favorites] == [demo_ids["merchant_one"]]
-    assert client.get("/api/v1/me/preferences", headers=user_headers).json()["tastes"] == [
+    assert client.get(
+        "/api/v1/me/preferences",
+        params={"campus_id": demo_ids["campus"]},
+        headers=user_headers,
+    ).json()["tastes"] == [
         "清淡",
         "高蛋白",
     ]
 
-    stale_guest = client.get("/api/v1/me/preferences", headers=headers)
+    stale_guest = client.get(
+        "/api/v1/me/preferences",
+        params={"campus_id": demo_ids["campus"]},
+        headers=headers,
+    )
     assert stale_guest.status_code == 401
 
 
@@ -87,6 +101,7 @@ def test_guest_cannot_review(client, demo_ids):
     guest_token = client.post("/api/v1/auth/guest").json()["access_token"]
     response = client.post(
         f"/api/v1/menu-items/{demo_ids['item_one']}/reviews",
+        params={"campus_id": demo_ids["campus"]},
         json={"rating": 5, "text": "很好吃", "images": []},
         headers=bearer(guest_token),
     )
@@ -108,6 +123,7 @@ def test_email_verification_and_password_reset(client, demo_ids):
 
     blocked = client.post(
         f"/api/v1/menu-items/{demo_ids['item_one']}/reviews",
+        params={"campus_id": demo_ids["campus"]},
         json={"rating": 5, "text": "邮箱还没验证", "images": []},
         headers=headers,
     )

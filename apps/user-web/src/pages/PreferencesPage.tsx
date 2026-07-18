@@ -1,13 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Toast } from 'antd-mobile'
-import { Check, Save, ShieldCheck, Sparkles, WalletCards } from 'lucide-react'
+import { Check, MapPinned, Save, ShieldCheck, Sparkles, WalletCards } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
 import { api } from '../services/api'
 import type { FoodPreferences } from '../types'
 
-const tasteOptions = ['清淡', '微辣', '酸辣', '麻辣', '高蛋白', '低糖', '素食友好', '早餐', '夜宵']
-const avoidOptions = ['麻辣', '酸辣', '油炸', '高糖', '海鲜', '花生', '乳制品', '香菜']
 const budgetOptions = [
   { value: undefined, label: '不限' },
   { value: 1500, label: '¥15 内' },
@@ -25,6 +23,16 @@ export function PreferencesPage() {
   const queryClient = useQueryClient()
   const [preferences, setPreferences] = useState<FoodPreferences>(emptyPreferences)
   const query = useQuery({ queryKey: ['preferences'], queryFn: () => api.getPreferences() })
+  const catalogQuery = useQuery({ queryKey: ['catalog'], queryFn: () => api.getCatalog() })
+  const tasteOptions = useMemo(() => [...new Set([
+    ...(catalogQuery.data?.tags.filter((tag) => tag.kind === 'taste' || tag.kind === 'diet').map((tag) => tag.name) ?? []),
+    ...preferences.tastes
+  ])], [catalogQuery.data, preferences.tastes])
+  const avoidOptions = useMemo(() => [...new Set([
+    ...(catalogQuery.data?.tags.map((tag) => tag.name) ?? []),
+    ...preferences.avoid
+  ])], [catalogQuery.data, preferences.avoid])
+  const areaOptions = useMemo(() => catalogQuery.data?.areas.flatMap((area) => area.children?.length ? area.children : [area]) ?? [], [catalogQuery.data])
 
   useEffect(() => {
     if (query.data) setPreferences(query.data)
@@ -45,6 +53,15 @@ export function PreferencesPage() {
       [key]: current[key].includes(value)
         ? current[key].filter((item) => item !== value)
         : [...current[key], value]
+    }))
+  }
+
+  const toggleArea = (areaId: string) => {
+    setPreferences((current) => ({
+      ...current,
+      frequentAreaIds: current.frequentAreaIds.includes(areaId)
+        ? current.frequentAreaIds.filter((item) => item !== areaId)
+        : [...current.frequentAreaIds, areaId]
     }))
   }
 
@@ -69,6 +86,15 @@ export function PreferencesPage() {
             <header><div><span>😋</span><div><strong>喜欢的口味与场景</strong><small>可多选，推荐时优先匹配</small></div></div><b>{preferences.tastes.length}</b></header>
             <div className="preference-chips">
               {tasteOptions.map((option) => <button type="button" key={option} className={preferences.tastes.includes(option) ? 'is-active' : ''} onClick={() => toggle('tastes', option)}>{preferences.tastes.includes(option) && <Check size={14} />}{option}</button>)}
+            </div>
+          </section>
+
+          <section className="preference-card">
+            <header><div><span className="preference-icon"><MapPinned size={20} /></span><div><strong>常去地点</strong><small>同等条件下优先推荐附近菜品</small></div></div><b>{preferences.frequentAreaIds.length}</b></header>
+            <div className="preference-chips">
+              {areaOptions.map((option) => <button type="button" key={option.id} className={preferences.frequentAreaIds.includes(option.id) ? 'is-active' : ''} onClick={() => toggleArea(option.id)}>{preferences.frequentAreaIds.includes(option.id) && <Check size={14} />}{option.icon} {option.label}</button>)}
+              {catalogQuery.isLoading && <span className="catalog-inline-state">正在读取校园地点…</span>}
+              {catalogQuery.isError && <button type="button" onClick={() => catalogQuery.refetch()}>地点读取失败，点击重试</button>}
             </div>
           </section>
 

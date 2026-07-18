@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Literal
+from typing import Any, Generic, Literal, TypeVar
 
 from pydantic import (
     AliasChoices,
@@ -112,6 +112,7 @@ class CampusRead(ORMModel):
 
 class TreeNode(BaseModel):
     id: str
+    campus_id: str
     name: str
     parent_id: str | None = None
     level: int | None = None
@@ -121,6 +122,7 @@ class TreeNode(BaseModel):
 
 class TagRead(ORMModel):
     id: str
+    campus_id: str
     name: str
     kind: str
 
@@ -154,6 +156,7 @@ class AdminMerchantRead(MerchantRead):
 
 class MenuItemSummary(ORMModel):
     id: str
+    campus_id: str
     merchant_id: str
     category_id: str | None
     name: str
@@ -181,8 +184,11 @@ class MenuItemDetail(MenuItemSummary):
     rating_distribution: dict[str, int] = Field(default_factory=dict)
 
 
-class CursorPage(BaseModel):
-    items: list[MenuItemSummary]
+PageItem = TypeVar("PageItem")
+
+
+class CursorPage(BaseModel, Generic[PageItem]):
+    items: list[PageItem]
     next_cursor: str | None
     has_more: bool
 
@@ -219,6 +225,7 @@ class ReviewUpdate(ReviewCreate):
 
 class ReviewRead(ORMModel):
     id: str
+    campus_id: str
     user_id: str
     username: str | None = None
     menu_item_id: str
@@ -241,20 +248,26 @@ class AdminReviewRead(ReviewRead):
 class ReviewPage(BaseModel):
     items: list[ReviewRead]
     total: int
+    next_cursor: str | None = None
+    has_more: bool = False
 
 
 class AdminReviewPage(BaseModel):
     items: list[AdminReviewRead]
     total: int
+    next_cursor: str | None = None
+    has_more: bool = False
 
 
 class FavoriteRead(BaseModel):
     id: str
+    campus_id: str
     merchant: MerchantRead
     created_at: datetime
 
 
 class PreferencesUpdate(BaseModel):
+    campus_id: str
     tastes: list[str] = Field(default_factory=list, max_length=20)
     avoid: list[str] = Field(default_factory=list, max_length=20)
     budget_max_cents: int | None = Field(default=None, ge=0, le=100_000)
@@ -272,6 +285,7 @@ class MyStats(BaseModel):
 
 
 class ReviewViewRequest(BaseModel):
+    campus_id: str
     event_id: str = Field(min_length=8, max_length=80)
 
 
@@ -284,6 +298,7 @@ class InteractionEventIn(BaseModel):
 
 
 class InteractionBatch(BaseModel):
+    campus_id: str
     events: list[InteractionEventIn] = Field(min_length=1, max_length=100)
 
 
@@ -327,6 +342,7 @@ class MerchantUpdate(BaseModel):
 
 
 class MenuItemCreate(BaseModel):
+    campus_id: str
     merchant_id: str
     category_id: str | None = None
     name: str = Field(min_length=1, max_length=120)
@@ -397,6 +413,7 @@ class ModerationRequest(BaseModel):
 
 
 class CategoryCreate(BaseModel):
+    campus_id: str
     parent_id: str | None = None
     name: str = Field(min_length=1, max_length=80)
     icon: str | None = Field(default=None, max_length=40)
@@ -408,6 +425,17 @@ class CategoryUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=80)
     icon: str | None = Field(default=None, max_length=40)
     sort_order: int | None = None
+
+
+class TagCreate(BaseModel):
+    campus_id: str
+    name: str = Field(min_length=1, max_length=60)
+    kind: str = Field(default="taste", min_length=1, max_length=30)
+
+
+class TagUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=60)
+    kind: str | None = Field(default=None, min_length=1, max_length=30)
 
 
 class AreaCreate(BaseModel):
@@ -427,6 +455,7 @@ class AreaUpdate(BaseModel):
 
 class AuditLogRead(ORMModel):
     id: str
+    campus_id: str
     admin_user_id: str
     action: str
     target_type: str
@@ -450,6 +479,7 @@ class ImportValidationRead(BaseModel):
 
 class ImportJobRead(BaseModel):
     id: str
+    campus_id: str
     file_name: str
     type: Literal["areas", "merchants", "menu_items"]
     status: Literal["validating", "processing", "completed", "failed"]

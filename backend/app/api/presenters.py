@@ -8,11 +8,20 @@ from app.schemas import MenuItemSummary, MerchantRead, ReviewRead
 from app.services.ratings import merchant_scores
 
 
-def favorite_merchant_ids(db: Session, *, kind: str | None, actor_id: str | None) -> set[str]:
+def favorite_merchant_ids(
+    db: Session,
+    *,
+    kind: str | None,
+    actor_id: str | None,
+    campus_id: str | None = None,
+) -> set[str]:
     if not kind or not actor_id:
         return set()
     column = Favorite.user_id if kind == "user" else Favorite.guest_id
-    return set(db.scalars(select(Favorite.merchant_id).where(column == actor_id)).all())
+    query = select(Favorite.merchant_id).where(column == actor_id)
+    if campus_id:
+        query = query.where(Favorite.campus_id == campus_id)
+    return set(db.scalars(query).all())
 
 
 def merchant_rating(db: Session, merchant_id: str) -> float:
