@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+from sqlalchemy import func, select
+
+from app.models import MenuItem, Merchant, Review, ReviewStatus, User
+
 
 def test_health_openapi_and_seeded_catalog(client, demo_ids):
     health = client.get("/health")
@@ -55,6 +59,63 @@ def test_health_openapi_and_seeded_catalog(client, demo_ids):
     assert detail.status_code == 200
     assert set(detail.json()["rating_distribution"]) == {"1", "2", "3", "4", "5"}
     assert detail.json()["recommendation_reason"]
+
+
+def test_seeded_ratings_are_backed_by_published_reviews(client, demo_ids):
+    database = client.app.state.database
+    item_ids = [
+        demo_ids["item_one"],
+        demo_ids["item_two"],
+        demo_ids["item_three"],
+        demo_ids["item_four"],
+    ]
+
+    with database.session_factory() as db:
+        demo_user_id = db.scalar(select(User.id).where(User.username == "demo"))
+        seeded_reviews = db.scalars(select(Review)).all()
+        assert seeded_reviews
+        assert all(review.user_id != demo_user_id for review in seeded_reviews)
+        assert all(review.status == ReviewStatus.PUBLISHED for review in seeded_reviews)
+
+        campus_average = db.scalar(
+            select(func.avg(Review.rating))
+            .join(MenuItem, MenuItem.id == Review.menu_item_id)
+            .join(Merchant, Merchant.id == MenuItem.merchant_id)
+            .where(
+                Merchant.campus_id == demo_ids["campus"],
+                Review.status == ReviewStatus.PUBLISHED,
+                Review.deleted_at.is_(None),
+            )
+        )
+        assert campus_average is not None
+
+        for item_id in item_ids:
+            item = db.get(MenuItem, item_id)
+            assert item is not None
+            average, count = db.execute(
+                select(func.avg(Review.rating), func.count(Review.id)).where(
+                    Review.menu_item_id == item_id,
+                    Review.status == ReviewStatus.PUBLISHED,
+                    Review.deleted_at.is_(None),
+                )
+            ).one()
+            assert average is not None
+            assert count > 0
+            expected_rating = round(
+                (count / (count + 5)) * float(average)
+                + (5 / (count + 5)) * float(campus_average),
+                2,
+            )
+            assert item.review_count == count
+            assert item.rating_avg == expected_rating
+
+    for item_id in item_ids:
+        detail = client.get(f"/api/v1/menu-items/{item_id}")
+        reviews = client.get(f"/api/v1/menu-items/{item_id}/reviews")
+        assert detail.status_code == 200
+        assert reviews.status_code == 200
+        assert reviews.json()["total"] == detail.json()["review_count"]
+        assert sum(detail.json()["rating_distribution"].values()) == reviews.json()["total"]
 
 
 def test_problem_details_and_cursor_validation(client):

@@ -16,6 +16,10 @@ CORRUPT_PNG = base64.b64decode(
 def test_review_manual_fallback_admin_publish_and_stats(client, demo_ids):
     user_pair = login(client)
     user_headers = bearer(user_pair["access_token"])
+    seeded_total = client.get(
+        f"/api/v1/menu-items/{demo_ids['item_one']}/reviews"
+    ).json()["total"]
+    assert seeded_total > 0
     created = client.post(
         f"/api/v1/menu-items/{demo_ids['item_one']}/reviews",
         json={"rating": 5, "text": "牛腩很软，番茄味也很足", "images": []},
@@ -29,7 +33,7 @@ def test_review_manual_fallback_admin_publish_and_stats(client, demo_ids):
     public_before = client.get(
         f"/api/v1/menu-items/{demo_ids['item_one']}/reviews"
     ).json()
-    assert public_before["total"] == 0
+    assert public_before["total"] == seeded_total
 
     admin_pair = admin_login(client)
     admin_headers = bearer(admin_pair["access_token"])
@@ -52,7 +56,7 @@ def test_review_manual_fallback_admin_publish_and_stats(client, demo_ids):
     public_after = client.get(
         f"/api/v1/menu-items/{demo_ids['item_one']}/reviews"
     ).json()
-    assert public_after["total"] == 1
+    assert public_after["total"] == seeded_total + 1
 
     guest_headers = bearer(client.post("/api/v1/auth/guest").json()["access_token"])
     event = {"event_id": "review-view-event-0001"}

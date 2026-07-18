@@ -10,12 +10,15 @@ from app.models import (
     ItemType,
     MenuItem,
     Merchant,
+    Review,
+    ReviewStatus,
     Tag,
     User,
     UserProfile,
     UserRole,
 )
 from app.security import hash_password
+from app.services.ratings import recalculate_item_rating
 
 
 DEMO_IDS = {
@@ -34,6 +37,12 @@ DEMO_IDS = {
     "item_two": "00000000-0000-0000-0000-000000000042",
     "item_three": "00000000-0000-0000-0000-000000000043",
     "item_four": "00000000-0000-0000-0000-000000000044",
+    "reviewer_one": "00000000-0000-0000-0000-000000000051",
+    "reviewer_two": "00000000-0000-0000-0000-000000000052",
+    "reviewer_three": "00000000-0000-0000-0000-000000000053",
+    "reviewer_four": "00000000-0000-0000-0000-000000000054",
+    "reviewer_five": "00000000-0000-0000-0000-000000000055",
+    "reviewer_six": "00000000-0000-0000-0000-000000000056",
 }
 
 
@@ -142,8 +151,6 @@ def seed_demo_data(db: Session) -> None:
             item_type=ItemType.COMBO,
             price_cents=1800,
             image_url="/dishes/rice-bowl.svg",
-            rating_avg=4.8,
-            review_count=23,
             tags=["酸甜", "高蛋白", "米饭"],
         ),
         MenuItem(
@@ -155,8 +162,6 @@ def seed_demo_data(db: Session) -> None:
             item_type=ItemType.COMBO,
             price_cents=1650,
             image_url="/dishes/energy-bowl.svg",
-            rating_avg=4.6,
-            review_count=17,
             tags=["微辣", "高蛋白"],
         ),
         MenuItem(
@@ -168,8 +173,6 @@ def seed_demo_data(db: Session) -> None:
             item_type=ItemType.DISH,
             price_cents=1400,
             image_url="/dishes/noodles.svg",
-            rating_avg=4.7,
-            review_count=31,
             tags=["清淡", "汤面"],
         ),
         MenuItem(
@@ -181,8 +184,6 @@ def seed_demo_data(db: Session) -> None:
             item_type=ItemType.COMBO,
             price_cents=2480,
             image_url="/dishes/energy-bowl.svg",
-            rating_avg=4.9,
-            review_count=12,
             tags=["高蛋白", "清淡"],
         ),
     ]
@@ -202,6 +203,84 @@ def seed_demo_data(db: Session) -> None:
         is_active=True,
         email_verified=True,
     )
+    reviewer_password_hash = hash_password("DemoReviewer123!")
+    reviewers = [
+        User(
+            id=DEMO_IDS[reviewer_id],
+            username=username,
+            email=f"{username}@example.com",
+            password_hash=reviewer_password_hash,
+            role=UserRole.USER,
+            is_active=True,
+            email_verified=True,
+        )
+        for reviewer_id, username in [
+            ("reviewer_one", "foodie_lin"),
+            ("reviewer_two", "foodie_chen"),
+            ("reviewer_three", "foodie_zhou"),
+            ("reviewer_four", "foodie_wu"),
+            ("reviewer_five", "foodie_song"),
+            ("reviewer_six", "foodie_he"),
+        ]
+    ]
+    review_samples = [
+        (
+            DEMO_IDS["item_one"],
+            [
+                (5, "牛腩炖得很软，番茄汁拌饭很香。"),
+                (5, "酸甜度刚好，午餐吃很满足。"),
+                (4, "分量足，蔬菜再多一点就更好了。"),
+                (5, "出餐很快，牛腩没有肥腻感。"),
+                (4, "味道家常，米饭软硬合适。"),
+                (5, "番茄味浓，属于会回购的套餐。"),
+            ],
+        ),
+        (
+            DEMO_IDS["item_two"],
+            [
+                (4, "鸡腿肉嫩，微辣口味很下饭。"),
+                (5, "去骨鸡腿吃起来方便，配菜也新鲜。"),
+                (4, "辣度友好，整体分量适中。"),
+                (4, "高峰期出餐仍然很快。"),
+                (5, "鸡腿外焦里嫩，套餐搭配均衡。"),
+                (4, "香辣但不油，适合工作日午餐。"),
+            ],
+        ),
+        (
+            DEMO_IDS["item_three"],
+            [
+                (5, "鸡汤鲜而不咸，菌菇很有香气。"),
+                (4, "面条筋道，清淡口味很舒服。"),
+                (5, "天气凉的时候吃一碗很暖胃。"),
+                (5, "汤底自然，配料也很足。"),
+                (4, "整体清爽，面量对女生很合适。"),
+                (5, "菌菇和鸡汤很搭，会再次点。"),
+            ],
+        ),
+        (
+            DEMO_IDS["item_four"],
+            [
+                (5, "鸡胸不柴，糙米和蔬菜搭配丰富。"),
+                (5, "吃完很有饱腹感，负担又不重。"),
+                (5, "照烧汁甜度合适，牛油果很新鲜。"),
+                (4, "食材丰富，价格稍高但可以接受。"),
+                (5, "健身后吃很合适，蛋白质充足。"),
+                (5, "颜色和口感都很好，推荐轻食党。"),
+            ],
+        ),
+    ]
+    reviews = [
+        Review(
+            user_id=reviewer.id,
+            menu_item_id=menu_item_id,
+            rating=rating,
+            text=text,
+            images=[],
+            status=ReviewStatus.PUBLISHED,
+        )
+        for menu_item_id, samples in review_samples
+        for reviewer, (rating, text) in zip(reviewers, samples, strict=True)
+    ]
     # The models intentionally do not define ORM relationships, so SQLAlchemy's
     # unit of work cannot infer every insert dependency from Python object
     # references.  Flush each foreign-key layer explicitly; this is especially
@@ -211,7 +290,16 @@ def seed_demo_data(db: Session) -> None:
     db.flush()
 
     db.add_all(
-        [areas[0], areas[2], categories[0], categories[3], *tags, admin, demo_user]
+        [
+            areas[0],
+            areas[2],
+            categories[0],
+            categories[3],
+            *tags,
+            admin,
+            demo_user,
+            *reviewers,
+        ]
     )
     db.flush()
 
@@ -223,5 +311,11 @@ def seed_demo_data(db: Session) -> None:
 
     db.add_all(items)
     db.flush()
+
+    db.add_all(reviews)
+    db.flush()
+    for item in items:
+        recalculate_item_rating(db, item.id)
+
     db.add(UserProfile(user_id=demo_user.id, preferences={"tastes": ["清淡", "高蛋白"]}))
     db.commit()
