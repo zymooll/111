@@ -60,7 +60,7 @@
     <rect x="626" y="340" width="44" height="44" rx="14" fill="#EAF7EF" />
     <use data-icon="phosphor-duotone/list-checks" x="636" y="350" width="24" height="24" fill="#1F8A70" />
     <text x="690" y="354" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="20" font-weight="800" fill="#182026">搜索与二级筛选</text>
-    <text x="690" y="382" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#4D5A57">关键词、品类、地点、预算共同收敛候选。</text>
+    <text x="690" y="382" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#4D5A57">按关键词、品类、地点、预算缩小范围。</text>
   </g>
   <g id="card-recommend">
     <rect x="596" y="426" width="586" height="86" rx="22" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" />
@@ -74,6 +74,6 @@
     <rect x="626" y="556" width="44" height="44" rx="14" fill="#EAF7EF" />
     <use data-icon="phosphor-duotone/sparkle" x="636" y="566" width="24" height="24" fill="#3A86FF" />
     <text x="690" y="570" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="20" font-weight="800" fill="#182026">理由让推荐可信</text>
-    <text x="690" y="598" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#4D5A57">DeepSeek 生成简短理由，但对象仍来自数据库合法候选。</text>
+    <text x="690" y="598" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#4D5A57">AI 只帮写理由，推荐的菜都来自真实数据。</text>
   </g>
 </svg>

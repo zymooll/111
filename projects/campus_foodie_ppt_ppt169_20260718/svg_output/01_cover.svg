@@ -36,7 +36,7 @@
     <text x="60" y="372" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="28" font-weight="700" fill="#182026">从“去哪吃”到“今天吃什么”</text>
     <text x="60" y="418" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="20" fill="#4D5A57">
       <tspan x="60" dy="0">面向校园场景的菜品级推荐、地图发现、真实评价与后台治理闭环</tspan>
-      <tspan x="60" dy="34">DeepSeek 只做受约束重排，核心体验可验证、可降级、可演示</tspan>
+      <tspan x="60" dy="34">AI 只帮忙排序，结果真实可查，没网也能演示</tspan>
     </text>
   </g>
   <g id="hero-device-card">
@@ -50,14 +50,14 @@
       <tspan x="660" dy="0">藤椒鸡</tspan>
       <tspan x="660" dy="16">双拼饭</tspan>
     </text>
-    <text x="660" y="333" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="10" fill="#4D5A57">微辣 · 20 元内</text>
+    <text x="660" y="333" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="10" fill="#4D5A57">微辣 · ¥18</text>
     <rect x="604" y="356" width="106" height="58" rx="14" fill="#EAF7EF" />
     <text x="618" y="383" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="12" font-weight="700" fill="#1F8A70">推荐理由</text>
     <text x="618" y="403" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="10" fill="#4D5A57">近图书馆，口味匹配</text>
   </g>
   <g id="footer">
     <line x1="56" y1="652" x2="1224" y2="652" stroke="#BFD9CC" stroke-width="1" />
-    <text x="56" y="682" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" fill="#74807C">Campus Foodie MVP · Product Pitch</text>
+    <text x="56" y="682" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" fill="#74807C">Campus Foodie · 校园饮食推荐路演</text>
     <text x="1224" y="682" text-anchor="end" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" fill="#74807C">01 / 16</text>
   </g>
 </svg>

@@ -27,10 +27,10 @@
     <rect x="692" y="184" width="72" height="72" rx="20" fill="#EAF7EF" />
     <use data-icon="phosphor-duotone/map-pin" x="710" y="202" width="36" height="36" fill="#3A86FF" />
     <text x="786" y="216" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="26" font-weight="800" fill="#182026">地图发现</text>
-    <text x="786" y="250" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#3A86FF">找得到、筛得动、可降级</text>
+    <text x="786" y="250" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#3A86FF">找得到、筛得动、也看得清</text>
     <text x="692" y="302" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" fill="#4D5A57">
-      <tspan x="692" dy="0">商家点位、收藏星标和聚合星标帮助学生理解</tspan>
-      <tspan x="692" dy="30">距离；无地图 Key 时仍保留示意地图语义。</tspan>
+      <tspan x="692" dy="0">商家位置、收藏标记和合并显示帮助学生理解</tspan>
+      <tspan x="692" dy="30">距离；没有地图服务时也保留校园示意图。</tspan>
     </text>
   </g>
   <g id="card-review">
@@ -51,10 +51,10 @@
     <rect x="692" y="444" width="72" height="72" rx="20" fill="#EAF7EF" />
     <use data-icon="phosphor-duotone/desktop" x="710" y="462" width="36" height="36" fill="#1F8A70" />
     <text x="786" y="476" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="26" font-weight="800" fill="#182026">管理端</text>
-    <text x="786" y="510" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#1F8A70">商家、菜品、评价和审计可治理</text>
+    <text x="786" y="510" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#1F8A70">商家、菜品、评价都能维护</text>
     <text x="692" y="562" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" fill="#4D5A57">
-      <tspan x="692" dy="0">独立端口与登录态支撑管理员维护数据、审核</tspan>
-      <tspan x="692" dy="30">评价、预校验 CSV，并留下审计日志。</tspan>
+      <tspan x="692" dy="0">管理员可以维护数据、审核评价、导入资料，</tspan>
+      <tspan x="692" dy="30">每一次操作都有记录可查。</tspan>
     </text>
   </g>
   <g id="loop-label">

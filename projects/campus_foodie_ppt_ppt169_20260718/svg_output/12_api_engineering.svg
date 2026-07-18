@@ -21,7 +21,7 @@
       <tspan x="100" dy="26">前端筛选造成数据越界。</tspan>
     </text>
     <rect x="100" y="522" width="208" height="44" rx="14" fill="#EAF7EF" />
-    <text x="204" y="550" text-anchor="middle" font-family="Consolas, 'Courier New', monospace" font-size="16" font-weight="700" fill="#1F8A70">campus_id</text>
+    <text x="204" y="550" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="700" fill="#1F8A70">校园标签</text>
   </g>
   <g id="pillar-cursor">
     <rect x="366" y="142" width="268" height="488" rx="22" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" />
@@ -29,14 +29,14 @@
     <text x="500" y="202" text-anchor="middle" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="48" font-weight="800" fill="#3A86FF">02</text>
     <text x="500" y="238" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="20" font-weight="800" fill="#182026">游标分页</text>
     <use data-icon="phosphor-duotone/path" x="394" y="294" width="36" height="36" fill="#3A86FF" />
-    <text x="444" y="314" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="800" fill="#182026">持续加载不依赖 offset</text>
+    <text x="444" y="314" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="800" fill="#182026">新增数据也不乱</text>
     <text x="396" y="364" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" fill="#4D5A57">
       <tspan x="396" dy="0">推荐流、评价和后台列表</tspan>
       <tspan x="396" dy="26">使用不透明游标，减少</tspan>
       <tspan x="396" dy="26">新增数据带来的重复遗漏。</tspan>
     </text>
     <rect x="396" y="522" width="208" height="44" rx="14" fill="#EAF7EF" />
-    <text x="500" y="550" text-anchor="middle" font-family="Consolas, 'Courier New', monospace" font-size="16" font-weight="700" fill="#3A86FF">next_cursor</text>
+    <text x="500" y="550" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="700" fill="#3A86FF">下一页标记</text>
   </g>
   <g id="pillar-idempotent">
     <rect x="662" y="142" width="268" height="488" rx="22" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" />
@@ -51,7 +51,7 @@
       <tspan x="692" dy="26">返回 409。</tspan>
     </text>
     <rect x="692" y="522" width="208" height="44" rx="14" fill="#EAF7EF" />
-    <text x="796" y="550" text-anchor="middle" font-family="Consolas, 'Courier New', monospace" font-size="15" font-weight="700" fill="#1F8A70">Idempotency-Key</text>
+    <text x="796" y="550" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" font-weight="700" fill="#1F8A70">防重标记</text>
   </g>
   <g id="pillar-problem">
     <rect x="958" y="142" width="252" height="488" rx="22" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" />
@@ -66,9 +66,9 @@
       <tspan x="984" dy="26">关联日志和排查。</tspan>
     </text>
     <rect x="984" y="522" width="200" height="44" rx="14" fill="#EAF7EF" />
-    <text x="1084" y="550" text-anchor="middle" font-family="Consolas, 'Courier New', monospace" font-size="15" font-weight="700" fill="#3A86FF">RFC 9457 style</text>
+    <text x="1084" y="550" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" font-weight="700" fill="#3A86FF">统一错误提示</text>
   </g>
   <g id="footer">
-    <text x="56" y="690" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#74807C">API design · reliability details that judges can verify in code and docs</text>
+    <text x="56" y="690" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#74807C">稳定细节 · 评委可在代码与说明中核验</text>
   </g>
 </svg>

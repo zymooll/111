@@ -35,7 +35,7 @@
     <text x="328" y="420" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="800" fill="#FFFFFF">★</text>
     <path fill="#EAF7EF" d="M182,482 H342 A18,18 0 0 1 360,500 V540 A18,18 0 0 1 342,558 H182 A18,18 0 0 1 164,540 V500 A18,18 0 0 1 182,482 Z" />
     <text x="184" y="512" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" font-weight="800" fill="#182026">二食堂窗口</text>
-    <text x="184" y="538" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="12" fill="#4D5A57">聚合点含收藏商家，低缩放仍可读</text>
+    <text x="184" y="538" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="12" fill="#4D5A57">收藏商家会合并显示，缩小也看得清</text>
   </g>
   <g id="flow-arrow">
     <line x1="456" y1="382" x2="808" y2="382" stroke="#3A86FF" stroke-width="5" stroke-linecap="round" marker-end="url(#arrowBlue)" />
@@ -67,7 +67,7 @@
   </g>
   <g id="bottom-tags">
     <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1" d="M168,646 H342 A18,18 0 0 1 360,664 V664 A18,18 0 0 1 342,682 H168 A18,18 0 0 1 150,664 V664 A18,18 0 0 1 168,646 Z" />
-    <text x="255" y="669" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" fill="#4D5A57">普通点 / 聚合点 / 收藏星标</text>
+    <text x="255" y="669" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" fill="#4D5A57">普通商家 / 合并显示 / 收藏标记</text>
     <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1" d="M876,646 H1060 A18,18 0 0 1 1078,664 V664 A18,18 0 0 1 1060,682 H876 A18,18 0 0 1 858,664 V664 A18,18 0 0 1 876,646 Z" />
     <text x="968" y="669" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" fill="#4D5A57">文字 / 图片 / 审核状态</text>
   </g>

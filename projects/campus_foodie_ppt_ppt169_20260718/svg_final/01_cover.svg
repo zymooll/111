@@ -45,7 +45,7 @@
     <text x="56" y="238" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="66" font-weight="800" fill="#182026">Campus</text>
     <text x="56" y="310" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="66" font-weight="800" fill="url(#heroGreen)">Foodie</text>
     <text x="60" y="372" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="28" font-weight="700" fill="#182026">从“去哪吃”到“今天吃什么”</text>
-    <text font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="20" fill="#4D5A57" x="60" y="418">面向校园场景的菜品级推荐、地图发现、真实评价与后台治理闭环</text><text font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="20" fill="#4D5A57" x="60" y="452">DeepSeek 只做受约束重排，核心体验可验证、可降级、可演示</text></g>
+    <text fill="#4D5A57" font-size="20" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" x="60" y="418">面向校园场景的菜品级推荐、地图发现、真实评价与后台治理闭环</text><text fill="#4D5A57" font-size="20" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" x="60" y="452">AI 只帮忙排序，结果真实可查，没网也能演示</text></g>
   <g id="hero-device-card">
     <path fill="#182026" d="M602,138 H712 A34,34 0 0 1 746,172 V456 A34,34 0 0 1 712,490 H602 A34,34 0 0 1 568,456 V172 A34,34 0 0 1 602,138 Z" />
     <path fill="#FFFFFF" d="M608,158 H706 A24,24 0 0 1 730,182 V446 A24,24 0 0 1 706,470 H608 A24,24 0 0 1 584,446 V182 A24,24 0 0 1 608,158 Z" />
@@ -57,14 +57,14 @@
     <path d="M224,112a96,96,0,0,1-56,87.3V208a8,8,0,0,1-8,8H96a8,8,0,0,1-8-8v-8.7A96,96,0,0,1,32,112Z" opacity="0.2" />
     <path d="M224,104h-8.37a88,88,0,0,0-175.26,0H32a8,8,0,0,0-8,8,104.35,104.35,0,0,0,56,92.28V208a16,16,0,0,0,16,16h64a16,16,0,0,0,16-16v-3.72A104.35,104.35,0,0,0,232,112,8,8,0,0,0,224,104ZM173.48,56.23q2.75,2.25,5.27,4.75a87.92,87.92,0,0,0-49.15,43H100.1A72.26,72.26,0,0,1,168,56C169.83,56,171.66,56.09,173.48,56.23Zm15.91,18.2A71.45,71.45,0,0,1,199.54,104H148.12A71.84,71.84,0,0,1,189.39,74.43ZM128,40a71.87,71.87,0,0,1,19,2.57A88.36,88.36,0,0,0,83.33,104H56.46A72.08,72.08,0,0,1,128,40Zm36.66,152A8,8,0,0,0,160,199.3V208H96v-8.7A8,8,0,0,0,91.34,192a88.29,88.29,0,0,1-51-72H215.63A88.29,88.29,0,0,1,164.66,192Z" />
   </g>
-    <text font-weight="800" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="11" fill="#182026" x="660" y="298">藤椒鸡</text><text font-weight="800" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="11" fill="#182026" x="660" y="314">双拼饭</text><text x="660" y="333" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="10" fill="#4D5A57">微辣 · 20 元内</text>
+    <text fill="#182026" font-size="11" font-weight="800" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" x="660" y="298">藤椒鸡</text><text fill="#182026" font-size="11" font-weight="800" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" x="660" y="314">双拼饭</text><text x="660" y="333" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="10" fill="#4D5A57">微辣 · ¥18</text>
     <path fill="#EAF7EF" d="M618,356 H696 A14,14 0 0 1 710,370 V400 A14,14 0 0 1 696,414 H618 A14,14 0 0 1 604,400 V370 A14,14 0 0 1 618,356 Z" />
     <text x="618" y="383" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="12" font-weight="700" fill="#1F8A70">推荐理由</text>
     <text x="618" y="403" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="10" fill="#4D5A57">近图书馆，口味匹配</text>
   </g>
   <g id="footer">
     <line x1="56" y1="652" x2="1224" y2="652" stroke="#BFD9CC" stroke-width="1" />
-    <text x="56" y="682" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" fill="#74807C">Campus Foodie MVP · Product Pitch</text>
+    <text x="56" y="682" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" fill="#74807C">Campus Foodie · 校园饮食推荐路演</text>
     <text x="1224" y="682" text-anchor="end" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" fill="#74807C">01 / 16</text>
   </g>
 </svg>
