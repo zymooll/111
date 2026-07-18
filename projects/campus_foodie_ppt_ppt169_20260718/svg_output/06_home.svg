@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <defs>
+    <linearGradient id="phoneGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1F8A70"/>
+      <stop offset="100%" stop-color="#3A86FF"/>
+    </linearGradient>
+  </defs>
+  <g id="background">
+    <rect x="0" y="0" width="1280" height="720" fill="#FBFFF7"/>
+    <rect x="42" y="118" width="500" height="548" rx="32" fill="#EAF7EF"/>
+    <circle cx="462" cy="156" r="88" fill="#FFB703" fill-opacity="0.18"/>
+  </g>
+  <g id="header">
+    <text x="596" y="82" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="34" font-weight="800" fill="#182026">首页只服务一个问题</text>
+    <text x="596" y="116" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" font-weight="700" fill="#4D5A57">用户打开首页时，系统应当帮助他快速决定吃什么。</text>
+    <text x="1224" y="72" text-anchor="end" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="11" fill="#74807C">06 / 16</text>
+  </g>
+  <g id="phone-mockup">
+    <rect x="170" y="104" width="248" height="520" rx="42" fill="#182026"/>
+    <rect x="188" y="126" width="212" height="476" rx="30" fill="#FFFFFF"/>
+    <rect x="253" y="142" width="82" height="7" rx="3.5" fill="#74807C"/>
+    <circle cx="215" cy="176" r="18" fill="#EAF7EF"/>
+    <use data-icon="phosphor-duotone/student" x="203" y="164" width="24" height="24" fill="#1F8A70"/>
+    <text x="246" y="180" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" font-weight="800" fill="#182026">中午好，今天吃点什么？</text>
+    <rect x="210" y="206" width="168" height="32" rx="16" fill="#EAF7EF" stroke="#BFD9CC" stroke-width="1"/>
+    <text x="232" y="227" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="11" fill="#4D5A57">搜索菜品、商家、地点</text>
+    <g id="phone-filter-row">
+      <rect x="210" y="256" width="48" height="24" rx="12" fill="#1F8A70"/>
+      <text x="234" y="272" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="10" font-weight="700" fill="#FFFFFF">微辣</text>
+      <rect x="266" y="256" width="58" height="24" rx="12" fill="#EAF7EF"/>
+      <text x="295" y="272" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="10" fill="#1F8A70">20元内</text>
+      <rect x="332" y="256" width="46" height="24" rx="12" fill="#EAF7EF"/>
+      <text x="355" y="272" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="10" fill="#1F8A70">图书馆</text>
+    </g>
+    <g id="recommend-card-main">
+      <rect x="210" y="304" width="168" height="150" rx="20" fill="#FBFFF7" stroke="#BFD9CC" stroke-width="1.2"/>
+      <rect x="226" y="322" width="54" height="54" rx="16" fill="#FFB703" fill-opacity="0.24"/>
+      <use data-icon="phosphor-duotone/bowl-food" x="240" y="336" width="26" height="26" fill="#FFB703"/>
+      <text x="294" y="342" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" font-weight="800" fill="#182026">藤椒鸡双拼饭</text>
+      <text x="294" y="362" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="10" fill="#4D5A57">二食堂 · 4.7 · ¥18</text>
+      <rect x="226" y="392" width="136" height="34" rx="12" fill="#EAF7EF"/>
+      <text x="238" y="413" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="10" font-weight="700" fill="#1F8A70">匹配你的微辣偏好</text>
+    </g>
+    <rect x="210" y="470" width="168" height="48" rx="16" fill="#EAF7EF"/>
+    <text x="230" y="500" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="11" fill="#4D5A57">更多推荐继续加载</text>
+    <line x1="216" y1="552" x2="372" y2="552" stroke="#DCEBE3" stroke-width="1.5"/>
+    <use data-icon="phosphor-duotone/device-mobile" x="214" y="562" width="24" height="24" fill="#1F8A70"/>
+    <use data-icon="phosphor-duotone/map-pin" x="280" y="562" width="24" height="24" fill="#74807C"/>
+    <use data-icon="phosphor-duotone/chat-circle" x="346" y="562" width="24" height="24" fill="#74807C"/>
+  </g>
+  <g id="insight-main">
+    <rect x="596" y="170" width="586" height="110" rx="24" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
+    <use data-icon="phosphor-duotone/fork-knife" x="626" y="200" width="42" height="42" fill="#1F8A70"/>
+    <text x="690" y="213" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="22" font-weight="800" fill="#182026">不是推荐“地点”，而是推进一次决策</text>
+    <text x="690" y="248" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="17" fill="#4D5A57">首页信息层级围绕菜品卡片展开，让用户马上看到可执行答案。</text>
+  </g>
+  <g id="card-search-filter">
+    <rect x="596" y="318" width="586" height="86" rx="22" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
+    <rect x="626" y="340" width="44" height="44" rx="14" fill="#EAF7EF"/>
+    <use data-icon="phosphor-duotone/list-checks" x="636" y="350" width="24" height="24" fill="#1F8A70"/>
+    <text x="690" y="354" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="20" font-weight="800" fill="#182026">搜索与二级筛选</text>
+    <text x="690" y="382" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#4D5A57">关键词、品类、地点、预算共同收敛候选。</text>
+  </g>
+  <g id="card-recommend">
+    <rect x="596" y="426" width="586" height="86" rx="22" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
+    <rect x="626" y="448" width="44" height="44" rx="14" fill="#EAF7EF"/>
+    <use data-icon="phosphor-duotone/bowl-food" x="636" y="458" width="24" height="24" fill="#FFB703"/>
+    <text x="690" y="462" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="20" font-weight="800" fill="#182026">推荐卡片可直接行动</text>
+    <text x="690" y="490" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#4D5A57">菜名、商家、评分、价格、收藏入口在同一张卡内。</text>
+  </g>
+  <g id="card-reason">
+    <rect x="596" y="534" width="586" height="86" rx="22" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
+    <rect x="626" y="556" width="44" height="44" rx="14" fill="#EAF7EF"/>
+    <use data-icon="phosphor-duotone/sparkle" x="636" y="566" width="24" height="24" fill="#3A86FF"/>
+    <text x="690" y="570" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="20" font-weight="800" fill="#182026">理由让推荐可信</text>
+    <text x="690" y="598" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#4D5A57">DeepSeek 生成简短理由，但对象仍来自数据库合法候选。</text>
+  </g>
+</svg>

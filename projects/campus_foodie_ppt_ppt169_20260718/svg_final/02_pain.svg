@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <defs>
+    <linearGradient id="softBand" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#EAF7EF" />
+      <stop offset="100%" stop-color="#FBFFF7" />
+    </linearGradient>
+  </defs>
+  <g id="background">
+    <rect x="0" y="0" width="1280" height="720" fill="#FBFFF7" />
+    <path fill="url(#softBand)" d="M-20,130 H510 A60,60 0 0 1 570,190 V500 A60,60 0 0 1 510,560 H-20 A60,60 0 0 1 -80,500 V190 A60,60 0 0 1 -20,130 Z" />
+    <circle cx="1088" cy="562" r="210" fill="#FFB703" fill-opacity="0.12" />
+    <circle cx="1040" cy="150" r="120" fill="#3A86FF" fill-opacity="0.10" />
+  </g>
+  <g id="header">
+    <text x="56" y="78" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" font-weight="700" fill="#1F8A70" letter-spacing="2">BACKGROUND AND PAIN</text>
+    <text x="1224" y="78" text-anchor="end" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="11" fill="#74807C">02 / 16</text>
+  </g>
+  <g id="hero-question">
+    
+  <g transform="translate(80, 160) scale(0.296875)" fill="#E45858">
+    <path d="M215.46,216H40.54C27.92,216,20,202.79,26.13,192.09L113.59,40.22c6.3-11,22.52-11,28.82,0l87.46,151.87C236,202.79,228.08,216,215.46,216Z" opacity="0.2" />
+    <path d="M236.8,188.09,149.35,36.22h0a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM222.93,203.8a8.5,8.5,0,0,1-7.48,4.2H40.55a8.5,8.5,0,0,1-7.48-4.2,7.59,7.59,0,0,1,0-7.72L120.52,44.21a8.75,8.75,0,0,1,15,0l87.45,151.87A7.59,7.59,0,0,1,222.93,203.8ZM120,144V104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm20,36a12,12,0,1,1-12-12A12,12,0,0,1,140,180Z" />
+  </g>
+    <text font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="64" font-weight="800" fill="#182026" x="80" y="294">选择太多，</text><text font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="64" font-weight="800" fill="#182026" x="80" y="376">也是一种成本</text><text x="84" y="466" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="24" font-weight="700" fill="#1F8A70">校园餐饮不是缺信息，而是缺一条能快速做决定的路径。</text>
+  </g>
+  <g id="pain-chip-info">
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="2" d="M736,150 H1064 A31,31 0 0 1 1095,181 V181 A31,31 0 0 1 1064,212 H736 A31,31 0 0 1 705,181 V181 A31,31 0 0 1 736,150 Z" />
+    <text x="740" y="190" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="20" font-weight="700" fill="#182026">信息分散</text>
+    <text x="872" y="190" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#4D5A57">食堂、档口、菜品散在不同入口</text>
+  </g>
+  <g id="pain-chip-choice">
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="2" d="M851,250 H1143 A31,31 0 0 1 1174,281 V281 A31,31 0 0 1 1143,312 H851 A31,31 0 0 1 820,281 V281 A31,31 0 0 1 851,250 Z" />
+    <text x="855" y="290" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="20" font-weight="700" fill="#182026">选择困难</text>
+    <text x="987" y="290" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#4D5A57">平台告诉你去哪，不告诉你吃啥</text>
+  </g>
+  <g id="pain-chip-personal">
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="2" d="M691,350 H1059 A31,31 0 0 1 1090,381 V381 A31,31 0 0 1 1059,412 H691 A31,31 0 0 1 660,381 V381 A31,31 0 0 1 691,350 Z" />
+    <text x="695" y="390" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="20" font-weight="700" fill="#182026">个体差异</text>
+    <text x="827" y="390" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#4D5A57">预算、忌口、口味、活动区域都不同</text>
+  </g>
+  <g id="pain-chip-review">
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="2" d="M821,450 H1143 A31,31 0 0 1 1174,481 V481 A31,31 0 0 1 1143,512 H821 A31,31 0 0 1 790,481 V481 A31,31 0 0 1 821,450 Z" />
+    <text x="825" y="490" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="20" font-weight="700" fill="#182026">评价治理</text>
+    <text x="957" y="490" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#4D5A57">内容质量需要审核和回流</text>
+  </g>
+  <g id="pain-chip-location">
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="2" d="M681,550 H975 A31,31 0 0 1 1006,581 V581 A31,31 0 0 1 975,612 H681 A31,31 0 0 1 650,581 V581 A31,31 0 0 1 681,550 Z" />
+    <text x="685" y="590" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="20" font-weight="700" fill="#182026">地点不熟</text>
+    <text x="817" y="590" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#4D5A57">新生和跨校区学生更难判断</text>
+  </g>
+  <g id="footer">
+    <text x="56" y="682" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#74807C">Hook · problem framing</text>
+  </g>
+</svg>

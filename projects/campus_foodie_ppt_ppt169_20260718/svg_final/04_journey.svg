@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <defs>
+    <marker id="arrowPrimary" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#1F8A70" />
+    </marker>
+    <linearGradient id="journeyLine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3A86FF" />
+      <stop offset="55%" stop-color="#1F8A70" />
+      <stop offset="100%" stop-color="#FFB703" />
+    </linearGradient>
+  </defs>
+  <g id="background">
+    <rect x="0" y="0" width="1280" height="720" fill="#FBFFF7" />
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" d="M68,118 H1212 A26,26 0 0 1 1238,144 V620 A26,26 0 0 1 1212,646 H68 A26,26 0 0 1 42,620 V144 A26,26 0 0 1 68,118 Z" />
+  </g>
+  <g id="header">
+    <text x="56" y="64" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="34" font-weight="800" fill="#182026">从游客到贡献者</text>
+    <text x="56" y="96" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="700" fill="#4D5A57">产品先允许轻量浏览，再在关键动作上完成身份归属。</text>
+    <text x="1224" y="72" text-anchor="end" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="11" fill="#74807C">04 / 16</text>
+  </g>
+  <g id="stage-header">
+    <path fill="#EAF7EF" d="M260,146 H410 A14,14 0 0 1 424,160 V176 A14,14 0 0 1 410,190 H260 A14,14 0 0 1 246,176 V160 A14,14 0 0 1 260,146 Z" />
+    <text x="335" y="174" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" font-weight="800" fill="#1F8A70">游客浏览</text>
+    <path fill="#EAF7EF" d="M458,146 H608 A14,14 0 0 1 622,160 V176 A14,14 0 0 1 608,190 H458 A14,14 0 0 1 444,176 V160 A14,14 0 0 1 458,146 Z" />
+    <text x="533" y="174" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" font-weight="800" fill="#1F8A70">设置偏好</text>
+    <path fill="#EAF7EF" d="M656,146 H806 A14,14 0 0 1 820,160 V176 A14,14 0 0 1 806,190 H656 A14,14 0 0 1 642,176 V160 A14,14 0 0 1 656,146 Z" />
+    <text x="731" y="174" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" font-weight="800" fill="#1F8A70">收藏商家</text>
+    <path fill="#EAF7EF" d="M854,146 H1004 A14,14 0 0 1 1018,160 V176 A14,14 0 0 1 1004,190 H854 A14,14 0 0 1 840,176 V160 A14,14 0 0 1 854,146 Z" />
+    <text x="929" y="174" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" font-weight="800" fill="#1F8A70">写评价草稿</text>
+    <path fill="#FFB703" fill-opacity="0.28" d="M1052,146 H1178 A14,14 0 0 1 1192,160 V176 A14,14 0 0 1 1178,190 H1052 A14,14 0 0 1 1038,176 V160 A14,14 0 0 1 1052,146 Z" />
+    <text x="1115" y="174" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" font-weight="800" fill="#182026">登录发布</text>
+  </g>
+  <g id="row-labels">
+    <text x="84" y="243" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="17" font-weight="800" fill="#182026">用户动作</text>
+    <text x="84" y="351" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="17" font-weight="800" fill="#182026">系统承接</text>
+    <text x="84" y="459" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="17" font-weight="800" fill="#182026">价值变化</text>
+    <text x="84" y="567" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="17" font-weight="800" fill="#182026">身份归属</text>
+  </g>
+  <g id="grid-lines">
+    <line x1="218" y1="208" x2="218" y2="614" stroke="#DCEBE3" stroke-width="1.5" />
+    <line x1="434" y1="208" x2="434" y2="614" stroke="#DCEBE3" stroke-width="1.5" stroke-dasharray="4,4" />
+    <line x1="632" y1="208" x2="632" y2="614" stroke="#DCEBE3" stroke-width="1.5" stroke-dasharray="4,4" />
+    <line x1="830" y1="208" x2="830" y2="614" stroke="#DCEBE3" stroke-width="1.5" stroke-dasharray="4,4" />
+    <line x1="1028" y1="208" x2="1028" y2="614" stroke="#DCEBE3" stroke-width="1.5" stroke-dasharray="4,4" />
+    <line x1="218" y1="310" x2="1192" y2="310" stroke="#DCEBE3" stroke-width="1.5" />
+    <line x1="218" y1="418" x2="1192" y2="418" stroke="#DCEBE3" stroke-width="1.5" />
+    <line x1="218" y1="526" x2="1192" y2="526" stroke="#DCEBE3" stroke-width="1.5" />
+  </g>
+  <g id="journey-cells">
+    <text x="246" y="242" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" fill="#4D5A57">打开首页，看推荐</text>
+    <text x="444" y="242" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" fill="#4D5A57">选择微辣、预算、区域</text>
+    <text x="642" y="242" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" fill="#4D5A57">查看地图并点星标</text>
+    <text x="840" y="242" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" fill="#4D5A57">“我也吃过”先写草稿</text>
+    <text x="1038" y="242" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" fill="#4D5A57">登录后恢复并提交</text>
+    <text x="246" y="350" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" fill="#4D5A57">游客 token 记录状态</text>
+    <text x="444" y="350" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" fill="#4D5A57">画像只保留偏好标签</text>
+    <text x="642" y="350" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" fill="#4D5A57">收藏商家而非菜品</text>
+    <text x="840" y="350" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" fill="#4D5A57">草稿等待身份绑定</text>
+    <text x="1038" y="350" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" fill="#4D5A57">幂等合并游客数据</text>
+    <text x="246" y="458" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" fill="#4D5A57">低门槛进入</text>
+    <text x="444" y="458" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" fill="#4D5A57">推荐更贴近个人</text>
+    <text x="642" y="458" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" fill="#4D5A57">下次更快找到</text>
+    <text x="840" y="458" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" fill="#4D5A57">贡献意愿不被打断</text>
+    <text x="1038" y="458" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" fill="#4D5A57">评价进入公共信息池</text>
+    <text x="246" y="566" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" fill="#74807C">匿名可用</text>
+    <text x="444" y="566" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" fill="#74807C">去标识化画像</text>
+    <text x="642" y="566" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" fill="#74807C">游客收藏</text>
+    <text x="840" y="566" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" fill="#74807C">本地草稿</text>
+    <text x="1038" y="566" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" font-weight="800" fill="#1F8A70">账号归属</text>
+  </g>
+  <g id="journey-path">
+    <path d="M 250 636 C 386 602, 484 604, 594 588 S 770 556, 872 588 S 1044 634, 1168 592" fill="none" stroke="url(#journeyLine)" stroke-width="5" stroke-linecap="round" />
+    <circle cx="250" cy="636" r="12" fill="#3A86FF" stroke="#FFFFFF" stroke-width="4" />
+    <circle cx="500" cy="604" r="12" fill="#1F8A70" stroke="#FFFFFF" stroke-width="4" />
+    <circle cx="720" cy="566" r="12" fill="#1F8A70" stroke="#FFFFFF" stroke-width="4" />
+    <circle cx="930" cy="608" r="12" fill="#FFB703" stroke="#FFFFFF" stroke-width="4" />
+    <circle cx="1168" cy="592" r="12" fill="#FFB703" stroke="#FFFFFF" stroke-width="4" />
+  </g>
+  <g id="persona-strip">
+    <path fill="#EAF7EF" d="M92,128 H178 A20,20 0 0 1 198,148 V174 A20,20 0 0 1 178,194 H92 A20,20 0 0 1 72,174 V148 A20,20 0 0 1 92,128 Z" />
+    
+  <g transform="translate(92, 146) scale(0.117188)" fill="#1F8A70">
+    <path d="M224,64,128,96,32,64l96-32Z" opacity="0.2" />
+    <path d="M226.53,56.41l-96-32a8,8,0,0,0-5.06,0l-96,32a8,8,0,0,0-5.4,6.75A5,5,0,0,0,24,64v80a8,8,0,0,0,16,0V75.1L73.59,86.29a64,64,0,0,0,20.65,88.05c-18,7.06-33.56,19.83-44.94,37.29a8,8,0,1,0,13.4,8.74C77.77,197.25,101.57,184,128,184s50.23,13.25,65.3,36.37a8,8,0,0,0,13.4-8.74c-11.38-17.46-27-30.23-44.94-37.29a64,64,0,0,0,20.65-88l44.12-14.7a8,8,0,0,0,0-15.18ZM176,120A48,48,0,1,1,89.35,91.55l36.12,12a8,8,0,0,0,5.06,0l36.12-12A47.89,47.89,0,0,1,176,120ZM128,87.57,57.3,64,128,40.43,198.7,64Z" />
+  </g>
+    <text x="132" y="166" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="800" fill="#182026">学生旅程</text>
+    
+  <g transform="translate(164, 222) scale(0.109375)" fill="#3A86FF">
+    <path d="M160,200l-32,32L96,200Z" opacity="0.2" />
+    <path d="M184,32a8,8,0,0,0-8,8v60.69l-48,48-48-48V40a8,8,0,0,0-16,0v64a8,8,0,0,0,2.34,5.66L120,163.31V192H96a8,8,0,0,0-5.66,13.66l32,32a8,8,0,0,0,11.32,0l32-32A8,8,0,0,0,160,192H136V163.31l53.66-53.65A8,8,0,0,0,192,104V40A8,8,0,0,0,184,32ZM128,220.69,115.31,208h25.38Z" />
+  </g>
+    
+  <g transform="translate(164, 548) scale(0.109375)" fill="#1F8A70">
+    <path d="M224,200a24,24,0,1,1-24-24A24,24,0,0,1,224,200Z" opacity="0.2" />
+    <path d="M200,168a32.06,32.06,0,0,0-31,24H72a32,32,0,0,1,0-64h96a40,40,0,0,0,0-80H72a8,8,0,0,0,0,16h96a24,24,0,0,1,0,48H72a48,48,0,0,0,0,96h97a32,32,0,1,0,31-40Zm0,48a16,16,0,1,1,16-16A16,16,0,0,1,200,216Z" />
+  </g>
+  </g>
+</svg>

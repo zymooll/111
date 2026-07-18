@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <g id="background">
+    <rect x="0" y="0" width="1280" height="720" fill="#FBFFF7"/>
+    <rect x="36" y="112" width="1208" height="548" rx="30" fill="#EAF7EF"/>
+  </g>
+  <g id="header">
+    <text x="56" y="64" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="34" font-weight="800" fill="#182026">一个闭环，四个入口</text>
+    <text x="56" y="96" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="700" fill="#4D5A57">首页、地图、评价、管理端共同组成完整餐饮决策闭环。</text>
+    <text x="1224" y="72" text-anchor="end" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="11" fill="#74807C">05 / 16</text>
+  </g>
+  <g id="card-home">
+    <rect x="80" y="150" width="540" height="220" rx="24" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
+    <text x="582" y="210" text-anchor="end" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="56" font-weight="800" fill="#1F8A70" fill-opacity="0.12">01</text>
+    <rect x="112" y="184" width="72" height="72" rx="20" fill="#EAF7EF"/>
+    <use data-icon="phosphor-duotone/device-mobile" x="130" y="202" width="36" height="36" fill="#1F8A70"/>
+    <text x="206" y="216" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="26" font-weight="800" fill="#182026">首页推荐</text>
+    <text x="206" y="250" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#1F8A70">打开即回答“今天吃什么”</text>
+    <text x="112" y="302" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" fill="#4D5A57">
+      <tspan x="112" dy="0">搜索、品类、地点和预算筛选一起服务推荐流，</tspan>
+      <tspan x="112" dy="30">卡片展示菜名、商家、评分、价格和理由。</tspan>
+    </text>
+  </g>
+  <g id="card-map">
+    <rect x="660" y="150" width="540" height="220" rx="24" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
+    <text x="1162" y="210" text-anchor="end" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="56" font-weight="800" fill="#3A86FF" fill-opacity="0.12">02</text>
+    <rect x="692" y="184" width="72" height="72" rx="20" fill="#EAF7EF"/>
+    <use data-icon="phosphor-duotone/map-pin" x="710" y="202" width="36" height="36" fill="#3A86FF"/>
+    <text x="786" y="216" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="26" font-weight="800" fill="#182026">地图发现</text>
+    <text x="786" y="250" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#3A86FF">找得到、筛得动、可降级</text>
+    <text x="692" y="302" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" fill="#4D5A57">
+      <tspan x="692" dy="0">商家点位、收藏星标和聚合星标帮助学生理解</tspan>
+      <tspan x="692" dy="30">距离；无地图 Key 时仍保留示意地图语义。</tspan>
+    </text>
+  </g>
+  <g id="card-review">
+    <rect x="80" y="410" width="540" height="220" rx="24" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
+    <text x="582" y="470" text-anchor="end" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="56" font-weight="800" fill="#FFB703" fill-opacity="0.18">03</text>
+    <rect x="112" y="444" width="72" height="72" rx="20" fill="#EAF7EF"/>
+    <use data-icon="phosphor-duotone/chat-circle" x="130" y="462" width="36" height="36" fill="#FFB703"/>
+    <text x="206" y="476" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="26" font-weight="800" fill="#182026">我也吃过</text>
+    <text x="206" y="510" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#1F8A70">体验回流成公共信息</text>
+    <text x="112" y="562" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" fill="#4D5A57">
+      <tspan x="112" dy="0">评价入口独立存在；游客可以先写草稿，提交时</tspan>
+      <tspan x="112" dy="30">再登录，图片和审核状态都可追踪。</tspan>
+    </text>
+  </g>
+  <g id="card-admin">
+    <rect x="660" y="410" width="540" height="220" rx="24" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
+    <text x="1162" y="470" text-anchor="end" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="56" font-weight="800" fill="#1F8A70" fill-opacity="0.12">04</text>
+    <rect x="692" y="444" width="72" height="72" rx="20" fill="#EAF7EF"/>
+    <use data-icon="phosphor-duotone/desktop" x="710" y="462" width="36" height="36" fill="#1F8A70"/>
+    <text x="786" y="476" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="26" font-weight="800" fill="#182026">管理端</text>
+    <text x="786" y="510" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#1F8A70">商家、菜品、评价和审计可治理</text>
+    <text x="692" y="562" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" fill="#4D5A57">
+      <tspan x="692" dy="0">独立端口与登录态支撑管理员维护数据、审核</tspan>
+      <tspan x="692" dy="30">评价、预校验 CSV，并留下审计日志。</tspan>
+    </text>
+  </g>
+  <g id="loop-label">
+    <rect x="470" y="336" width="340" height="48" rx="24" fill="#1F8A70"/>
+    <use data-icon="phosphor-duotone/arrows-merge" x="500" y="347" width="26" height="26" fill="#FFFFFF"/>
+    <text x="640" y="367" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" font-weight="800" fill="#FFFFFF">推荐 → 决策 → 评价 → 治理</text>
+  </g>
+</svg>

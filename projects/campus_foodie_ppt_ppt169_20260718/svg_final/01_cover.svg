@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <defs>
+    <linearGradient id="campusWash" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EAF7EF" />
+      <stop offset="100%" stop-color="#FBFFF7" />
+    </linearGradient>
+    <linearGradient id="heroGreen" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1F8A70" />
+      <stop offset="100%" stop-color="#3A86FF" />
+    </linearGradient>
+  </defs>
+  <g id="background">
+    <rect x="0" y="0" width="1280" height="720" fill="url(#campusWash)" />
+    <circle cx="1090" cy="120" r="170" fill="#FFB703" fill-opacity="0.16" />
+    <circle cx="170" cy="620" r="210" fill="#3A86FF" fill-opacity="0.10" />
+    <path d="M 830 0 C 1030 82 1180 236 1280 438 L 1280 0 Z" fill="#1F8A70" fill-opacity="0.08" />
+  </g>
+  <g id="decor-product-triangle">
+    <path d="M 806 208 L 1058 356 L 832 526 Z" fill="#FFFFFF" fill-opacity="0.72" stroke="#BFD9CC" stroke-width="2" />
+    <circle cx="806" cy="208" r="56" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="2" />
+    
+  <g transform="translate(778, 180) scale(0.21875)" fill="#1F8A70">
+    <path d="M208,40V168H152S152,64,208,40Z" opacity="0.2" />
+    <path d="M72,88V40a8,8,0,0,1,16,0V88a8,8,0,0,1-16,0ZM216,40V224a8,8,0,0,1-16,0V176H152a8,8,0,0,1-8-8,268.75,268.75,0,0,1,7.22-56.88c9.78-40.49,28.32-67.63,53.63-78.47A8,8,0,0,1,216,40ZM200,53.9c-32.17,24.57-38.47,84.42-39.7,106.1H200ZM119.89,38.69a8,8,0,1,0-15.78,2.63L112,88.63a32,32,0,0,1-64,0l7.88-47.31a8,8,0,1,0-15.78-2.63l-8,48A8.17,8.17,0,0,0,32,88a48.07,48.07,0,0,0,40,47.32V224a8,8,0,0,0,16,0V135.32A48.07,48.07,0,0,0,128,88a8.17,8.17,0,0,0-.11-1.31Z" />
+  </g>
+    <text x="806" y="282" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" fill="#4D5A57">吃什么</text>
+    <circle cx="1058" cy="356" r="56" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="2" />
+    
+  <g transform="translate(1030, 328) scale(0.21875)" fill="#3A86FF">
+    <path d="M128,24a80,80,0,0,0-80,80c0,72,80,128,80,128s80-56,80-128A80,80,0,0,0,128,24Zm0,112a32,32,0,1,1,32-32A32,32,0,0,1,128,136Z" opacity="0.2" />
+    <path d="M128,64a40,40,0,1,0,40,40A40,40,0,0,0,128,64Zm0,64a24,24,0,1,1,24-24A24,24,0,0,1,128,128Zm0-112a88.1,88.1,0,0,0-88,88c0,31.4,14.51,64.68,42,96.25a254.19,254.19,0,0,0,41.45,38.3,8,8,0,0,0,9.18,0A254.19,254.19,0,0,0,174,200.25c27.45-31.57,42-64.85,42-96.25A88.1,88.1,0,0,0,128,16Zm0,206c-16.53-13-72-60.75-72-118a72,72,0,0,1,144,0C200,161.23,144.53,209,128,222Z" />
+  </g>
+    <text x="1058" y="430" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" fill="#4D5A57">在哪吃</text>
+    <circle cx="832" cy="526" r="56" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="2" />
+    
+  <g transform="translate(804, 498) scale(0.21875)" fill="#FFB703">
+    <path d="M194.82,151.43l-51.66,19a7.88,7.88,0,0,0-4.69,4.69l-19,51.66a7.92,7.92,0,0,1-14.86,0l-19-51.66a7.88,7.88,0,0,0-4.69-4.69l-51.66-19a7.92,7.92,0,0,1,0-14.86l51.66-19a7.88,7.88,0,0,0,4.69-4.69l19-51.66a7.92,7.92,0,0,1,14.86,0l19,51.66a7.88,7.88,0,0,0,4.69,4.69l51.66,19A7.92,7.92,0,0,1,194.82,151.43Z" opacity="0.2" />
+    <path d="M197.58,129.06l-51.61-19-19-51.65a15.92,15.92,0,0,0-29.88,0L78.07,110l-51.65,19a15.92,15.92,0,0,0,0,29.88L78,178l19,51.62a15.92,15.92,0,0,0,29.88,0l19-51.61,51.65-19a15.92,15.92,0,0,0,0-29.88ZM140.39,163a15.87,15.87,0,0,0-9.43,9.43l-19,51.46L93,172.39A15.87,15.87,0,0,0,83.61,163h0L32.15,144l51.46-19A15.87,15.87,0,0,0,93,115.61l19-51.46,19,51.46a15.87,15.87,0,0,0,9.43,9.43l51.46,19ZM144,40a8,8,0,0,1,8-8h16V16a8,8,0,0,1,16,0V32h16a8,8,0,0,1,0,16H184V64a8,8,0,0,1-16,0V48H152A8,8,0,0,1,144,40ZM248,88a8,8,0,0,1-8,8h-8v8a8,8,0,0,1-16,0V96h-8a8,8,0,0,1,0-16h8V72a8,8,0,0,1,16,0v8h8A8,8,0,0,1,248,88Z" />
+  </g>
+    <text x="832" y="600" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" fill="#4D5A57">为什么推荐</text>
+  </g>
+  <g id="title-block">
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" d="M76,96 H254 A20,20 0 0 1 274,116 V116 A20,20 0 0 1 254,136 H76 A20,20 0 0 1 56,116 V116 A20,20 0 0 1 76,96 Z" />
+    <text x="165" y="122" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="700" fill="#1F8A70">黑客松路演</text>
+    <text x="56" y="246" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="72" font-weight="800" fill="#182026">Campus</text>
+    <text x="56" y="326" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="72" font-weight="800" fill="url(#heroGreen)">Foodie</text>
+    <text x="60" y="384" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="28" font-weight="700" fill="#182026">从“去哪吃”到“今天吃什么”</text>
+    <text font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="20" fill="#4D5A57" x="60" y="430">面向校园场景的菜品级推荐、地图发现、真实评价与后台治理闭环</text><text font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="20" fill="#4D5A57" x="60" y="464">DeepSeek 只做受约束重排，核心体验可验证、可降级、可演示</text></g>
+  <g id="hero-device-card">
+    <path fill="#182026" d="M602,138 H712 A34,34 0 0 1 746,172 V456 A34,34 0 0 1 712,490 H602 A34,34 0 0 1 568,456 V172 A34,34 0 0 1 602,138 Z" />
+    <path fill="#FFFFFF" d="M608,158 H706 A24,24 0 0 1 730,182 V446 A24,24 0 0 1 706,470 H608 A24,24 0 0 1 584,446 V182 A24,24 0 0 1 608,158 Z" />
+    <path fill="#DCEBE3" d="M617,184 H697 A9,9 0 0 1 706,193 V193 A9,9 0 0 1 697,202 H617 A9,9 0 0 1 608,193 V193 A9,9 0 0 1 617,184 Z" />
+    <path fill="#EAF7EF" d="M618,226 H696 A14,14 0 0 1 710,240 V240 A14,14 0 0 1 696,254 H618 A14,14 0 0 1 604,240 V240 A14,14 0 0 1 618,226 Z" />
+    <path fill="#FBFFF7" stroke="#BFD9CC" stroke-width="1" d="M620,270 H694 A16,16 0 0 1 710,286 V328 A16,16 0 0 1 694,344 H620 A16,16 0 0 1 604,328 V286 A16,16 0 0 1 620,270 Z" />
+    
+  <g transform="translate(616, 286) scale(0.140625)" fill="#FFB703">
+    <path d="M224,112a96,96,0,0,1-56,87.3V208a8,8,0,0,1-8,8H96a8,8,0,0,1-8-8v-8.7A96,96,0,0,1,32,112Z" opacity="0.2" />
+    <path d="M224,104h-8.37a88,88,0,0,0-175.26,0H32a8,8,0,0,0-8,8,104.35,104.35,0,0,0,56,92.28V208a16,16,0,0,0,16,16h64a16,16,0,0,0,16-16v-3.72A104.35,104.35,0,0,0,232,112,8,8,0,0,0,224,104ZM173.48,56.23q2.75,2.25,5.27,4.75a87.92,87.92,0,0,0-49.15,43H100.1A72.26,72.26,0,0,1,168,56C169.83,56,171.66,56.09,173.48,56.23Zm15.91,18.2A71.45,71.45,0,0,1,199.54,104H148.12A71.84,71.84,0,0,1,189.39,74.43ZM128,40a71.87,71.87,0,0,1,19,2.57A88.36,88.36,0,0,0,83.33,104H56.46A72.08,72.08,0,0,1,128,40Zm36.66,152A8,8,0,0,0,160,199.3V208H96v-8.7A8,8,0,0,0,91.34,192a88.29,88.29,0,0,1-51-72H215.63A88.29,88.29,0,0,1,164.66,192Z" />
+  </g>
+    <text x="660" y="304" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" font-weight="700" fill="#182026">藤椒鸡双拼饭</text>
+    <text x="660" y="326" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="11" fill="#4D5A57">微辣 · 20 元以内</text>
+    <path fill="#EAF7EF" d="M618,356 H696 A14,14 0 0 1 710,370 V400 A14,14 0 0 1 696,414 H618 A14,14 0 0 1 604,400 V370 A14,14 0 0 1 618,356 Z" />
+    <text x="618" y="383" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="12" font-weight="700" fill="#1F8A70">推荐理由</text>
+    <text x="618" y="403" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="10" fill="#4D5A57">近图书馆，口味匹配</text>
+  </g>
+  <g id="footer">
+    <line x1="56" y1="652" x2="1224" y2="652" stroke="#BFD9CC" stroke-width="1" />
+    <text x="56" y="682" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" fill="#74807C">Campus Foodie MVP · Product Pitch</text>
+    <text x="1224" y="682" text-anchor="end" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" fill="#74807C">01 / 16</text>
+  </g>
+</svg>

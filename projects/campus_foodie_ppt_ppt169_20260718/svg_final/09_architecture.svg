@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <defs>
+    <marker id="arrowReq" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#3A86FF" />
+    </marker>
+    <marker id="arrowResp" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#1F8A70" />
+    </marker>
+  </defs>
+  <g id="background">
+    <rect x="0" y="0" width="1280" height="720" fill="#FBFFF7" />
+  </g>
+  <g id="header">
+    <text x="56" y="62" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="34" font-weight="800" fill="#182026">模块化单体，边界清晰</text>
+    <text x="56" y="94" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="700" fill="#4D5A57">初版用前后端分离保证开发效率，同时保留服务拆分边界。</text>
+    <text x="1224" y="72" text-anchor="end" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="11" fill="#74807C">09 / 16</text>
+  </g>
+  <g id="client-zone">
+    <path fill="#EAF7EF" stroke="#BFD9CC" stroke-width="1.5" d="M80,130 H324 A24,24 0 0 1 348,154 V586 A24,24 0 0 1 324,610 H80 A24,24 0 0 1 56,586 V154 A24,24 0 0 1 80,130 Z" />
+    <path fill="#3A86FF" d="M80,130 H324 A24,24 0 0 1 348,154 V154 A24,24 0 0 1 324,178 H80 A24,24 0 0 1 56,154 V154 A24,24 0 0 1 80,130 Z" />
+    <rect x="56" y="154" width="292" height="24" fill="#3A86FF" />
+    <text x="202" y="162" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="800" fill="#FFFFFF">CLIENTS</text>
+    <g id="client-user">
+      <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1" d="M104,220 H300 A18,18 0 0 1 318,238 V320 A18,18 0 0 1 300,338 H104 A18,18 0 0 1 86,320 V238 A18,18 0 0 1 104,220 Z" />
+      
+  <g transform="translate(110, 246) scale(0.148438)" fill="#3A86FF">
+    <path d="M192,56V200H64V56Z" opacity="0.2" />
+    <path d="M176,16H80A24,24,0,0,0,56,40V216a24,24,0,0,0,24,24h96a24,24,0,0,0,24-24V40A24,24,0,0,0,176,16ZM72,64H184V192H72Zm8-32h96a8,8,0,0,1,8,8v8H72V40A8,8,0,0,1,80,32Zm96,192H80a8,8,0,0,1-8-8v-8H184v8A8,8,0,0,1,176,224Z" />
+  </g>
+      <text x="164" y="256" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" font-weight="800" fill="#182026">用户端 React PWA</text>
+      <text x="164" y="284" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" fill="#4D5A57">端口 5173</text>
+      <text x="110" y="318" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#74807C">推荐、搜索、地图、评价、我的</text>
+    </g>
+    <g id="client-admin">
+      <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1" d="M104,388 H300 A18,18 0 0 1 318,406 V488 A18,18 0 0 1 300,506 H104 A18,18 0 0 1 86,488 V406 A18,18 0 0 1 104,388 Z" />
+      
+  <g transform="translate(110, 414) scale(0.148438)" fill="#1F8A70">
+    <path d="M224,64v88H32V64A16,16,0,0,1,48,48H208A16,16,0,0,1,224,64Z" opacity="0.2" />
+    <path d="M208,40H48A24,24,0,0,0,24,64V176a24,24,0,0,0,24,24h72v16H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16H136V200h72a24,24,0,0,0,24-24V64A24,24,0,0,0,208,40ZM48,56H208a8,8,0,0,1,8,8v80H40V64A8,8,0,0,1,48,56ZM208,184H48a8,8,0,0,1-8-8V160H216v16A8,8,0,0,1,208,184Z" />
+  </g>
+      <text x="164" y="424" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" font-weight="800" fill="#182026">管理端 React Web</text>
+      <text x="164" y="452" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" fill="#4D5A57">端口 5174</text>
+      <text x="110" y="486" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#74807C">用户、商家、菜品、审核、导入</text>
+    </g>
+  </g>
+  <g id="api-zone">
+    <path fill="#FFFFFF" stroke="#1F8A70" stroke-width="3" d="M524,194 H756 A28,28 0 0 1 784,222 V518 A28,28 0 0 1 756,546 H524 A28,28 0 0 1 496,518 V222 A28,28 0 0 1 524,194 Z" />
+    <path fill="#EAF7EF" d="M554,228 H586 A24,24 0 0 1 610,252 V284 A24,24 0 0 1 586,308 H554 A24,24 0 0 1 530,284 V252 A24,24 0 0 1 554,228 Z" />
+    
+  <g transform="translate(550, 248) scale(0.15625)" fill="#1F8A70">
+    <path d="M230.1,108.76,198.25,90.62c-.64-1.16-1.31-2.29-2-3.41l-.12-36A104.61,104.61,0,0,0,162,32L130,49.89c-1.34,0-2.69,0-4,0L94,32A104.58,104.58,0,0,0,59.89,51.25l-.16,36c-.7,1.12-1.37,2.26-2,3.41l-31.84,18.1a99.15,99.15,0,0,0,0,38.46l31.85,18.14c.64,1.16,1.31,2.29,2,3.41l.12,36A104.61,104.61,0,0,0,94,224l32-17.87c1.34,0,2.69,0,4,0L162,224a104.58,104.58,0,0,0,34.08-19.25l.16-36c.7-1.12,1.37-2.26,2-3.41l31.84-18.1A99.15,99.15,0,0,0,230.1,108.76ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z" opacity="0.2" />
+    <path d="M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm109.94-52.79a8,8,0,0,0-3.89-5.4l-29.83-17-.12-33.62a8,8,0,0,0-2.83-6.08,111.91,111.91,0,0,0-36.72-20.67,8,8,0,0,0-6.46.59L128,41.85,97.88,25a8,8,0,0,0-6.47-.6A111.92,111.92,0,0,0,54.73,45.15a8,8,0,0,0-2.83,6.07l-.15,33.65-29.83,17a8,8,0,0,0-3.89,5.4,106.47,106.47,0,0,0,0,41.56,8,8,0,0,0,3.89,5.4l29.83,17,.12,33.63a8,8,0,0,0,2.83,6.08,111.91,111.91,0,0,0,36.72,20.67,8,8,0,0,0,6.46-.59L128,214.15,158.12,231a7.91,7.91,0,0,0,3.9,1,8.09,8.09,0,0,0,2.57-.42,112.1,112.1,0,0,0,36.68-20.73,8,8,0,0,0,2.83-6.07l.15-33.65,29.83-17a8,8,0,0,0,3.89-5.4A106.47,106.47,0,0,0,237.94,107.21Zm-15,34.91-28.57,16.25a8,8,0,0,0-3,3c-.58,1-1.19,2.06-1.81,3.06a7.94,7.94,0,0,0-1.22,4.21l-.15,32.25a95.89,95.89,0,0,1-25.37,14.3L134,199.13a8,8,0,0,0-3.91-1h-.19c-1.21,0-2.43,0-3.64,0a8.1,8.1,0,0,0-4.1,1l-28.84,16.1A96,96,0,0,1,67.88,201l-.11-32.2a8,8,0,0,0-1.22-4.22c-.62-1-1.23-2-1.8-3.06a8.09,8.09,0,0,0-3-3.06l-28.6-16.29a90.49,90.49,0,0,1,0-28.26L61.67,97.63a8,8,0,0,0,3-3c.58-1,1.19-2.06,1.81-3.06a7.94,7.94,0,0,0,1.22-4.21l.15-32.25a95.89,95.89,0,0,1,25.37-14.3L122,56.87a8,8,0,0,0,4.1,1c1.21,0,2.43,0,3.64,0a8,8,0,0,0,4.1-1l28.84-16.1A96,96,0,0,1,188.12,55l.11,32.2a8,8,0,0,0,1.22,4.22c.62,1,1.23,2,1.8,3.06a8.09,8.09,0,0,0,3,3.06l28.6,16.29A90.49,90.49,0,0,1,222.9,142.12Z" />
+  </g>
+    <text x="632" y="258" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="24" font-weight="800" fill="#182026">FastAPI</text>
+    <text x="632" y="292" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" fill="#4D5A57">模块化 API · 端口 8000</text>
+    <line x1="532" y1="334" x2="748" y2="334" stroke="#DCEBE3" stroke-width="2" />
+    <text x="532" y="370" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" fill="#4D5A57">认证 / 推荐 / 地图 / 评价</text>
+    <text x="532" y="402" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" fill="#4D5A57">目录 / 收藏 / 个人中心</text>
+    <text x="532" y="434" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" fill="#4D5A57">管理接口 /admin/api/v1</text>
+    <path fill="#EAF7EF" d="M551,472 H729 A19,19 0 0 1 748,491 V491 A19,19 0 0 1 729,510 H551 A19,19 0 0 1 532,491 V491 A19,19 0 0 1 551,472 Z" />
+    <text x="640" y="496" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" font-weight="800" fill="#1F8A70">共享业务库，校园和权限隔离</text>
+  </g>
+  <g id="server-zone">
+    <path fill="#EAF7EF" stroke="#BFD9CC" stroke-width="1.5" d="M956,130 H1200 A24,24 0 0 1 1224,154 V586 A24,24 0 0 1 1200,610 H956 A24,24 0 0 1 932,586 V154 A24,24 0 0 1 956,130 Z" />
+    <path fill="#1F8A70" d="M956,130 H1200 A24,24 0 0 1 1224,154 V154 A24,24 0 0 1 1200,178 H956 A24,24 0 0 1 932,154 V154 A24,24 0 0 1 956,130 Z" />
+    <rect x="932" y="154" width="292" height="24" fill="#1F8A70" />
+    <text x="1078" y="162" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="800" fill="#FFFFFF">DATA AND SERVICES</text>
+    <g id="service-db">
+      <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1" d="M978,206 H1178 A16,16 0 0 1 1194,222 V262 A16,16 0 0 1 1178,278 H978 A16,16 0 0 1 962,262 V222 A16,16 0 0 1 978,206 Z" />
+      
+  <g transform="translate(984, 224) scale(0.132812)" fill="#1F8A70">
+    <path d="M216,80c0,26.51-39.4,48-88,48S40,106.51,40,80s39.4-48,88-48S216,53.49,216,80Z" opacity="0.2" />
+    <path d="M128,24C74.17,24,32,48.6,32,80v96c0,31.4,42.17,56,96,56s96-24.6,96-56V80C224,48.6,181.83,24,128,24Zm80,104c0,9.62-7.88,19.43-21.61,26.92C170.93,163.35,150.19,168,128,168s-42.93-4.65-58.39-13.08C55.88,147.43,48,137.62,48,128V111.36c17.06,15,46.23,24.64,80,24.64s62.94-9.68,80-24.64ZM69.61,53.08C85.07,44.65,105.81,40,128,40s42.93,4.65,58.39,13.08C200.12,60.57,208,70.38,208,80s-7.88,19.43-21.61,26.92C170.93,115.35,150.19,120,128,120s-42.93-4.65-58.39-13.08C55.88,99.43,48,89.62,48,80S55.88,60.57,69.61,53.08ZM186.39,202.92C170.93,211.35,150.19,216,128,216s-42.93-4.65-58.39-13.08C55.88,195.43,48,185.62,48,176V159.36c17.06,15,46.23,24.64,80,24.64s62.94-9.68,80-24.64V176C208,185.62,200.12,195.43,186.39,202.92Z" />
+  </g>
+      <text x="1030" y="234" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="800" fill="#182026">SQLite / PostgreSQL</text>
+      <text x="1030" y="258" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="12" fill="#74807C">开发存储与生产扩展</text>
+    </g>
+    <g id="service-ai">
+      <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1" d="M978,302 H1178 A16,16 0 0 1 1194,318 V358 A16,16 0 0 1 1178,374 H978 A16,16 0 0 1 962,358 V318 A16,16 0 0 1 978,302 Z" />
+      
+  <g transform="translate(984, 320) scale(0.132812)" fill="#3A86FF">
+    <path d="M240,124a48,48,0,0,1-32,45.27h0V176a40,40,0,0,1-80,0,40,40,0,0,1-80,0v-6.73h0a48,48,0,0,1,0-90.54V72a40,40,0,0,1,80,0,40,40,0,0,1,80,0v6.73A48,48,0,0,1,240,124Z" opacity="0.2" />
+    <path d="M248,124a56.11,56.11,0,0,0-32-50.61V72a48,48,0,0,0-88-26.49A48,48,0,0,0,40,72v1.39a56,56,0,0,0,0,101.2V176a48,48,0,0,0,88,26.49A48,48,0,0,0,216,176v-1.41A56.09,56.09,0,0,0,248,124ZM88,208a32,32,0,0,1-31.81-28.56A55.87,55.87,0,0,0,64,180h8a8,8,0,0,0,0-16H64A40,40,0,0,1,50.67,86.27,8,8,0,0,0,56,78.73V72a32,32,0,0,1,64,0v68.26A47.8,47.8,0,0,0,88,128a8,8,0,0,0,0,16,32,32,0,0,1,0,64Zm104-44h-8a8,8,0,0,0,0,16h8a55.87,55.87,0,0,0,7.81-.56A32,32,0,1,1,168,144a8,8,0,0,0,0-16,47.8,47.8,0,0,0-32,12.26V72a32,32,0,0,1,64,0v6.73a8,8,0,0,0,5.33,7.54A40,40,0,0,1,192,164Zm16-52a8,8,0,0,1-8,8h-4a36,36,0,0,1-36-36V80a8,8,0,0,1,16,0v4a20,20,0,0,0,20,20h4A8,8,0,0,1,208,112ZM60,120H56a8,8,0,0,1,0-16h4A20,20,0,0,0,80,84V80a8,8,0,0,1,16,0v4A36,36,0,0,1,60,120Z" />
+  </g>
+      <text x="1030" y="330" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="800" fill="#182026">DeepSeek API</text>
+      <text x="1030" y="354" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="12" fill="#74807C">推荐重排与审核辅助</text>
+    </g>
+    <g id="service-map">
+      <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1" d="M978,398 H1178 A16,16 0 0 1 1194,414 V454 A16,16 0 0 1 1178,470 H978 A16,16 0 0 1 962,454 V414 A16,16 0 0 1 978,398 Z" />
+      
+  <g transform="translate(984, 416) scale(0.132812)" fill="#FFB703">
+    <path d="M128,24a80,80,0,0,0-80,80c0,72,80,128,80,128s80-56,80-128A80,80,0,0,0,128,24Zm0,112a32,32,0,1,1,32-32A32,32,0,0,1,128,136Z" opacity="0.2" />
+    <path d="M128,64a40,40,0,1,0,40,40A40,40,0,0,0,128,64Zm0,64a24,24,0,1,1,24-24A24,24,0,0,1,128,128Zm0-112a88.1,88.1,0,0,0-88,88c0,31.4,14.51,64.68,42,96.25a254.19,254.19,0,0,0,41.45,38.3,8,8,0,0,0,9.18,0A254.19,254.19,0,0,0,174,200.25c27.45-31.57,42-64.85,42-96.25A88.1,88.1,0,0,0,128,16Zm0,206c-16.53-13-72-60.75-72-118a72,72,0,0,1,144,0C200,161.23,144.53,209,128,222Z" />
+  </g>
+      <text x="1030" y="426" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="800" fill="#182026">地图与图片存储</text>
+      <text x="1030" y="450" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="12" fill="#74807C">高德 Key 可选，失败可降级</text>
+    </g>
+    <g id="service-mail">
+      <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1" d="M978,494 H1178 A16,16 0 0 1 1194,510 V550 A16,16 0 0 1 1178,566 H978 A16,16 0 0 1 962,550 V510 A16,16 0 0 1 978,494 Z" />
+      
+  <g transform="translate(984, 512) scale(0.132812)" fill="#22A06B">
+    <path d="M240,128a80,80,0,0,1-80,80H72A56,56,0,1,1,85.92,97.74l0,.1A80,80,0,0,1,240,128Z" opacity="0.2" />
+    <path d="M160,40A88.09,88.09,0,0,0,81.29,88.67,64,64,0,1,0,72,216h88a88,88,0,0,0,0-176Zm0,160H72a48,48,0,0,1,0-96c1.1,0,2.2,0,3.29.11A88,88,0,0,0,72,128a8,8,0,0,0,16,0,72,72,0,1,1,72,72Zm37.66-93.66a8,8,0,0,1,0,11.32l-48,48a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L144,148.69l42.34-42.35A8,8,0,0,1,197.66,106.34Z" />
+  </g>
+      <text x="1030" y="522" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="800" fill="#182026">SMTP / Mailpit</text>
+      <text x="1030" y="546" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="12" fill="#74807C">邮箱验证与密码找回</text>
+    </g>
+  </g>
+  <g id="interactions">
+    <line x1="348" y1="276" x2="492" y2="276" stroke="#3A86FF" stroke-width="3" marker-end="url(#arrowReq)" />
+    <path fill="#FFFFFF" stroke="#3A86FF" stroke-width="1" d="M388,244 H460 A12,12 0 0 1 472,256 V256 A12,12 0 0 1 460,268 H388 A12,12 0 0 1 376,256 V256 A12,12 0 0 1 388,244 Z" />
+    <text x="424" y="261" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="12" font-weight="800" fill="#3A86FF">/api/v1</text>
+    <line x1="348" y1="444" x2="492" y2="444" stroke="#3A86FF" stroke-width="3" marker-end="url(#arrowReq)" />
+    <path fill="#FFFFFF" stroke="#3A86FF" stroke-width="1" d="M372,412 H478 A12,12 0 0 1 490,424 V424 A12,12 0 0 1 478,436 H372 A12,12 0 0 1 360,424 V424 A12,12 0 0 1 372,412 Z" />
+    <text x="425" y="429" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="12" font-weight="800" fill="#3A86FF">/admin/api/v1</text>
+    <line x1="784" y1="276" x2="928" y2="276" stroke="#1F8A70" stroke-width="3" marker-end="url(#arrowResp)" />
+    <path fill="#FFFFFF" stroke="#1F8A70" stroke-width="1" d="M822,244 H890 A12,12 0 0 1 902,256 V256 A12,12 0 0 1 890,268 H822 A12,12 0 0 1 810,256 V256 A12,12 0 0 1 822,244 Z" />
+    <text x="856" y="261" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="12" font-weight="800" fill="#1F8A70">读写数据</text>
+    <line x1="784" y1="368" x2="928" y2="368" stroke="#3A86FF" stroke-width="3" marker-end="url(#arrowReq)" />
+    <path fill="#FFFFFF" stroke="#3A86FF" stroke-width="1" d="M814,336 H898 A12,12 0 0 1 910,348 V348 A12,12 0 0 1 898,360 H814 A12,12 0 0 1 802,348 V348 A12,12 0 0 1 814,336 Z" />
+    <text x="856" y="353" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="12" font-weight="800" fill="#3A86FF">AI 重排审核</text>
+    <line x1="784" y1="458" x2="928" y2="458" stroke="#1F8A70" stroke-width="3" marker-end="url(#arrowResp)" />
+    <path fill="#FFFFFF" stroke="#1F8A70" stroke-width="1" d="M816,426 H896 A12,12 0 0 1 908,438 V438 A12,12 0 0 1 896,450 H816 A12,12 0 0 1 804,438 V438 A12,12 0 0 1 816,426 Z" />
+    <text x="856" y="443" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="12" font-weight="800" fill="#1F8A70">可选增强</text>
+  </g>
+  <g id="footer">
+    <text x="56" y="682" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#74807C">Blue = request / enhancement · Green = data or stable response</text>
+  </g>
+</svg>

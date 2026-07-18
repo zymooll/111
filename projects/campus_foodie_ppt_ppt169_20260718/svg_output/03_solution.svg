@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <defs>
+    <linearGradient id="heroGreen" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1F8A70"/>
+      <stop offset="100%" stop-color="#3A86FF"/>
+    </linearGradient>
+    <marker id="arrowPrimary" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#1F8A70"/>
+    </marker>
+  </defs>
+  <g id="background">
+    <rect x="0" y="0" width="1280" height="720" fill="#FBFFF7"/>
+    <circle cx="640" cy="370" r="300" fill="#EAF7EF"/>
+    <circle cx="1020" cy="146" r="95" fill="#FFB703" fill-opacity="0.14"/>
+  </g>
+  <g id="header">
+    <text x="56" y="78" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" font-weight="700" fill="#1F8A70" letter-spacing="2">SOLUTION</text>
+    <text x="1224" y="78" text-anchor="end" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="11" fill="#74807C">03 / 16</text>
+  </g>
+  <g id="title-block">
+    <text x="640" y="156" text-anchor="middle" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="58" font-weight="800" fill="#182026">直接推荐具体菜品</text>
+    <text x="640" y="204" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="22" font-weight="700" fill="#4D5A57">把推荐主体从“商家”前移到“菜品或套餐”，缩短决策链路。</text>
+  </g>
+  <g id="before-block">
+    <rect x="86" y="286" width="390" height="238" rx="30" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="2"/>
+    <rect x="116" y="318" width="82" height="82" rx="24" fill="#EAF7EF"/>
+    <use data-icon="phosphor-duotone/storefront" x="137" y="339" width="40" height="40" fill="#74807C"/>
+    <text x="224" y="350" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="26" font-weight="800" fill="#182026">传统路径</text>
+    <text x="224" y="386" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" fill="#4D5A57">先找商家，再翻菜单</text>
+    <line x1="128" y1="438" x2="430" y2="438" stroke="#DCEBE3" stroke-width="2"/>
+    <text x="128" y="472" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" fill="#4D5A57">“这家好像不错”</text>
+    <text x="128" y="506" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" fill="#4D5A57">但还要继续决定吃什么</text>
+  </g>
+  <g id="arrow-shift">
+    <line x1="508" y1="405" x2="760" y2="405" stroke="#1F8A70" stroke-width="5" stroke-linecap="round" marker-end="url(#arrowPrimary)"/>
+    <rect x="558" y="366" width="148" height="34" rx="17" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
+    <text x="632" y="389" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" font-weight="700" fill="#1F8A70">决策前移</text>
+  </g>
+  <g id="after-block">
+    <rect x="804" y="264" width="390" height="284" rx="34" fill="#FFFFFF" stroke="#1F8A70" stroke-width="3"/>
+    <rect x="836" y="300" width="90" height="90" rx="28" fill="#FFB703" fill-opacity="0.20"/>
+    <use data-icon="phosphor-duotone/bowl-food" x="858" y="322" width="46" height="46" fill="#FFB703"/>
+    <text x="952" y="338" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="28" font-weight="800" fill="#182026">Campus Foodie</text>
+    <text x="952" y="376" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" fill="#4D5A57">直接给出菜品级候选和理由</text>
+    <line x1="846" y1="426" x2="1152" y2="426" stroke="#DCEBE3" stroke-width="2"/>
+    <text x="846" y="464" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="20" font-weight="700" fill="#1F8A70">藤椒鸡双拼饭</text>
+    <text x="846" y="498" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="17" fill="#4D5A57">微辣、预算匹配、靠近图书馆</text>
+    <text x="846" y="528" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="17" fill="#4D5A57">可查看地图、评价并收藏所属商家</text>
+  </g>
+  <g id="capability-strip">
+    <rect x="238" y="596" width="804" height="52" rx="26" fill="url(#heroGreen)"/>
+    <use data-icon="phosphor-duotone/map-pin" x="270" y="608" width="28" height="28" fill="#FFFFFF"/>
+    <text x="310" y="630" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="17" font-weight="700" fill="#FFFFFF">地图发现</text>
+    <use data-icon="phosphor-duotone/chat-circle" x="450" y="608" width="28" height="28" fill="#FFFFFF"/>
+    <text x="490" y="630" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="17" font-weight="700" fill="#FFFFFF">真实评价</text>
+    <use data-icon="phosphor-duotone/desktop" x="630" y="608" width="28" height="28" fill="#FFFFFF"/>
+    <text x="670" y="630" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="17" font-weight="700" fill="#FFFFFF">后台治理</text>
+    <use data-icon="phosphor-duotone/brain" x="810" y="608" width="28" height="28" fill="#FFFFFF"/>
+    <text x="850" y="630" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="17" font-weight="700" fill="#FFFFFF">受约束 AI</text>
+  </g>
+</svg>

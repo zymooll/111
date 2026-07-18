@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <defs>
+    <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#3A86FF"/>
+    </marker>
+  </defs>
+  <g id="background">
+    <rect x="0" y="0" width="1280" height="720" fill="#FBFFF7"/>
+    <rect x="54" y="126" width="1172" height="520" rx="32" fill="#EAF7EF"/>
+    <circle cx="650" cy="384" r="250" fill="#FFFFFF" fill-opacity="0.56"/>
+  </g>
+  <g id="header">
+    <text x="56" y="72" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="34" font-weight="800" fill="#182026">找得到，也评得上</text>
+    <text x="56" y="104" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="700" fill="#4D5A57">地图解决位置问题，评价入口让消费体验回流成公共信息。</text>
+    <text x="1224" y="72" text-anchor="end" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="11" fill="#74807C">07 / 16</text>
+  </g>
+  <g id="phone-map">
+    <rect x="120" y="150" width="284" height="468" rx="42" fill="#182026"/>
+    <rect x="140" y="172" width="244" height="424" rx="30" fill="#FFFFFF"/>
+    <text x="164" y="214" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="800" fill="#182026">地图发现</text>
+    <rect x="164" y="232" width="196" height="34" rx="17" fill="#EAF7EF" stroke="#BFD9CC" stroke-width="1"/>
+    <text x="184" y="254" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="12" fill="#4D5A57">筛选：价格 / 类别 / 收藏</text>
+    <rect x="164" y="292" width="196" height="170" rx="20" fill="#FBFFF7" stroke="#BFD9CC" stroke-width="1.5"/>
+    <path d="M 178 420 C 210 396, 224 356, 270 348 S 320 330, 348 308" fill="none" stroke="#DCEBE3" stroke-width="5" stroke-linecap="round"/>
+    <path d="M 178 326 C 220 342, 248 392, 310 414 S 332 444, 350 450" fill="none" stroke="#DCEBE3" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="222" cy="360" r="16" fill="#3A86FF"/>
+    <use data-icon="phosphor-duotone/map-pin" x="210" y="348" width="24" height="24" fill="#FFFFFF"/>
+    <circle cx="304" cy="334" r="14" fill="#1F8A70"/>
+    <text x="304" y="339" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="12" font-weight="800" fill="#FFFFFF">3</text>
+    <circle cx="328" cy="414" r="16" fill="#FFB703"/>
+    <text x="328" y="420" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="800" fill="#FFFFFF">★</text>
+    <rect x="164" y="482" width="196" height="76" rx="18" fill="#EAF7EF"/>
+    <text x="184" y="512" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" font-weight="800" fill="#182026">二食堂窗口</text>
+    <text x="184" y="538" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="12" fill="#4D5A57">聚合点含收藏商家，低缩放仍可读</text>
+  </g>
+  <g id="flow-arrow">
+    <line x1="456" y1="382" x2="808" y2="382" stroke="#3A86FF" stroke-width="5" stroke-linecap="round" marker-end="url(#arrowBlue)"/>
+    <rect x="542" y="334" width="180" height="40" rx="20" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
+    <text x="632" y="360" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="800" fill="#3A86FF">吃过之后</text>
+    <text x="632" y="430" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" font-weight="700" fill="#182026">体验回流</text>
+  </g>
+  <g id="phone-review">
+    <rect x="858" y="150" width="284" height="468" rx="42" fill="#182026"/>
+    <rect x="878" y="172" width="244" height="424" rx="30" fill="#FFFFFF"/>
+    <text x="902" y="214" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="800" fill="#182026">我也吃过</text>
+    <rect x="902" y="238" width="196" height="58" rx="18" fill="#EAF7EF"/>
+    <text x="922" y="266" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" font-weight="800" fill="#1F8A70">藤椒鸡双拼饭</text>
+    <text x="922" y="286" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="11" fill="#4D5A57">二食堂 · 已选择菜品</text>
+    <text x="902" y="334" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" font-weight="700" fill="#182026">评分</text>
+    <text x="960" y="336" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="24" fill="#FFB703">★★★★★</text>
+    <rect x="902" y="360" width="196" height="84" rx="18" fill="#FBFFF7" stroke="#BFD9CC" stroke-width="1.2"/>
+    <text x="922" y="390" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="12" fill="#4D5A57">写下真实体验...</text>
+    <rect x="902" y="462" width="54" height="54" rx="14" fill="#EAF7EF" stroke="#BFD9CC" stroke-width="1"/>
+    <use data-icon="phosphor-duotone/chat-circle" x="917" y="477" width="24" height="24" fill="#1F8A70"/>
+    <rect x="970" y="462" width="54" height="54" rx="14" fill="#EAF7EF" stroke="#BFD9CC" stroke-width="1" stroke-dasharray="4,4"/>
+    <text x="997" y="494" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" fill="#74807C">+</text>
+    <rect x="902" y="538" width="196" height="34" rx="17" fill="#1F8A70"/>
+    <text x="1000" y="560" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" font-weight="800" fill="#FFFFFF">提交审核</text>
+  </g>
+  <g id="bottom-tags">
+    <rect x="150" y="646" width="210" height="36" rx="18" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1"/>
+    <text x="255" y="669" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" fill="#4D5A57">普通点 / 聚合点 / 收藏星标</text>
+    <rect x="858" y="646" width="220" height="36" rx="18" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1"/>
+    <text x="968" y="669" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" fill="#4D5A57">文字 / 图片 / 审核状态</text>
+  </g>
+</svg>

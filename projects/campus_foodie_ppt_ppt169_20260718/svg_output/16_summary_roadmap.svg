@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <defs>
+    <linearGradient id="heroGreen" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1F8A70"/>
+      <stop offset="100%" stop-color="#3A86FF"/>
+    </linearGradient>
+  </defs>
+  <g id="background">
+    <rect x="0" y="0" width="1280" height="720" fill="#FBFFF7"/>
+    <path d="M 0 0 H 560 C 504 146, 530 302, 448 446 C 372 582, 234 660, 0 720 Z" fill="#EAF7EF"/>
+    <circle cx="1080" cy="116" r="130" fill="#FFB703" fill-opacity="0.14"/>
+  </g>
+  <g id="left-closing-thesis">
+    <rect x="56" y="82" width="178" height="40" rx="20" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
+    <text x="145" y="108" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" font-weight="800" fill="#1F8A70">SUMMARY</text>
+    <text x="72" y="222" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="54" font-weight="800" fill="#182026">
+      <tspan x="72" dy="0">让校园选择</tspan>
+      <tspan x="72" dy="72">更轻一点</tspan>
+    </text>
+    <text x="76" y="398" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="22" fill="#4D5A57">
+      <tspan x="76" dy="0">Campus Foodie 已形成</tspan>
+      <tspan x="76" dy="38">从推荐、决策、评价、审核</tspan>
+      <tspan x="76" dy="38">到影响统计的 MVP 闭环。</tspan>
+    </text>
+    <rect x="78" y="536" width="318" height="56" rx="28" fill="url(#heroGreen)"/>
+    <use data-icon="phosphor-duotone/rocket-launch" x="110" y="550" width="28" height="28" fill="#FFFFFF"/>
+    <text x="160" y="572" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="18" font-weight="800" fill="#FFFFFF">可演示，也能继续迭代</text>
+  </g>
+  <g id="roadmap-panel">
+    <rect x="600" y="92" width="578" height="536" rx="30" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
+    <text x="640" y="142" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="24" font-weight="800" fill="#182026">下一步路线</text>
+    <line x1="676" y1="178" x2="676" y2="552" stroke="#DCEBE3" stroke-width="4" stroke-linecap="round"/>
+    <line x1="676" y1="178" x2="676" y2="252" stroke="#1F8A70" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  <g id="roadmap-now">
+    <circle cx="676" cy="204" r="17" fill="#1F8A70" stroke="#FFFFFF" stroke-width="4"/>
+    <path d="M 668,204 L 674,210 L 686,196" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="642" y="210" text-anchor="end" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" font-weight="800" fill="#1F8A70">NOW</text>
+    <rect x="716" y="170" width="406" height="68" rx="18" fill="#EAF7EF" stroke="#BFD9CC" stroke-width="1"/>
+    <text x="742" y="198" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="17" font-weight="800" fill="#182026">MVP 闭环完成</text>
+    <text x="742" y="222" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57">推荐、地图、评价、审核、降级链路可路演</text>
+  </g>
+  <g id="roadmap-identity">
+    <circle cx="676" cy="292" r="15" fill="#FFFFFF" stroke="#3A86FF" stroke-width="4"/>
+    <text x="642" y="298" text-anchor="end" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" font-weight="800" fill="#3A86FF">01</text>
+    <rect x="716" y="258" width="406" height="68" rx="18" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1"/>
+    <text x="742" y="286" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="17" font-weight="800" fill="#182026">统一身份接入</text>
+    <text x="742" y="310" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57">学校统一认证、微信或企业微信登录</text>
+  </g>
+  <g id="roadmap-realtime">
+    <circle cx="676" cy="380" r="15" fill="#FFFFFF" stroke="#FFB703" stroke-width="4"/>
+    <text x="642" y="386" text-anchor="end" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" font-weight="800" fill="#FFB703">02</text>
+    <rect x="716" y="346" width="406" height="68" rx="18" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1"/>
+    <text x="742" y="374" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="17" font-weight="800" fill="#182026">实时营业数据</text>
+    <text x="742" y="398" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57">营业时间、拥挤度、售罄状态进入推荐</text>
+  </g>
+  <g id="roadmap-context">
+    <circle cx="676" cy="468" r="15" fill="#FFFFFF" stroke="#1F8A70" stroke-width="4"/>
+    <text x="642" y="474" text-anchor="end" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" font-weight="800" fill="#1F8A70">03</text>
+    <rect x="716" y="434" width="406" height="68" rx="18" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1"/>
+    <text x="742" y="462" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="17" font-weight="800" fill="#182026">情境推荐</text>
+    <text x="742" y="486" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57">时间段、天气、课程地点帮助更快决策</text>
+  </g>
+  <g id="roadmap-metrics">
+    <circle cx="676" cy="556" r="15" fill="#FFFFFF" stroke="#3A86FF" stroke-width="4"/>
+    <text x="642" y="562" text-anchor="end" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" font-weight="800" fill="#3A86FF">04</text>
+    <rect x="716" y="522" width="406" height="68" rx="18" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1"/>
+    <text x="742" y="550" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="17" font-weight="800" fill="#182026">推荐效果指标</text>
+    <text x="742" y="574" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#4D5A57">点击率、收藏率、评价转化率与多样性</text>
+  </g>
+  <g id="qa-cue">
+    <rect x="470" y="654" width="340" height="46" rx="23" fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5"/>
+    <use data-icon="phosphor-duotone/question" x="504" y="665" width="24" height="24" fill="#1F8A70"/>
+    <text x="640" y="683" text-anchor="middle" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="22" font-weight="800" fill="#182026">Q&amp;A</text>
+  </g>
+</svg>

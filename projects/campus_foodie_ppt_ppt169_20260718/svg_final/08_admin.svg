@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <g id="background">
+    <rect x="0" y="0" width="1280" height="720" fill="#FBFFF7" />
+    <path fill="#EAF7EF" d="M68,112 H1212 A32,32 0 0 1 1244,144 V632 A32,32 0 0 1 1212,664 H68 A32,32 0 0 1 36,632 V144 A32,32 0 0 1 68,112 Z" />
+  </g>
+  <g id="header">
+    <text x="56" y="64" font-family="'Trebuchet MS', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="34" font-weight="800" fill="#182026">后台保证可治理</text>
+    <text x="56" y="96" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="700" fill="#4D5A57">商家、菜品、评价、导入和审计都可维护、可追踪。</text>
+    <text x="1224" y="72" text-anchor="end" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="11" fill="#74807C">08 / 16</text>
+  </g>
+  <g id="desktop-dashboard">
+    <path fill="#182026" d="M98,150 H822 A28,28 0 0 1 850,178 V592 A28,28 0 0 1 822,620 H98 A28,28 0 0 1 70,592 V178 A28,28 0 0 1 98,150 Z" />
+    <path fill="#FFFFFF" d="M108,178 H812 A18,18 0 0 1 830,196 V574 A18,18 0 0 1 812,592 H108 A18,18 0 0 1 90,574 V196 A18,18 0 0 1 108,178 Z" />
+    <path fill="#1F8A70" d="M108,178 H240 A18,18 0 0 1 258,196 V574 A18,18 0 0 1 240,592 H108 A18,18 0 0 1 90,574 V196 A18,18 0 0 1 108,178 Z" />
+    <rect x="90" y="560" width="168" height="32" fill="#1F8A70" />
+    
+  <g transform="translate(118, 208) scale(0.132812)" fill="#FFFFFF">
+    <path d="M224,64v88H32V64A16,16,0,0,1,48,48H208A16,16,0,0,1,224,64Z" opacity="0.2" />
+    <path d="M208,40H48A24,24,0,0,0,24,64V176a24,24,0,0,0,24,24h72v16H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16H136V200h72a24,24,0,0,0,24-24V64A24,24,0,0,0,208,40ZM48,56H208a8,8,0,0,1,8,8v80H40V64A8,8,0,0,1,48,56ZM208,184H48a8,8,0,0,1-8-8V160H216v16A8,8,0,0,1,208,184Z" />
+  </g>
+    <text x="162" y="231" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="16" font-weight="800" fill="#FFFFFF">Admin</text>
+    <g id="admin-nav">
+      <path fill="#FFFFFF" fill-opacity="0.20" d="M129,284 H217 A17,17 0 0 1 234,301 V301 A17,17 0 0 1 217,318 H129 A17,17 0 0 1 112,301 V301 A17,17 0 0 1 129,284 Z" />
+      <text x="142" y="306" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">评价审核</text>
+      <text x="142" y="354" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#FFFFFF" fill-opacity="0.84">商家菜品</text>
+      <text x="142" y="402" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#FFFFFF" fill-opacity="0.84">CSV 导入</text>
+      <text x="142" y="450" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#FFFFFF" fill-opacity="0.84">审计日志</text>
+    </g>
+    <g id="dashboard-content">
+      <text x="292" y="230" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="22" font-weight="800" fill="#182026">评价审核队列</text>
+      <path fill="#EAF7EF" d="M668,206 H764 A18,18 0 0 1 782,224 V224 A18,18 0 0 1 764,242 H668 A18,18 0 0 1 650,224 V224 A18,18 0 0 1 668,206 Z" />
+      <text x="716" y="229" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" font-weight="800" fill="#1F8A70">待处理 12</text>
+      <line x1="292" y1="270" x2="792" y2="270" stroke="#DCEBE3" stroke-width="2" />
+      <path fill="#FBFFF7" stroke="#BFD9CC" stroke-width="1" d="M306,298 H778 A14,14 0 0 1 792,312 V338 A14,14 0 0 1 778,352 H306 A14,14 0 0 1 292,338 V312 A14,14 0 0 1 306,298 Z" />
+      <text x="314" y="326" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" font-weight="800" fill="#182026">藤椒鸡双拼饭 · 五星评价</text>
+      <text x="314" y="346" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="11" fill="#4D5A57">图片 1 张 · 规则通过 · 等待人工确认</text>
+      <path fill="#1F8A70" d="M704,312 H754 A12,12 0 0 1 766,324 V324 A12,12 0 0 1 754,336 H704 A12,12 0 0 1 692,324 V324 A12,12 0 0 1 704,312 Z" />
+      <text x="729" y="328" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="11" font-weight="800" fill="#FFFFFF">通过</text>
+      <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1" d="M306,370 H778 A14,14 0 0 1 792,384 V410 A14,14 0 0 1 778,424 H306 A14,14 0 0 1 292,410 V384 A14,14 0 0 1 306,370 Z" />
+      <text x="314" y="398" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" font-weight="800" fill="#182026">商家地图选点更新</text>
+      <text x="314" y="418" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="11" fill="#4D5A57">WGS-84 坐标记录 · 管理员 admin</text>
+      <path fill="#EAF7EF" d="M704,384 H754 A12,12 0 0 1 766,396 V396 A12,12 0 0 1 754,408 H704 A12,12 0 0 1 692,396 V396 A12,12 0 0 1 704,384 Z" />
+      <text x="729" y="400" text-anchor="middle" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="11" font-weight="800" fill="#1F8A70">追踪</text>
+      <path fill="#FBFFF7" stroke="#BFD9CC" stroke-width="1" d="M306,442 H778 A14,14 0 0 1 792,456 V520 A14,14 0 0 1 778,534 H306 A14,14 0 0 1 292,520 V456 A14,14 0 0 1 306,442 Z" />
+      <text x="314" y="470" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="14" font-weight="800" fill="#182026">CSV 预校验</text>
+      <path fill="#EAF7EF" d="M326,488 H744 A12,12 0 0 1 756,500 V500 A12,12 0 0 1 744,512 H326 A12,12 0 0 1 314,500 V500 A12,12 0 0 1 326,488 Z" />
+      <path fill="#22A06B" d="M326,488 H632 A12,12 0 0 1 644,500 V500 A12,12 0 0 1 632,512 H326 A12,12 0 0 1 314,500 V500 A12,12 0 0 1 326,488 Z" />
+      <text x="770" y="505" text-anchor="end" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="12" fill="#4D5A57">字段 / 行级错误先返回，再导入</text>
+    </g>
+  </g>
+  <g id="right-governance-stack">
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" d="M914,156 H1184 A24,24 0 0 1 1208,180 V252 A24,24 0 0 1 1184,276 H914 A24,24 0 0 1 890,252 V180 A24,24 0 0 1 914,156 Z" />
+    
+  <g transform="translate(920, 188) scale(0.164062)" fill="#1F8A70">
+    <path d="M208,48V216a8,8,0,0,1-8,8H56a8,8,0,0,1-8-8V48a8,8,0,0,1,8-8H96a39.83,39.83,0,0,0-8,24v8h80V64a39.83,39.83,0,0,0-8-24h40A8,8,0,0,1,208,48Z" opacity="0.2" />
+    <path d="M168,152a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,152Zm-8-40H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16Zm56-64V216a16,16,0,0,1-16,16H56a16,16,0,0,1-16-16V48A16,16,0,0,1,56,32H92.26a47.92,47.92,0,0,1,71.48,0H200A16,16,0,0,1,216,48ZM96,64h64a32,32,0,0,0-64,0ZM200,48H173.25A47.93,47.93,0,0,1,176,64v8a8,8,0,0,1-8,8H88a8,8,0,0,1-8-8V64a47.93,47.93,0,0,1,2.75-16H56V216H200Z" />
+  </g>
+    <text x="980" y="198" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="20" font-weight="800" fill="#182026">评价审核</text>
+    <text x="980" y="228" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" fill="#4D5A57">通过、驳回、隐藏都写明原因</text>
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" d="M914,306 H1184 A24,24 0 0 1 1208,330 V402 A24,24 0 0 1 1184,426 H914 A24,24 0 0 1 890,402 V330 A24,24 0 0 1 914,306 Z" />
+    
+  <g transform="translate(920, 338) scale(0.164062)" fill="#3A86FF">
+    <path d="M216,64V192H128V64Z" opacity="0.2" />
+    <path d="M224,128a8,8,0,0,1-8,8H128a8,8,0,0,1,0-16h88A8,8,0,0,1,224,128ZM128,72h88a8,8,0,0,0,0-16H128a8,8,0,0,0,0,16Zm88,112H128a8,8,0,0,0,0,16h88a8,8,0,0,0,0-16ZM82.34,42.34,56,68.69,45.66,58.34A8,8,0,0,0,34.34,69.66l16,16a8,8,0,0,0,11.32,0l32-32A8,8,0,0,0,82.34,42.34Zm0,64L56,132.69,45.66,122.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32,0l32-32a8,8,0,0,0-11.32-11.32Zm0,64L56,196.69,45.66,186.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32,0l32-32a8,8,0,0,0-11.32-11.32Z" />
+  </g>
+    <text x="980" y="348" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="20" font-weight="800" fill="#182026">数据导入</text>
+    <text x="980" y="378" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" fill="#4D5A57">CSV 先校验，避免脏数据入库</text>
+    <path fill="#FFFFFF" stroke="#BFD9CC" stroke-width="1.5" d="M914,456 H1184 A24,24 0 0 1 1208,480 V552 A24,24 0 0 1 1184,576 H914 A24,24 0 0 1 890,552 V480 A24,24 0 0 1 914,456 Z" />
+    
+  <g transform="translate(920, 488) scale(0.164062)" fill="#FFB703">
+    <path d="M216,56v58.77c0,84.18-71.31,112.07-85.54,116.8a7.54,7.54,0,0,1-4.92,0C111.31,226.86,40,199,40,114.79V56a8,8,0,0,1,8-8H208A8,8,0,0,1,216,56Z" opacity="0.2" />
+    <path d="M208,40H48A16,16,0,0,0,32,56v58.78c0,89.61,75.82,119.34,91,124.39a15.53,15.53,0,0,0,10,0c15.2-5.05,91-34.78,91-124.39V56A16,16,0,0,0,208,40Zm0,74.79c0,78.42-66.35,104.62-80,109.18-13.53-4.51-80-30.69-80-109.18V56H208ZM82.34,141.66a8,8,0,0,1,11.32-11.32L112,148.68l50.34-50.34a8,8,0,0,1,11.32,11.32l-56,56a8,8,0,0,1-11.32,0Z" />
+  </g>
+    <text x="980" y="498" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="20" font-weight="800" fill="#182026">审计日志</text>
+    <text x="980" y="528" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="15" fill="#4D5A57">操作者、对象、时间、变更可追踪</text>
+  </g>
+  <g id="footer">
+    <text x="56" y="690" font-family="'Microsoft YaHei', 'PingFang SC', Arial, sans-serif" font-size="13" fill="#74807C">管理端独立端口 5174 · 管理接口 /admin/api/v1</text>
+  </g>
+</svg>
