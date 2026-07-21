@@ -29,7 +29,7 @@ describe('admin HTTP adapter', () => {
       user: { id: 'admin-1', username: 'admin', role: 'super_admin' },
     });
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(fetchMock.mock.calls[0][0]).toBe('http://localhost:8000/admin/api/v1/auth/login');
+    expect(fetchMock.mock.calls[0][0]).toBe('http://127.0.0.1:7993/admin/api/v1/auth/login');
     expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body))).toMatchObject({
       identifier: 'admin',
       password: 'Admin123!',

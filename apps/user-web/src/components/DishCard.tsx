@@ -4,6 +4,7 @@ import type { DishCardData } from '../types'
 
 export function DishCard({ item, onFavorite, onOpen }: { item: DishCardData; onFavorite: (merchantId: string) => void; onOpen?: (item: DishCardData) => void }) {
   const navigate = useNavigate()
+  const isDemo = Boolean(item.isDemo || item.merchant.isDemo)
   return (
     <article className="dish-card" onClick={() => { onOpen?.(item); navigate(`/dish/${item.id}`) }}>
       <div className="dish-card__media">
@@ -21,16 +22,16 @@ export function DishCard({ item, onFavorite, onOpen }: { item: DishCardData; onF
       <div className="dish-card__content">
         <div className="dish-card__heading">
           <div>
-            <span className="eyebrow">{item.category}</span>
+            <span className="eyebrow">{item.category}{isDemo ? ' · 演示菜品' : ''}</span>
             <h3>{item.name}</h3>
           </div>
-          <span className="dish-price"><small>¥</small>{item.price}</span>
+          <span className="dish-price"><small>{isDemo ? '参考 ¥' : '¥'}</small>{item.price}</span>
         </div>
         <p className="merchant-line">{item.merchant.name}</p>
         <div className="dish-meta">
-          <span className="rating-value"><Star size={14} fill="currentColor" /> {item.rating}</span>
-          <span>{item.reviewCount} 条评价</span>
-          <span><Clock3 size={13} /> {item.waitMinutes} 分钟</span>
+          <span className="rating-value"><Star size={14} fill="currentColor" /> {isDemo ? `参考评分 ${item.rating}` : item.rating}</span>
+          <span>{item.reviewCount} 条{isDemo ? '评价（含演示）' : '评价'}</span>
+          <span><Clock3 size={13} /> {isDemo ? '参考 ' : ''}{item.waitMinutes} 分钟</span>
           <span><MapPin size={13} /> {item.merchant.distance}m</span>
         </div>
         <div className="reason"><Sparkles size={15} /><span>{item.reason}</span></div>

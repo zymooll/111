@@ -1,3 +1,4 @@
+import { CAMPUS_CENTER_GCJ02, CAMPUS_MAP_SPAN } from '../data/campus'
 import type {
   AccountActionResult,
   AuthProvider,
@@ -17,7 +18,7 @@ import type {
   UserStats
 } from '../types'
 
-const baseUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1').replace(/\/$/, '')
+const baseUrl = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:7993/api/v1').replace(/\/$/, '')
 const accessTokenKey = 'campus-foodie:access-token'
 const refreshTokenKey = 'campus-foodie:refresh-token'
 const guestTokenKey = 'campus-foodie:guest-token'
@@ -147,13 +148,21 @@ function localAsset(url: string) {
   return url.startsWith('/media/') ? new URL(url, apiOrigin).toString() : url
 }
 
+function isDemoDescription(description?: string | null) {
+  if (!description) return false
+  return ['演示生成', '演示菜品', '演示内容', '非门店实测'].some((marker) => description.includes(marker))
+}
+
 const categoryIcons: Record<string, string> = {
   bowl: '🍚',
   rice: '🍱',
   noodle: '🍜',
   leaf: '🥗',
   drink: '🧋',
-  snack: '🥟'
+  snack: '🥟',
+  cookie: '🥟',
+  flame: '🍢',
+  cup: '🥤'
 }
 
 function toTreeOption(value: ApiTreeNode, kind: 'area' | 'category'): TreeOption {
@@ -180,8 +189,8 @@ function categoryName(catalog: CatalogData, id?: string | null) {
 }
 
 function mapPosition(longitude: number, latitude: number) {
-  const x = Math.max(8, Math.min(92, ((longitude - 121.473) / 0.011) * 84 + 8))
-  const y = Math.max(8, Math.min(88, ((31.233 - latitude) / 0.01) * 80 + 8))
+  const x = Math.max(8, Math.min(92, 50 + ((longitude - CAMPUS_CENTER_GCJ02.longitude) / CAMPUS_MAP_SPAN.longitude) * 84))
+  const y = Math.max(8, Math.min(88, 50 - ((latitude - CAMPUS_CENTER_GCJ02.latitude) / CAMPUS_MAP_SPAN.latitude) * 80))
   return { x, y }
 }
 
@@ -206,6 +215,7 @@ function toMerchant(value: ApiMerchant, catalog: CatalogData): Merchant {
   const hours = value.business_hours.split('-')
   return {
     id: value.id,
+    isDemo: isDemoDescription(value.description),
     name: value.name,
     areaId: value.area_id || '',
     area: value.address,
@@ -227,6 +237,7 @@ function toMerchant(value: ApiMerchant, catalog: CatalogData): Merchant {
 function toDish(value: ApiMenuItem, merchant: Merchant, catalog: CatalogData): DishCardData {
   return {
     id: value.id,
+    isDemo: isDemoDescription(value.description) || merchant.isDemo,
     merchantId: value.merchant_id,
     name: value.name,
     subtitle: value.description,
@@ -341,8 +352,14 @@ async function request<T>(
   if (authenticated && token) headers.set('Authorization', `Bearer ${token}`)
   const response = await fetch(`${baseUrl}${path}`, { ...init, headers })
   if (response.status === 401 && authenticated) {
-    if (canRefresh && localStorage.getItem(accessTokenKey) && await refreshSession()) {
-      return request<T>(path, init, authenticated, false, canRenewGuest)
+    if (localStorage.getItem(accessTokenKey)) {
+      if (canRefresh && await refreshSession()) {
+        return request<T>(path, init, authenticated, false, canRenewGuest)
+      }
+      clearUserTokens(true)
+      if (canRenewGuest) {
+        return request<T>(path, init, authenticated, false, false)
+      }
     }
     if (canRenewGuest && !localStorage.getItem(accessTokenKey) && localStorage.getItem(guestTokenKey)) {
       localStorage.removeItem(guestTokenKey)
@@ -435,8 +452,8 @@ class HttpFoodieApi implements FoodieApi {
         name: item.merchant_name || '校园商家',
         description: '',
         address: item.merchant_address || '校园内',
-        gcj02_latitude: 31.228,
-        gcj02_longitude: 121.478,
+        gcj02_latitude: CAMPUS_CENTER_GCJ02.latitude,
+        gcj02_longitude: CAMPUS_CENTER_GCJ02.longitude,
         price_level: 2,
         business_hours: '07:00-21:00',
         is_favorite: favorites.includes(item.merchant_id),
@@ -473,15 +490,22 @@ class HttpFoodieApi implements FoodieApi {
     if (filters.taste) query.set('taste', filters.taste)
     if (filters.query) query.set('search', filters.query)
     if (filters.favoriteOnly) query.set('favorite_only', 'true')
-    const collection = await request<{ features: MerchantFeature[] }>(`/map/merchants?${query}`)
+    const [collection, merchantRows] = await Promise.all([
+      request<{ features: MerchantFeature[] }>(`/map/merchants?${query}`),
+      request<Page<ApiMerchant> | ApiMerchant[]>(`/merchants${params({ campus_id: catalogData.campusId, limit: 100 })}`)
+    ])
+    const merchantDetails = new Map(pageItems(merchantRows).map((merchant) => [merchant.id, merchant]))
     const features = collection.features.filter((feature) => feature.properties.kind === 'merchant')
     const positions = normalizedMapPositions(features)
     return features
       .map((feature, index) => {
         const id = String(feature.properties.id)
+        const details = merchantDetails.get(id)
+        const hours = details?.business_hours.split('-') ?? []
         const [longitude, latitude] = feature.geometry.coordinates
         return {
           id,
+          isDemo: isDemoDescription(details?.description),
           name: String(feature.properties.name),
           areaId: '',
           area: String(feature.properties.address || '校园内'),
@@ -491,7 +515,7 @@ class HttpFoodieApi implements FoodieApi {
           averagePrice: Number(feature.properties.price_level || 2) * 12,
           rating: Number(feature.properties.rating_avg || 0),
           reviewCount: 0,
-          openUntil: '21:00',
+          openUntil: hours[1] || details?.business_hours || '待核验',
           distance: 400,
           longitude,
           latitude,

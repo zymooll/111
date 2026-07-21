@@ -1,4 +1,5 @@
 import { mockApi } from './mockApi';
+import { CAMPUS_CENTER_WGS84, CAMPUS_NAME } from '../constants/campus';
 import type {
   AuditLog,
   AuditQuery,
@@ -20,7 +21,7 @@ import type {
   TagDefinition,
 } from '../types';
 
-const baseUrl = (import.meta.env.VITE_ADMIN_API_BASE_URL || 'http://localhost:8000/admin/api/v1').replace(/\/$/, '');
+const baseUrl = (import.meta.env.VITE_ADMIN_API_BASE_URL || 'http://127.0.0.1:7993/admin/api/v1').replace(/\/$/, '');
 const apiOrigin = new URL(baseUrl, window.location.origin).origin;
 export const apiMode = import.meta.env.VITE_API_MODE || 'remote';
 export const adminTokenKey = 'campus-foodie-admin-access-token';
@@ -153,7 +154,7 @@ function normalizeLogin(value: unknown): LoginResult {
       name: username,
       role,
       campusId: defaultCampusId,
-      campusName: '示范大学',
+      campusName: CAMPUS_NAME,
     },
   };
 }
@@ -327,8 +328,8 @@ function merchantPayload(input: Partial<Merchant> & Pick<Merchant, 'name'>) {
     name: input.name,
     description: input.description ?? '',
     address: input.address ?? '待补充',
-    latitude: input.latitude ?? 31.2304,
-    longitude: input.longitude ?? 121.4737,
+    latitude: input.latitude ?? CAMPUS_CENTER_WGS84.latitude,
+    longitude: input.longitude ?? CAMPUS_CENTER_WGS84.longitude,
     price_level: input.priceLevel ?? 2,
     business_hours: input.openingHours ?? '10:00-20:00',
     is_active: input.status === 'online',
@@ -403,14 +404,7 @@ export const adminApi = {
         categories: listValue(categoriesRaw).map((entry) => object(entry)).map((entry) => ({ id: stringValue(entry.id), name: stringValue(entry.name) })).filter((entry) => entry.id && entry.name),
         tags: collectionValue(tagsRaw).map(normalizeTag).filter((entry) => entry.id && entry.name),
       };
-    }, async () => ({
-      areas: [
-        { id: 'mock-area-canteen', name: '学苑一食堂' }, { id: 'mock-area-north', name: '北门商业街' },
-        { id: 'mock-area-south', name: '南苑生活区' }, { id: 'mock-area-east', name: '东区图书馆' }, { id: 'mock-area-lake', name: '湖畔餐厅' },
-      ],
-      categories: ['校园食堂', '中式快餐', '米饭', '面食', '轻食', '饮品', '小吃', '套餐', '其他'].map((name, index) => ({ id: `mock-category-${index}`, name })),
-      tags: await mockApi.tags(),
-    }));
+    }, () => mockApi.catalogMetadata());
   },
   tags(): Promise<TagDefinition[]> {
     return execute(

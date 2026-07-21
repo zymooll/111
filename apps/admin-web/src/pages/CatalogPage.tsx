@@ -6,6 +6,7 @@ import { adminApi } from '../api/client';
 import { LocationPicker } from '../components/LocationPicker';
 import { PageHeader } from '../components/PageHeader';
 import { StatusTag } from '../components/StatusTag';
+import { CAMPUS_CENTER_WGS84 } from '../constants/campus';
 import type { CatalogMetadata, MenuItem, Merchant, PublishStatus, TagDefinition } from '../types';
 
 const emptyMetadata: CatalogMetadata = { areas: [], categories: [], tags: [] };
@@ -81,7 +82,7 @@ function MerchantPanel() {
       ...record,
       areaId: record.areaId ?? metadata.areas.find((entry) => entry.name === record.area)?.id,
       categoryId: record.categoryId ?? metadata.categories.find((entry) => entry.name === record.category)?.id,
-    } : ({ status: 'draft', openingHours: '10:00-20:00', latitude: 31.2304, longitude: 121.4737, priceLevel: 2 } as Merchant));
+    } : ({ status: 'draft', openingHours: '10:00-20:00', latitude: CAMPUS_CENTER_WGS84.latitude, longitude: CAMPUS_CENTER_WGS84.longitude, priceLevel: 2 } as Merchant));
     setOpen(true);
   };
 
@@ -143,7 +144,7 @@ function MerchantPanel() {
     { title: '收藏', dataIndex: 'favoriteCount', width: 90 },
     { title: '营业时间', dataIndex: 'openingHours', width: 130 },
     {
-      title: '操作', key: 'actions', fixed: 'right', width: 170,
+      title: '操作', key: 'actions', fixed: 'right', width: 110,
       render: (_, record) => <Space size={2}>
         <Tooltip title="编辑"><Button type="text" icon={<EditOutlined />} onClick={() => edit(record)} /></Tooltip>
         {record.status === 'online'
@@ -168,12 +169,12 @@ function MerchantPanel() {
         columns={columns}
         dataSource={items}
         loading={loading}
-        scroll={{ x: 1120 }}
+        scroll={{ x: 1110 }}
         pagination={{ current: page, pageSize: 10, total, showTotal: (value) => `共 ${value} 家商家`, onChange: setPage }}
       />
       <Modal title={editing ? '编辑商家' : '新增商家'} width={680} open={open} onCancel={() => setOpen(false)} onOk={() => void save()} confirmLoading={saving} okText="保存">
         <Form form={form} layout="vertical" requiredMark={false} className="modal-form-grid">
-          <Form.Item label="商家名称" name="name" rules={[{ required: true, message: '请输入商家名称' }]}><Input placeholder="如：学苑一食堂·风味档口" /></Form.Item>
+          <Form.Item label="商家名称" name="name" rules={[{ required: true, message: '请输入商家名称' }]}><Input placeholder="如：林海餐厅·风味档口" /></Form.Item>
           <Form.Item label="所属区域" name="areaId" rules={[{ required: true, message: '请选择所属区域' }]}><Select showSearch optionFilterProp="label" placeholder="选择校园地点" options={metadata.areas.map((entry) => ({ value: entry.id, label: entry.name }))} /></Form.Item>
           <Form.Item label="餐饮类别" name="categoryId" rules={[{ required: true, message: '请选择餐饮类别' }]}><Select showSearch optionFilterProp="label" options={metadata.categories.map((entry) => ({ value: entry.id, label: entry.name }))} /></Form.Item>
           <Form.Item label="初始状态" name="status" rules={[{ required: true }]}><Select options={[{ value: 'draft', label: '草稿' }, { value: 'online', label: '已上架' }, { value: 'offline', label: '已下架' }]} /></Form.Item>

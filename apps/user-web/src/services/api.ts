@@ -1,3 +1,4 @@
+import { CAMPUS_NAME } from '../data/campus'
 import { areaTree, categoryTree, demoUser, dishes, initialReviews, merchants } from '../data/mockData'
 import type { CatalogData, DishCardData, FoodieApi, FoodPreferences, MapFilters, Review, ReviewDraft, User } from '../types'
 import { createFallbackFoodieApi, httpApi } from './httpApi'
@@ -46,7 +47,7 @@ class MockFoodieApi implements FoodieApi {
     }))
     return {
       campusId: 'mock-campus',
-      campusName: '演示校园',
+      campusName: CAMPUS_NAME,
       areas: cloneTree(areaTree),
       categories: cloneTree(categoryTree),
       tags

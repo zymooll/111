@@ -145,7 +145,7 @@ export function HomePage() {
       </section>
 
       <section className="section-heading">
-        <div><span><TrendingUp size={19} /></span><div><h2>{params.get('q') ? `“${params.get('q')}”的结果` : '今日灵感'}</h2><p>根据口味、距离与真实评价综合推荐</p></div></div>
+        <div><span><TrendingUp size={19} /></span><div><h2>{params.get('q') ? `“${params.get('q')}”的结果` : '今日灵感'}</h2><p>根据口味、距离与目录信息综合推荐</p></div></div>
         <button type="button" onClick={() => navigate('/filter/category')}><SlidersHorizontal size={17} /> 筛选</button>
       </section>
 

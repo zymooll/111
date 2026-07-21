@@ -78,14 +78,17 @@ describe('HTTP Foodie API', () => {
           merchant_id: merchant.id,
           category_id: null,
           name: '测试菜品',
-          description: '测试描述',
+          description: '演示生成：测试描述，非门店实测菜单。',
           item_type: 'dish',
           price_cents: 1200,
           image_url: '/media/user-1/review.jpg',
           rating_avg: 4.6,
           review_count: 3,
           tags: ['清淡'],
-          merchant
+          merchant: {
+            ...merchant,
+            description: '地点来自高德 POI；菜单、价格、营业时间和评价均为演示生成。'
+          }
         })
       }
       return json({ detail: 'unexpected request' }, 500)
@@ -94,10 +97,44 @@ describe('HTTP Foodie API', () => {
 
     const dish = await httpApi.getDish('dish-1', [])
 
-    expect(dish?.image).toBe('http://localhost:8000/media/user-1/review.jpg')
+    expect(dish?.image).toBe('http://127.0.0.1:7993/media/user-1/review.jpg')
+    expect(dish).toMatchObject({ isDemo: true, merchant: { isDemo: true } })
     expect(localStorage.getItem('campus-foodie:access-token')).toBe('fresh-access')
     expect(localStorage.getItem('campus-foodie:refresh-token')).toBe('fresh-refresh')
     expect(detailCalls).toBe(2)
+  })
+
+  it('derives map demo provenance and reference hours from merchant descriptions', async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input)
+      const catalog = catalogResponse(url)
+      if (catalog) return catalog
+      if (url.endsWith('/auth/guest')) return json({ access_token: 'guest-token' }, 201)
+      if (url.includes('/map/merchants?')) {
+        return json({
+          features: [{
+            geometry: { coordinates: [113, 28.1] },
+            properties: {
+              kind: 'merchant', id: merchant.id, name: merchant.name, address: merchant.address,
+              category_id: null, price_level: 2, rating_avg: 4.8, is_favorite: false
+            }
+          }]
+        })
+      }
+      if (url.includes('/merchants?campus_id=campus-1')) {
+        return json([{
+          ...merchant,
+          description: '地点来自高德 POI；菜单、价格、营业时间和评价均为演示生成。'
+        }])
+      }
+      return json({ detail: 'unexpected request' }, 500)
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await httpApi.getMerchants({}, [])
+
+    expect(result).toHaveLength(1)
+    expect(result[0]).toMatchObject({ isDemo: true, openUntil: '21:00' })
   })
 
   it('loads server-owned catalog dictionaries and forwards exact IDs with the feed cursor', async () => {
@@ -124,6 +161,26 @@ describe('HTTP Foodie API', () => {
     await expect(httpApi.getRecommendations({ categoryId: 'category-1', areaId: 'area-1' }, [], 'page-cursor')).resolves.toEqual({ items: [], nextCursor: 'next-page' })
 
     expect(urls.some((url) => url.includes('campus_id=campus-1') && url.includes('category_id=category-1') && url.includes('area_id=area-1') && url.includes('cursor=page-cursor'))).toBe(true)
+  })
+
+  it('maps backend category icon names to display icons', async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input)
+      if (url.endsWith('/campuses')) return json([{ id: 'campus-1', name: '测试大学', is_active: true }])
+      if (url.includes('/areas?campus_id=campus-1')) return json([])
+      if (url.includes('/categories?campus_id=campus-1')) return json([
+        { id: 'snack', name: '小吃烘焙', icon: 'cookie', children: [] },
+        { id: 'hotpot', name: '火锅烧烤', icon: 'flame', children: [] },
+        { id: 'drink', name: '饮品甜品', icon: 'cup', children: [] }
+      ])
+      if (url.includes('/tags?campus_id=campus-1')) return json([])
+      return json({ detail: 'unexpected request' }, 500)
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const catalog = await httpApi.getCatalog()
+
+    expect(catalog.categories.map((category) => category.icon)).toEqual(['🥟', '🍢', '🥤'])
   })
 
   it('does not hide backend validation or authentication errors with mock success', async () => {

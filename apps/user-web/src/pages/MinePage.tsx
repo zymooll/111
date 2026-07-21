@@ -72,7 +72,7 @@ export function MinePage() {
             {favoriteQuery.data.map((merchant) => (
               <article key={merchant.id} className="favorite-place-card">
                 <div><span>{merchant.category.includes('饮') ? '☕' : merchant.category.includes('轻食') ? '🥗' : '🍜'}</span><button type="button" aria-label="取消收藏" onClick={() => toggleFavorite(merchant.id)}><Star size={16} fill="currentColor" /></button></div>
-                <strong>{merchant.name}</strong><small><b>★ {merchant.rating}</b> · {merchant.distance}m</small>
+                <strong>{merchant.name}</strong><small><b>{merchant.isDemo ? `参考评分 ${merchant.rating}` : `★ ${merchant.rating}`}</b> · {merchant.distance}m</small>
               </article>
             ))}
           </div>

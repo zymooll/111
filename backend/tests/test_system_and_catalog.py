@@ -21,6 +21,8 @@ from app.models import (
     Tag,
     User,
 )
+from app.seed import seed_demo_data
+from app.seed_catalog import EXTENDED_ITEM_COUNT
 from tests.conftest import bearer, login
 
 
@@ -62,6 +64,7 @@ def test_health_openapi_and_seeded_catalog(client, demo_ids):
 
     campuses = client.get("/api/v1/campuses").json()
     assert campuses[0]["id"] == demo_ids["campus"]
+    assert campuses[0]["name"] == "中南林业科技大学"
 
     categories = client.get(
         "/api/v1/categories", params={"campus_id": demo_ids["campus"]}
@@ -77,7 +80,9 @@ def test_health_openapi_and_seeded_catalog(client, demo_ids):
     )
     assert feed.status_code == 200, feed.text
     payload = feed.json()
-    assert len(payload["items"]) == 4
+    assert len(payload["items"]) == 20
+    assert payload["has_more"] is True
+    assert payload["next_cursor"]
     assert all(item["recommendation_reason"] for item in payload["items"])
     assert {item["item_type"] for item in payload["items"]} <= {"dish", "combo"}
 
@@ -169,6 +174,75 @@ def test_seeded_ratings_are_backed_by_published_reviews(client, demo_ids):
         assert reviews.status_code == 200
         assert reviews.json()["total"] == detail.json()["review_count"]
         assert sum(detail.json()["rating_distribution"].values()) == reviews.json()["total"]
+
+
+def test_seeded_catalog_scales_to_csuft_demo_96_items(client, demo_ids):
+    database = client.app.state.database
+    original_item_ids = {
+        demo_ids["item_one"],
+        demo_ids["item_two"],
+        demo_ids["item_three"],
+        demo_ids["item_four"],
+    }
+
+    with database.session_factory() as db:
+        items = db.scalars(
+            select(MenuItem)
+            .where(MenuItem.campus_id == demo_ids["campus"])
+            .order_by(MenuItem.name)
+        ).all()
+        expanded_items = [item for item in items if item.id not in original_item_ids]
+        merchants = db.scalars(
+            select(Merchant).where(Merchant.campus_id == demo_ids["campus"])
+        ).all()
+
+        assert len(items) == 4 + EXTENDED_ITEM_COUNT == 96
+        assert len(expanded_items) == 92
+        assert len({item.name for item in items}) == len(items)
+        assert len(merchants) == 11
+        assert all("演示生成" in item.description for item in expanded_items)
+        assert all(300 <= item.price_cents <= 3500 for item in expanded_items)
+        assert all(item.image_url.startswith("/dishes/") for item in expanded_items)
+        assert all(item.review_count == 1 for item in expanded_items)
+        assert {item.name for item in expanded_items} >= {
+            "新奥尔良鸡扒饭",
+            "林冠骨汤麻辣烫",
+            "五食堂番茄鸡蛋面",
+            "匠心卤双拼饭",
+            "瑞幸经典拿铁",
+            "库迪经典美式",
+            "原味螺蛳粉",
+            "原味过桥米线",
+        }
+        assert {merchant.name for merchant in merchants} >= {
+            "中南林业科技大学林海餐厅",
+            "林语餐厅",
+            "中南林业科技大学林苑餐厅",
+            "林涛餐厅",
+            "林冠餐厅",
+            "中南林业科技大学学生五食堂",
+        }
+
+        campus = db.get(Campus, demo_ids["campus"])
+        lin_tao = next(merchant for merchant in merchants if merchant.name == "林涛餐厅")
+        generated_item = next(
+            item for item in expanded_items if item.name == "新奥尔良鸡扒饭"
+        )
+        assert campus is not None
+        campus.name = "示范大学"
+        lin_tao.name = "旧演示商家"
+        generated_item.name = "旧演示菜品"
+        db.commit()
+
+        seed_demo_data(db)
+        assert db.scalar(
+            select(func.count(MenuItem.id)).where(
+                MenuItem.campus_id == demo_ids["campus"]
+            )
+        ) == 96
+        assert db.get(Campus, demo_ids["campus"]).name == "中南林业科技大学"
+        assert db.get(Merchant, lin_tao.id).name == "林涛餐厅"
+        assert db.get(MenuItem, generated_item.id).name == "新奥尔良鸡扒饭"
 
 
 def test_problem_details_and_cursor_validation(client, demo_ids):

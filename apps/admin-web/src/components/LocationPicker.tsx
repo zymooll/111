@@ -1,6 +1,7 @@
 import { AimOutlined, EnvironmentFilled } from '@ant-design/icons';
 import { Button } from 'antd';
 import type { KeyboardEvent, MouseEvent } from 'react';
+import { CAMPUS_CENTER_WGS84 } from '../constants/campus';
 
 export interface MapLocation {
   latitude: number;
@@ -15,7 +16,6 @@ interface LocationPickerProps {
   centerLongitude?: number;
 }
 
-const DEFAULT_CENTER = { latitude: 31.2304, longitude: 121.4737 };
 const LATITUDE_SPAN = 0.008;
 const LONGITUDE_SPAN = 0.012;
 
@@ -31,8 +31,8 @@ export function LocationPicker({
   latitude,
   longitude,
   onChange,
-  centerLatitude = DEFAULT_CENTER.latitude,
-  centerLongitude = DEFAULT_CENTER.longitude,
+  centerLatitude = CAMPUS_CENTER_WGS84.latitude,
+  centerLongitude = CAMPUS_CENTER_WGS84.longitude,
 }: LocationPickerProps) {
   const selectedLatitude = isCoordinate(latitude) ? latitude as number : centerLatitude;
   const selectedLongitude = isCoordinate(longitude) ? longitude as number : centerLongitude;
@@ -84,9 +84,9 @@ export function LocationPicker({
         onClick={pick}
         onKeyDown={nudge}
       >
-        <span className="map-zone map-zone-north">北区食堂</span>
-        <span className="map-zone map-zone-library">图书馆</span>
-        <span className="map-zone map-zone-south">南区生活街</span>
+        <span className="map-zone map-zone-north">东园餐饮区</span>
+        <span className="map-zone map-zone-library">校园中心</span>
+        <span className="map-zone map-zone-south">西园餐饮区</span>
         <span className="map-road map-road-horizontal" />
         <span className="map-road map-road-vertical" />
         <span

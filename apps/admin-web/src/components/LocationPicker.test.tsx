@@ -1,11 +1,12 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { CAMPUS_CENTER_WGS84 } from '../constants/campus';
 import { LocationPicker } from './LocationPicker';
 
 describe('LocationPicker', () => {
   it('converts a map click into WGS-84 coordinates', () => {
     const onChange = vi.fn();
-    render(<LocationPicker latitude={31.2304} longitude={121.4737} onChange={onChange} />);
+    render(<LocationPicker latitude={CAMPUS_CENTER_WGS84.latitude} longitude={CAMPUS_CENTER_WGS84.longitude} onChange={onChange} />);
     const map = screen.getByRole('button', { name: '在校园示意地图上选择商家位置' });
     vi.spyOn(map, 'getBoundingClientRect').mockReturnValue({
       x: 10,
@@ -21,20 +22,20 @@ describe('LocationPicker', () => {
 
     fireEvent.click(map, { clientX: 160, clientY: 45 });
 
-    expect(onChange).toHaveBeenCalledWith({ latitude: 31.2324, longitude: 121.4767 });
+    expect(onChange).toHaveBeenCalledWith({ latitude: 28.136945, longitude: 112.992306 });
   });
 
   it('supports keyboard nudging and resetting to campus center', () => {
     const onChange = vi.fn();
-    render(<LocationPicker latitude={31.23} longitude={121.47} onChange={onChange} />);
+    render(<LocationPicker latitude={28.1345} longitude={112.989} onChange={onChange} />);
 
     fireEvent.keyDown(
       screen.getByRole('button', { name: '在校园示意地图上选择商家位置' }),
       { key: 'ArrowRight' },
     );
-    expect(onChange).toHaveBeenLastCalledWith({ latitude: 31.23, longitude: 121.47005 });
+    expect(onChange).toHaveBeenLastCalledWith({ latitude: 28.1345, longitude: 112.98905 });
 
     fireEvent.click(screen.getByRole('button', { name: '回到校园中心' }));
-    expect(onChange).toHaveBeenLastCalledWith({ latitude: 31.2304, longitude: 121.4737 });
+    expect(onChange).toHaveBeenLastCalledWith(CAMPUS_CENTER_WGS84);
   });
 });

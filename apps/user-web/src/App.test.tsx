@@ -28,7 +28,10 @@ describe('user app navigation shell', () => {
     )
 
     expect(screen.getByText('把每一餐，都选得刚刚好')).toBeInTheDocument()
-    expect(await screen.findByText('招牌藤椒鸡双拼饭')).toBeInTheDocument()
+    expect(await screen.findByText('番茄牛腩饭')).toBeInTheDocument()
+    expect(screen.queryByText(/真实评价/)).not.toBeInTheDocument()
+    expect(screen.getAllByText(/参考评分/).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/演示菜品/).length).toBeGreaterThan(0)
     expect(screen.getByRole('navigation', { name: '主要导航' })).toBeInTheDocument()
   })
 
@@ -98,7 +101,10 @@ describe('user app navigation shell', () => {
       </QueryClientProvider>
     )
 
-    expect(await screen.findByText('藤椒香很足但不会呛，酥肉还是脆的。窗口阿姨打菜也很大方，赶课的时候八分钟拿到。')).toBeInTheDocument()
+    expect(await screen.findByText('演示评价（非真实用户评价）：番茄风味浓，牛腩口感软，适合作为午餐示例。')).toBeInTheDocument()
+    expect(screen.getAllByText(/参考评分/).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/评价（含演示）/).length).toBeGreaterThan(0)
+    expect(screen.getByText(/参考时段 21:00/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '我也吃过' })).toBeInTheDocument()
     await waitFor(() => expect(viewReview).toHaveBeenCalled())
   })
@@ -169,9 +175,27 @@ describe('user app navigation shell', () => {
     await user.type(screen.getByPlaceholderText('真实、具体的体验最能帮助到同学……'), '味道很好，分量也很足。')
     await user.click(screen.getByRole('button', { name: '发布评价' }))
 
-    expect(await screen.findByText(`${refreshedDish.reviewCount} 人评价`)).toBeInTheDocument()
-    expect(screen.getByText('4.75')).toBeInTheDocument()
+    expect(await screen.findByText(`${refreshedDish.reviewCount} 条评价（含演示）`)).toBeInTheDocument()
+    expect(screen.getByText(/参考评分 4\.75/)).toBeInTheDocument()
     expect(getDish.mock.calls.length).toBeGreaterThanOrEqual(2)
+  })
+
+  it('labels mock map values as references without fixed canteen text', async () => {
+    const user = userEvent.setup()
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    render(
+      <QueryClientProvider client={client}>
+        <MemoryRouter initialEntries={['/map']}>
+          <AppStateProvider><App /></AppStateProvider>
+        </MemoryRouter>
+      </QueryClientProvider>
+    )
+
+    expect(screen.queryByText('林海餐厅')).not.toBeInTheDocument()
+    await user.click(await screen.findByRole('button', { name: '中南林业科技大学林海餐厅' }))
+    expect(await screen.findByText(/参考评分 4\.8/)).toBeInTheDocument()
+    expect(await screen.findByText(/参考 ¥16\/人/)).toBeInTheDocument()
+    expect(screen.getByText(/参考时段 21:00/)).toBeInTheDocument()
   })
 
   it('reads current profile statistics instead of the login snapshot', async () => {

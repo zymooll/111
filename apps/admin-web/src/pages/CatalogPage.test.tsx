@@ -7,7 +7,7 @@ const api = vi.hoisted(() => ({
   merchants: vi.fn().mockResolvedValue({ items: [], total: 0 }),
   menuItems: vi.fn().mockResolvedValue({ items: [], total: 0 }),
   catalogMetadata: vi.fn().mockResolvedValue({
-    areas: [{ id: 'area-1', name: '北区食堂' }],
+    areas: [{ id: 'area-1', name: '东园餐饮区' }],
     categories: [{ id: 'category-1', name: '米饭套餐' }],
     tags: [{ id: 'tag-1', campusId: 'campus-1', name: '清淡', kind: 'taste' }],
   }),
@@ -54,8 +54,8 @@ describe('CatalogPage completion flows', () => {
 
     const coordinateInputs = within(dialog).getAllByRole('spinbutton');
     await waitFor(() => {
-      expect(coordinateInputs[0]).toHaveValue('31.232400');
-      expect(coordinateInputs[1]).toHaveValue('121.476700');
+      expect(coordinateInputs[0]).toHaveValue('28.136945');
+      expect(coordinateInputs[1]).toHaveValue('112.992306');
     });
   });
 

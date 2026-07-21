@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --port 5174 --configLoader runner",
+    "dev": "vite --host 0.0.0.0 --port 7992 --strictPort --configLoader runner",
     "build": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json && vite build --configLoader runner",
-    "preview": "vite preview --port 5174 --configLoader runner",
+    "preview": "vite preview --host 0.0.0.0 --port 7992 --strictPort --configLoader runner",
     "typecheck": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json",
     "test": "vitest run",
     "test:watch": "vitest"

@@ -31,54 +31,54 @@ export const categoryTree: TreeOption[] = [
 
 export const areaTree: TreeOption[] = [
   {
-    id: 'north', label: '北校区', icon: '🏫', children: [
-      { id: 'north-canteen', label: '北苑食堂', icon: '①' },
-      { id: 'library', label: '图书馆周边', icon: '📚' },
-      { id: 'north-gate', label: '北门商业街', icon: '🚪' }
+    id: 'east-zone', label: '东园餐饮区', icon: '🏫', children: [
+      { id: 'linhai-canteen', label: '林海餐厅', icon: '①' },
+      { id: 'linyu-canteen', label: '林语餐厅', icon: '②' }
     ]
   },
   {
-    id: 'south', label: '南校区', icon: '🌳', children: [
-      { id: 'south-canteen', label: '南苑食堂', icon: '②' },
-      { id: 'dormitory', label: '学生宿舍区', icon: '🛏️' },
-      { id: 'south-gate', label: '南门生活区', icon: '🚪' }
+    id: 'west-zone', label: '西园餐饮区', icon: '🌳', children: [
+      { id: 'linyuan-canteen', label: '林苑餐厅', icon: '③' },
+      { id: 'lintao-canteen', label: '林涛餐厅', icon: '④' },
+      { id: 'linguan-canteen', label: '林冠餐厅', icon: '⑤' },
+      { id: 'student-five-canteen', label: '学生五食堂', icon: '⑥' }
     ]
   },
   {
-    id: 'east', label: '东校区', icon: '🌅', children: [
-      { id: 'sports', label: '体育馆周边', icon: '🏀' },
-      { id: 'east-canteen', label: '东区食堂', icon: '③' }
+    id: 'campus-gates', label: '校门生活圈', icon: '🚪', children: [
+      { id: 'west-backstreet', label: '西园后街', icon: '🍜' },
+      { id: 'campus-shops', label: '校内商业点', icon: '☕' }
     ]
   }
 ]
 
 export const merchants: Merchant[] = [
-  { id: 'm1', name: '南苑一楼 · 川味窗口', areaId: 'south-canteen', area: '南苑食堂 1F', categoryId: 'rice', category: '米饭套餐', priceLevel: 1, averagePrice: 16, rating: 4.8, reviewCount: 328, openUntil: '21:00', distance: 180, latitude: 31.2292, longitude: 121.4762, position: { x: 25, y: 36 }, tags: ['麻辣', '下饭', '高性价比'] },
-  { id: 'm2', name: '北苑 · 一碗好面', areaId: 'north-canteen', area: '北苑食堂 2F', categoryId: 'noodle', category: '面食粉类', priceLevel: 1, averagePrice: 14, rating: 4.7, reviewCount: 206, openUntil: '20:30', distance: 420, latitude: 31.22922, longitude: 121.47622, position: { x: 31, y: 33 }, tags: ['酸辣', '热汤', '出餐快'] },
-  { id: 'm3', name: '图书馆咖啡角', areaId: 'library', area: '图书馆西侧', categoryId: 'tea', category: '茶饮咖啡', priceLevel: 2, averagePrice: 22, rating: 4.9, reviewCount: 152, openUntil: '22:30', distance: 560, latitude: 31.2295, longitude: 121.479, position: { x: 49, y: 47 }, tags: ['安静', '低糖', '学习搭子'] },
-  { id: 'm4', name: '元气碗轻食实验室', areaId: 'sports', area: '体育馆南门', categoryId: 'salad', category: '沙拉轻食', priceLevel: 2, averagePrice: 27, rating: 4.6, reviewCount: 96, openUntil: '20:00', distance: 760, latitude: 31.226, longitude: 121.482, position: { x: 77, y: 62 }, tags: ['高蛋白', '低卡', '清爽'] },
-  { id: 'm5', name: '北门深夜食堂', areaId: 'north-gate', area: '北门商业街', categoryId: 'late-night', category: '夜宵烧烤', priceLevel: 2, averagePrice: 34, rating: 4.5, reviewCount: 411, openUntil: '次日 02:00', distance: 890, latitude: 31.224, longitude: 121.4765, position: { x: 31, y: 69 }, tags: ['夜宵', '烟火气', '朋友聚餐'] },
-  { id: 'm6', name: '南门 · 麦香烘焙', areaId: 'south-gate', area: '南门生活区', categoryId: 'bakery', category: '烘焙点心', priceLevel: 1, averagePrice: 12, rating: 4.8, reviewCount: 184, openUntil: '22:00', distance: 1040, latitude: 31.222, longitude: 121.474, position: { x: 19, y: 79 }, tags: ['早餐', '现烤', '微甜'] }
+  { id: 'm1', isDemo: true, name: '中南林业科技大学林海餐厅', areaId: 'linhai-canteen', area: '青园路357号东北80米', categoryId: 'rice', category: '米饭套餐', priceLevel: 1, averagePrice: 16, rating: 4.8, reviewCount: 32, openUntil: '21:00', distance: 26, latitude: 28.131782, longitude: 112.995009, position: { x: 82, y: 42 }, tags: ['综合食堂', '东园'] },
+  { id: 'm2', isDemo: true, name: '林语餐厅', areaId: 'linyu-canteen', area: '林大路105号（近常青公寓）', categoryId: 'noodle', category: '面食粉类', priceLevel: 1, averagePrice: 14, rating: 4.7, reviewCount: 24, openUntil: '21:00', distance: 201, latitude: 28.133125, longitude: 112.993875, position: { x: 66, y: 25 }, tags: ['粉面', '东园'] },
+  { id: 'm3', isDemo: true, name: '中南林业科技大学林苑餐厅', areaId: 'linyuan-canteen', area: '中南林业科技大学北门南220米', categoryId: 'salad', category: '轻食汤品', priceLevel: 1, averagePrice: 16, rating: 4.8, reviewCount: 28, openUntil: '21:00', distance: 235, latitude: 28.130286, longitude: 112.993001, position: { x: 55, y: 62 }, tags: ['综合食堂', '西园'] },
+  { id: 'm4', isDemo: true, name: '林涛餐厅', areaId: 'lintao-canteen', area: '中南林业科技大学西园14栋', categoryId: 'rice', category: '米饭套餐', priceLevel: 1, averagePrice: 15, rating: 4.6, reviewCount: 21, openUntil: '21:00', distance: 502, latitude: 28.129644, longitude: 112.990275, position: { x: 18, y: 71 }, tags: ['综合食堂', '西园'] },
+  { id: 'm5', isDemo: true, name: '林冠餐厅', areaId: 'linguan-canteen', area: '韶山南路498号中南林业科技大学', categoryId: 'late-night', category: '火锅烧烤', priceLevel: 1, averagePrice: 16, rating: 4.5, reviewCount: 19, openUntil: '21:00', distance: 503, latitude: 28.129298, longitude: 112.990471, position: { x: 21, y: 76 }, tags: ['综合食堂', '西园'] },
+  { id: 'm6', isDemo: true, name: '中南林业科技大学学生五食堂', areaId: 'student-five-canteen', area: '韶山南路498号中南林业科技大学', categoryId: 'street', category: '校园简餐', priceLevel: 1, averagePrice: 14, rating: 4.6, reviewCount: 18, openUntil: '21:00', distance: 255, latitude: 28.130124, longitude: 112.992881, position: { x: 53, y: 64 }, tags: ['校园食堂', '西园'] }
 ]
 
 export const dishes: Dish[] = [
-  { id: 'd1', merchantId: 'm1', name: '招牌藤椒鸡双拼饭', subtitle: '藤椒鲜香 × 酥脆小酥肉，一份满足两种快乐', image: '/dishes/rice-bowl.svg', gallery: ['/dishes/rice-bowl.svg', '/dishes/energy-bowl.svg'], price: 18.8, originalPrice: 22, rating: 4.9, reviewCount: 186, categoryId: 'rice', category: '米饭套餐', tags: ['微辣', '高蛋白', '招牌'], reason: '你喜欢微辣和丰富口感，这份双拼刚刚好', match: 96, calories: 680, waitMinutes: 8, ingredients: ['藤椒鸡', '小酥肉', '时蔬', '米饭'] },
-  { id: 'd2', merchantId: 'm2', name: '酸汤肥牛米线', subtitle: '酸香开胃，汤底每天现熬', image: '/dishes/noodles.svg', gallery: ['/dishes/noodles.svg', '/dishes/rice-bowl.svg'], price: 15.8, rating: 4.8, reviewCount: 141, categoryId: 'noodle', category: '面食粉类', tags: ['酸辣', '热汤', '暖胃'], reason: '今天降温，来一碗你常点的酸辣热汤吧', match: 94, calories: 590, waitMinutes: 6, ingredients: ['肥牛', '米线', '番茄', '金针菇'] },
-  { id: 'd3', merchantId: 'm3', name: '海盐青提冷萃', subtitle: '清甜果香，默认三分糖', image: '/dishes/cold-brew.svg', gallery: ['/dishes/cold-brew.svg', '/dishes/bagel.svg'], price: 19, rating: 4.9, reviewCount: 89, categoryId: 'tea', category: '茶饮咖啡', tags: ['低糖', '清爽', '冷萃'], reason: '适合下午自习的轻负担饮品，离图书馆仅 2 分钟', match: 91, calories: 126, waitMinutes: 4, ingredients: ['冷萃茶', '青提', '海盐奶盖'] },
-  { id: 'd4', merchantId: 'm4', name: '香煎鸡腿能量碗', subtitle: '足量蛋白和五色蔬菜，饱腹不犯困', image: '/dishes/energy-bowl.svg', gallery: ['/dishes/energy-bowl.svg', '/dishes/rice-bowl.svg'], price: 26, rating: 4.7, reviewCount: 73, categoryId: 'salad', category: '沙拉轻食', tags: ['高蛋白', '低卡', '健身'], reason: '匹配你的健身目标，蛋白质约 42g', match: 89, calories: 468, waitMinutes: 10, ingredients: ['鸡腿肉', '藜麦', '西兰花', '南瓜'] },
-  { id: 'd5', merchantId: 'm5', name: '炭火烤串双人套餐', subtitle: '12 串荤素搭配，加赠冰粉', image: '/dishes/skewers.svg', gallery: ['/dishes/skewers.svg', '/dishes/noodles.svg'], price: 49.9, originalPrice: 62, rating: 4.6, reviewCount: 238, categoryId: 'late-night', category: '夜宵烧烤', tags: ['夜宵', '双人', '炭烤'], reason: '今晚适合和室友分享，收藏用户复购率很高', match: 86, calories: 920, waitMinutes: 18, ingredients: ['牛肉串', '鸡翅', '豆皮', '蔬菜串'] },
-  { id: 'd6', merchantId: 'm6', name: '流心芝士贝果', subtitle: '外韧内软，早餐 8 点前第二件半价', image: '/dishes/bagel.svg', gallery: ['/dishes/bagel.svg', '/dishes/cold-brew.svg'], price: 9.9, rating: 4.8, reviewCount: 112, categoryId: 'bakery', category: '烘焙点心', tags: ['早餐', '现烤', '芝士'], reason: '符合你的早餐预算，步行到教学楼顺路可取', match: 84, calories: 320, waitMinutes: 2, ingredients: ['高筋面粉', '奶油芝士', '牛奶'] }
+  { id: 'd1', isDemo: true, merchantId: 'm1', name: '番茄牛腩饭', subtitle: '依据综合食堂类型生成的演示菜品，实际供应以现场为准', image: '/dishes/rice-bowl.svg', gallery: ['/dishes/rice-bowl.svg', '/dishes/energy-bowl.svg'], price: 18, rating: 4.8, reviewCount: 18, categoryId: 'rice', category: '米饭套餐', tags: ['酸甜', '高蛋白'], reason: '符合你的米饭与高蛋白偏好', match: 96, calories: 680, waitMinutes: 8, ingredients: ['牛腩', '番茄', '时蔬', '米饭'] },
+  { id: 'd2', isDemo: true, merchantId: 'm2', name: '菌菇鸡汤面', subtitle: '依据粉面档口类型生成的演示菜品，实际供应以现场为准', image: '/dishes/noodles.svg', gallery: ['/dishes/noodles.svg', '/dishes/rice-bowl.svg'], price: 14, rating: 4.7, reviewCount: 15, categoryId: 'noodle', category: '面食粉类', tags: ['清淡', '热汤'], reason: '清淡暖胃，适合日常午餐', match: 94, calories: 560, waitMinutes: 6, ingredients: ['鸡肉', '菌菇', '面条', '青菜'] },
+  { id: 'd3', isDemo: true, merchantId: 'm3', name: '鸡胸时蔬能量碗', subtitle: '依据综合餐饮类型生成的演示菜品，实际供应以现场为准', image: '/dishes/energy-bowl.svg', gallery: ['/dishes/energy-bowl.svg', '/dishes/rice-bowl.svg'], price: 18, rating: 4.8, reviewCount: 16, categoryId: 'salad', category: '轻食汤品', tags: ['高蛋白', '清淡'], reason: '匹配你的清淡与高蛋白偏好', match: 91, calories: 468, waitMinutes: 10, ingredients: ['鸡胸肉', '杂粮', '西兰花', '南瓜'] },
+  { id: 'd4', isDemo: true, merchantId: 'm4', name: '新奥尔良鸡扒饭', subtitle: '依据校园食堂类型生成的演示菜品，实际供应以现场为准', image: '/dishes/rice-bowl.svg', gallery: ['/dishes/rice-bowl.svg', '/dishes/energy-bowl.svg'], price: 16, rating: 4.6, reviewCount: 13, categoryId: 'rice', category: '米饭套餐', tags: ['微辣', '高蛋白'], reason: '预算适中，适合赶课前快速用餐', match: 89, calories: 650, waitMinutes: 8, ingredients: ['鸡扒', '时蔬', '米饭'] },
+  { id: 'd5', isDemo: true, merchantId: 'm5', name: '林冠骨汤麻辣烫', subtitle: '依据餐厅类型生成的演示菜品，实际供应以现场为准', image: '/dishes/skewers.svg', gallery: ['/dishes/skewers.svg', '/dishes/noodles.svg'], price: 18, rating: 4.5, reviewCount: 12, categoryId: 'late-night', category: '火锅烧烤', tags: ['香辣', '暖胃'], reason: '适合偏好香辣和自由搭配的用餐场景', match: 86, calories: 720, waitMinutes: 12, ingredients: ['时蔬', '豆制品', '丸类', '骨汤'] },
+  { id: 'd6', isDemo: true, merchantId: 'm6', name: '五食堂番茄鸡蛋面', subtitle: '依据校园食堂类型生成的演示菜品，实际供应以现场为准', image: '/dishes/noodles.svg', gallery: ['/dishes/noodles.svg', '/dishes/rice-bowl.svg'], price: 11, rating: 4.6, reviewCount: 11, categoryId: 'noodle', category: '面食粉类', tags: ['清淡', '实惠'], reason: '符合你的日常预算和清淡口味', match: 84, calories: 520, waitMinutes: 6, ingredients: ['番茄', '鸡蛋', '面条', '青菜'] }
 ]
 
 export const initialReviews: Review[] = [
-  { id: 'r1', dishId: 'd1', userId: 'u2', userName: '不想早八', avatarText: '八', rating: 5, content: '藤椒香很足但不会呛，酥肉还是脆的。窗口阿姨打菜也很大方，赶课的时候八分钟拿到。', images: ['/dishes/rice-bowl.svg'], createdAt: '今天 12:26', likes: 48, status: 'published' },
-  { id: 'r2', dishId: 'd1', userId: 'u3', userName: '橘子汽水', avatarText: '橘', rating: 4, content: '建议米饭少一点、青菜多一点，整体很下饭。微辣对我正合适。', images: [], createdAt: '昨天 18:42', likes: 21, status: 'published' },
-  { id: 'r3', dishId: 'd2', userId: 'u4', userName: '汤汤水水', avatarText: '汤', rating: 5, content: '酸度很舒服，冬天下课来一碗特别治愈。', images: [], createdAt: '07-16', likes: 16, status: 'published' },
-  { id: 'r4', dishId: 'd3', userId: 'u5', userName: '图书馆常驻', avatarText: '书', rating: 5, content: '三分糖清爽不腻，自习带着喝很合适。', images: [], createdAt: '07-15', likes: 11, status: 'published' }
+  { id: 'r1', dishId: 'd1', userId: 'u2', userName: '演示同学甲', avatarText: '甲', rating: 5, content: '演示评价（非真实用户评价）：番茄风味浓，牛腩口感软，适合作为午餐示例。', images: ['/dishes/rice-bowl.svg'], createdAt: '演示数据', likes: 8, status: 'published' },
+  { id: 'r2', dishId: 'd1', userId: 'u3', userName: '演示同学乙', avatarText: '乙', rating: 4, content: '演示评价（非真实用户评价）：分量设定适中，配菜结构适合功能展示。', images: [], createdAt: '演示数据', likes: 5, status: 'published' },
+  { id: 'r3', dishId: 'd2', userId: 'u4', userName: '演示同学丙', avatarText: '丙', rating: 5, content: '演示评价（非真实用户评价）：汤面清淡暖胃，出餐时间为模拟值。', images: [], createdAt: '演示数据', likes: 4, status: 'published' },
+  { id: 'r4', dishId: 'd3', userId: 'u5', userName: '演示同学丁', avatarText: '丁', rating: 5, content: '演示评价（非真实用户评价）：蛋白质和蔬菜搭配用于展示偏好匹配。', images: [], createdAt: '演示数据', likes: 3, status: 'published' }
 ]
 
 export const demoUser: User = {
-  id: 'u1', username: 'foodie', email: 'foodie@campus.edu', displayName: '蓝莓同学', publishedReviews: 12, views: 2864
+  id: 'u1', username: 'foodie', email: 'demo@campus-foodie.local', displayName: '演示用户', publishedReviews: 12, views: 2864
 }
 
 export function findTreeLabel(tree: TreeOption[], id?: string) {

@@ -34,11 +34,11 @@ export function LoginPage() {
         <div className="showcase-copy">
           <Tag color="blue">校园饮食推荐系统</Tag>
           <h1>让校园里的每一餐<br />都值得期待</h1>
-          <p>统一管理用户、商家、菜品与评价，让可信数据持续驱动个性化推荐。</p>
+          <p>统一管理用户、商家、菜品与评价，让数据来源、演示边界和审核记录保持可追溯。</p>
           <div className="showcase-metrics">
-            <div><strong>12,846</strong><span>活跃用户</span></div>
-            <div><strong>1,842</strong><span>在售菜品</span></div>
-            <div><strong>98.6%</strong><span>审核及时率</span></div>
+            <div><strong>校区级</strong><span>数据隔离</span></div>
+            <div><strong>全流程</strong><span>内容审核</span></div>
+            <div><strong>可追溯</strong><span>操作审计</span></div>
           </div>
         </div>
         <div className="showcase-orb showcase-orb-one" />

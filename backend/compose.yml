@@ -2,14 +2,14 @@ services:
   api:
     build: .
     ports:
-      - "8000:8000"
+      - "7993:8000"
     environment:
       ENVIRONMENT: ${ENVIRONMENT:-development}
       DATABASE_URL: postgresql+psycopg://campus:campus@postgres:5432/campus_food
       REDIS_URL: redis://redis:6379/0
       SECRET_KEY: ${SECRET_KEY:-change-this-before-production}
       AUTO_SEED: ${AUTO_SEED:-true}
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://localhost:5174}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:7991,http://localhost:7992,http://127.0.0.1:7991,http://127.0.0.1:7992}
       DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
       DEEPSEEK_BASE_URL: ${DEEPSEEK_BASE_URL:-https://api.deepseek.com}
     volumes:

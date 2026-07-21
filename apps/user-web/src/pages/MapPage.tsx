@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Popup, Switch, Toast } from 'antd-mobile'
 import { ChevronDown, Layers3, LocateFixed, MapPin, Navigation, Search, SlidersHorizontal, Star, X } from 'lucide-react'
+import { CAMPUS_CENTER_GCJ02 } from '../data/campus'
 import { api } from '../services/api'
 import { useAppState } from '../store/AppState'
 import type { MapFilters, Merchant } from '../types'
@@ -56,6 +57,30 @@ function makeGroups(items: MerchantWithFavorite[]): MapGroup[] {
   return groups
 }
 
+function extractClusterMerchants(data: unknown): MerchantWithFavorite[] {
+  const pending = Array.isArray(data) ? [...data] : [data]
+  const merchants = new Map<string, MerchantWithFavorite>()
+
+  while (pending.length) {
+    const entry = pending.pop()
+    if (Array.isArray(entry)) {
+      pending.push(...entry)
+      continue
+    }
+    if (!entry || typeof entry !== 'object') continue
+
+    const point = entry as { merchant?: MerchantWithFavorite; data?: unknown }
+    if (point.merchant) merchants.set(point.merchant.id, point.merchant)
+    if (point.data) pending.push(point.data)
+  }
+
+  return [...merchants.values()]
+}
+
+export function recenterAmapToCampus(map?: { setZoomAndCenter?: (zoom: number, center: [number, number]) => void } | null) {
+  map?.setZoomAndCenter?.(17, [CAMPUS_CENTER_GCJ02.longitude, CAMPUS_CENTER_GCJ02.latitude])
+}
+
 export function MapPage() {
   const { favorites, toggleFavorite } = useAppState()
   const [filters, setFilters] = useState<MapFilters>({})
@@ -105,7 +130,7 @@ export function MapPage() {
       const merchants = (query.data ?? []).filter((merchant) => merchant.longitude !== undefined && merchant.latitude !== undefined)
       const center = merchants.length
         ? [merchants.reduce((sum, merchant) => sum + Number(merchant.longitude), 0) / merchants.length, merchants.reduce((sum, merchant) => sum + Number(merchant.latitude), 0) / merchants.length]
-        : [121.4782, 31.2285]
+        : [CAMPUS_CENTER_GCJ02.longitude, CAMPUS_CENTER_GCJ02.latitude]
       map = new AMap.Map(amapRoot.current, {
         center,
         zoom: 17,
@@ -160,11 +185,9 @@ export function MapPage() {
             bindSingleClick(context.marker, content, [merchant])
           },
           renderClusterMarker: (context: any) => {
-            const clusterMerchants = (context.clusterData ?? [])
-              .map((entry: any) => entry?.merchant)
-              .filter(Boolean) as MerchantWithFavorite[]
+            const clusterMerchants = extractClusterMerchants(context.clusterData)
             const containsFavorite = clusterMerchants.some((merchant) => merchant.favorite)
-            const count = clusterMerchants.length || Number(context.count) || 0
+            const count = Number(context.count) || clusterMerchants.length
             const content = document.createElement('button')
             content.type = 'button'
             content.className = `amap-cluster-marker ${containsFavorite ? 'has-star' : ''}`
@@ -246,10 +269,6 @@ export function MapPage() {
           <div className="map-water water-one" />
           <div className="map-water water-two" />
           <div className="map-road road-a" /><div className="map-road road-b" /><div className="map-road road-c" />
-          <span className="map-label label-library">图书馆</span>
-          <span className="map-label label-sports">体育馆</span>
-          <span className="map-label label-dorm">学生宿舍</span>
-          <span className="map-label label-south">南苑食堂</span>
           {groups.map((group) => group.items.length > 1 ? (
             <button key={group.id} type="button" className={`map-marker cluster ${group.favorite ? 'has-star' : ''}`} style={{ left: `${group.x}%`, top: `${group.y}%` }} onClick={() => setSelectedGroup(group)} aria-label={`附近 ${group.items.length} 家商家${group.favorite ? '，含收藏商家' : ''}`} data-testid="merchant-cluster-marker">
               {group.favorite && <Star className="marker-star" size={14} fill="currentColor" />}
@@ -265,7 +284,7 @@ export function MapPage() {
         {query.data?.length === 0 && <div className="map-empty"><span>🗺️</span><strong>没有符合条件的商家</strong><small>试试放宽筛选条件</small></div>}
         <div className="map-side-tools">
           <button type="button" aria-label="地图图层"><Layers3 size={20} /></button>
-          <button type="button" aria-label="定位到当前位置" onClick={() => { amapInstance.current?.setZoomAndCenter?.(17, [121.4782, 31.2285]); Toast.show('已定位到校园中心') }}><LocateFixed size={20} /></button>
+          <button type="button" aria-label="定位到校园中心" onClick={() => { recenterAmapToCampus(amapInstance.current); Toast.show('已定位到校园中心') }}><LocateFixed size={20} /></button>
         </div>
         {!useAmap && <><div className="my-location" style={{ left: '54%', top: '72%' }}><span /></div><div className="map-attribution">Campus Foodie · 示意地图</div></>}
       </section>
@@ -281,7 +300,7 @@ export function MapPage() {
               {selectedGroup.items.map((merchant) => (
                 <article className="merchant-mini-card" key={merchant.id}>
                   <div className="merchant-mini-card__icon">{merchant.category.includes('饮') ? '🧋' : merchant.category.includes('轻食') ? '🥗' : '🍜'}</div>
-                  <div className="merchant-mini-card__content"><strong>{merchant.name}</strong><span><b>★ {merchant.rating}</b> · {merchant.category} · ¥{merchant.averagePrice}/人</span><small><Navigation size={13} /> {merchant.distance}m · 营业至 {merchant.openUntil}</small></div>
+                  <div className="merchant-mini-card__content"><strong>{merchant.name}</strong><span><b>{merchant.isDemo ? `参考评分 ${merchant.rating}` : `★ ${merchant.rating}`}</b> · {merchant.category} · {merchant.isDemo ? '参考 ' : ''}¥{merchant.averagePrice}/人</span><small><Navigation size={13} /> {merchant.distance}m · {merchant.isDemo ? '参考时段' : '营业至'} {merchant.openUntil}</small></div>
                   <button type="button" className={merchant.favorite ? 'mini-favorite is-favorite' : 'mini-favorite'} onClick={() => favorite(merchant.id)} aria-label="收藏商家"><Star size={20} fill={merchant.favorite ? 'currentColor' : 'none'} /></button>
                 </article>
               ))}

@@ -3,6 +3,7 @@ import type {
   AuditLog,
   AuditQuery,
   CampusUser,
+  CatalogMetadata,
   DashboardData,
   EntityStatus,
   ImportJob,
@@ -18,6 +19,7 @@ import type {
   ReviewStatus,
   TagDefinition,
 } from '../types';
+import { CAMPUS_NAME } from '../constants/campus';
 
 const admin: AdminUser = {
   id: 'admin-001',
@@ -25,33 +27,52 @@ const admin: AdminUser = {
   name: '林老师',
   role: 'super_admin',
   campusId: 'campus-main',
-  campusName: '示范大学主校区',
+  campusName: CAMPUS_NAME,
 };
+
+const mockCatalogAreas: CatalogMetadata['areas'] = [
+  { id: 'mock-area-east', name: '东园餐饮区' },
+  { id: 'mock-area-linhai', name: '林海餐厅及周边档口' },
+  { id: 'mock-area-west', name: '西园及后街餐饮区' },
+];
+
+const mockCatalogCategories: CatalogMetadata['categories'] = [
+  { id: 'mock-category-campus', name: '校园食堂' },
+  { id: 'mock-category-fast-food', name: '中式快餐' },
+  { id: 'mock-category-rice', name: '米饭' },
+  { id: 'mock-category-noodle', name: '面食' },
+  { id: 'mock-category-light', name: '轻食' },
+  { id: 'mock-category-hot-food', name: '热食' },
+  { id: 'mock-category-drink', name: '饮品' },
+  { id: 'mock-category-snack', name: '小吃' },
+  { id: 'mock-category-combo', name: '套餐' },
+  { id: 'mock-category-other', name: '其他' },
+];
 
 const seedUsers: CampusUser[] = [
   { id: 'U10001', username: '小林今天吃什么', email: 'lin@example.edu.cn', status: 'active', reviewCount: 18, impactViews: 3240, favoriteCount: 12, createdAt: '2026-05-12 09:20', lastActive: '2026-07-18 10:42', dietaryTags: ['微辣', '低糖'] },
   { id: 'U10002', username: '早八也要吃饱', email: 'zao8@example.edu.cn', status: 'active', reviewCount: 6, impactViews: 875, favoriteCount: 21, createdAt: '2026-05-19 14:30', lastActive: '2026-07-18 09:13', dietaryTags: ['性价比', '清淡'] },
-  { id: 'U10003', username: '北门干饭王', email: 'fanwang@example.edu.cn', status: 'frozen', reviewCount: 32, impactViews: 9120, favoriteCount: 8, createdAt: '2026-04-03 11:08', lastActive: '2026-07-16 22:01', dietaryTags: ['重辣', '大份'] },
+  { id: 'U10003', username: '西园干饭王', email: 'fanwang@example.edu.cn', status: 'frozen', reviewCount: 32, impactViews: 9120, favoriteCount: 8, createdAt: '2026-04-03 11:08', lastActive: '2026-07-16 22:01', dietaryTags: ['重辣', '大份'] },
   { id: 'U10004', username: '一杯冰美式', email: 'coffee@example.edu.cn', status: 'unverified', reviewCount: 0, impactViews: 0, favoriteCount: 3, createdAt: '2026-07-17 18:36', lastActive: '2026-07-17 18:36', dietaryTags: ['咖啡', '低脂'] },
   { id: 'U10005', username: '图书馆常驻', email: 'library@example.edu.cn', status: 'active', reviewCount: 11, impactViews: 1860, favoriteCount: 14, createdAt: '2026-06-01 08:45', lastActive: '2026-07-18 08:05', dietaryTags: ['素食友好'] },
-  { id: 'U10006', username: '南苑小队长', email: 'nanyuan@example.edu.cn', status: 'active', reviewCount: 9, impactViews: 2310, favoriteCount: 19, createdAt: '2026-06-08 12:15', lastActive: '2026-07-17 20:54', dietaryTags: ['酸甜', '面食'] },
+  { id: 'U10006', username: '林苑小队长', email: 'linyuan@example.edu.cn', status: 'active', reviewCount: 9, impactViews: 2310, favoriteCount: 19, createdAt: '2026-06-08 12:15', lastActive: '2026-07-17 20:54', dietaryTags: ['酸甜', '面食'] },
 ];
 
 const seedMerchants: Merchant[] = [
-  { id: 'M001', name: '学苑一食堂·风味档口', area: '学苑一食堂', category: '校园食堂', address: '学苑路 1 号一层东区', status: 'online', rating: 4.7, dishCount: 24, favoriteCount: 486, openingHours: '06:30-21:00', contact: '010-60001001', updatedAt: '2026-07-18 09:30' },
-  { id: 'M002', name: '北门重庆小面', area: '北门商业街', category: '面食', address: '北门商业街 18 号', status: 'online', rating: 4.8, dishCount: 16, favoriteCount: 721, openingHours: '10:00-23:00', contact: '13800001002', updatedAt: '2026-07-17 20:16' },
-  { id: 'M003', name: '南苑轻食实验室', area: '南苑生活区', category: '轻食', address: '南苑 7 号楼底商', status: 'online', rating: 4.6, dishCount: 19, favoriteCount: 355, openingHours: '09:30-21:30', contact: '13800001003', updatedAt: '2026-07-18 08:02' },
-  { id: 'M004', name: '东区咖啡站', area: '东区图书馆', category: '饮品', address: '东区图书馆一层', status: 'offline', rating: 4.5, dishCount: 12, favoriteCount: 298, openingHours: '08:00-20:00', contact: '010-60001004', updatedAt: '2026-07-16 17:45' },
-  { id: 'M005', name: '湖畔砂锅小馆', area: '湖畔餐厅', category: '中式快餐', address: '湖畔餐厅二层 05 号', status: 'draft', rating: 0, dishCount: 8, favoriteCount: 0, openingHours: '10:30-20:30', contact: '13800001005', updatedAt: '2026-07-18 10:11' },
+  { id: 'M001', areaId: 'mock-area-linhai', categoryId: 'mock-category-campus', name: '中南林业科技大学林海餐厅', description: '高德 POI B0FFK85GDN；菜单与评分为演示生成。', area: '林海餐厅及周边档口', category: '校园食堂', address: '青园路357号东北80米', latitude: 28.135160, longitude: 112.989410, status: 'online', rating: 4.8, dishCount: 1, favoriteCount: 48, openingHours: '07:00-21:00', contact: '待现场核验', updatedAt: '2026-07-22 12:00' },
+  { id: 'M002', areaId: 'mock-area-east', categoryId: 'mock-category-campus', name: '林语餐厅', description: '高德 POI B0FFHS6IE6；菜单与评分为演示生成。', area: '东园餐饮区', category: '校园食堂', address: '中南林业科技大学林大路105号(近常青公寓)', latitude: 28.136507, longitude: 112.988280, status: 'online', rating: 4.7, dishCount: 2, favoriteCount: 36, openingHours: '07:00-21:00', contact: '待现场核验', updatedAt: '2026-07-22 12:00' },
+  { id: 'M003', areaId: 'mock-area-west', categoryId: 'mock-category-campus', name: '中南林业科技大学林苑餐厅', description: '高德 POI B0FFH6K3IJ；菜单与评分为演示生成。', area: '西园及后街餐饮区', category: '校园食堂', address: '中南林业科技大学北门南220米', latitude: 28.133670, longitude: 112.987409, status: 'online', rating: 4.8, dishCount: 1, favoriteCount: 41, openingHours: '07:00-21:00', contact: '待现场核验', updatedAt: '2026-07-22 12:00' },
+  { id: 'M004', areaId: 'mock-area-west', categoryId: 'mock-category-campus', name: '林涛餐厅', description: '高德 POI B0FFIIUFLZ；菜单与评分为演示生成。', area: '西园及后街餐饮区', category: '校园食堂', address: '中南林业科技大学西园14栋', latitude: 28.133036, longitude: 112.984693, status: 'online', rating: 4.6, dishCount: 1, favoriteCount: 29, openingHours: '07:00-21:00', contact: '待现场核验', updatedAt: '2026-07-22 12:00' },
+  { id: 'M005', areaId: 'mock-area-west', categoryId: 'mock-category-campus', name: '林冠餐厅', description: '高德 POI B0FFIZQWMY；菜单与评分为演示生成。', area: '西园及后街餐饮区', category: '校园食堂', address: '韶山南路498号中南林业科技大学', latitude: 28.132689, longitude: 112.984888, status: 'online', rating: 4.5, dishCount: 1, favoriteCount: 27, openingHours: '07:00-21:00', contact: '待现场核验', updatedAt: '2026-07-22 12:00' },
 ];
 
 const seedItems: MenuItem[] = [
-  { id: 'D001', name: '招牌酸汤肥牛饭', merchantId: 'M001', merchantName: '学苑一食堂·风味档口', type: 'dish', category: '米饭', price: 16, rating: 4.8, reviewCount: 192, status: 'online', tags: ['酸辣', '下饭'], updatedAt: '2026-07-18 09:32' },
-  { id: 'D002', name: '重庆豌杂小面', merchantId: 'M002', merchantName: '北门重庆小面', type: 'dish', category: '面食', price: 14, rating: 4.9, reviewCount: 285, status: 'online', tags: ['麻辣', '人气'], updatedAt: '2026-07-17 20:18' },
-  { id: 'D003', name: '鸡胸牛油果能量碗', merchantId: 'M003', merchantName: '南苑轻食实验室', type: 'dish', category: '轻食', price: 22, rating: 4.7, reviewCount: 116, status: 'online', tags: ['高蛋白', '低脂'], updatedAt: '2026-07-18 08:10' },
-  { id: 'D004', name: '冰美式早餐套餐', merchantId: 'M004', merchantName: '东区咖啡站', type: 'combo', category: '套餐', price: 18, rating: 4.6, reviewCount: 74, status: 'offline', tags: ['早餐', '咖啡'], updatedAt: '2026-07-16 17:46' },
-  { id: 'D005', name: '菌菇砂锅饭', merchantId: 'M005', merchantName: '湖畔砂锅小馆', type: 'dish', category: '米饭', price: 19, rating: 0, reviewCount: 0, status: 'draft', tags: ['菌菇', '热食'], updatedAt: '2026-07-18 10:12' },
-  { id: 'D006', name: '双人小面套餐', merchantId: 'M002', merchantName: '北门重庆小面', type: 'combo', category: '套餐', price: 35, rating: 4.7, reviewCount: 46, status: 'online', tags: ['双人', '实惠'], updatedAt: '2026-07-15 15:20' },
+  { id: 'D001', categoryId: 'mock-category-rice', name: '番茄牛腩饭', description: '演示生成，非门店实测菜单。', merchantId: 'M001', merchantName: '中南林业科技大学林海餐厅', type: 'dish', category: '米饭', price: 18, rating: 4.8, reviewCount: 18, status: 'online', tags: ['酸甜', '高蛋白'], updatedAt: '2026-07-22 12:00' },
+  { id: 'D002', categoryId: 'mock-category-noodle', name: '菌菇鸡汤面', description: '演示生成，非门店实测菜单。', merchantId: 'M002', merchantName: '林语餐厅', type: 'dish', category: '面食', price: 14, rating: 4.7, reviewCount: 15, status: 'online', tags: ['清淡', '暖胃'], updatedAt: '2026-07-22 12:00' },
+  { id: 'D003', categoryId: 'mock-category-light', name: '鸡胸时蔬能量碗', description: '演示生成，非门店实测菜单。', merchantId: 'M003', merchantName: '中南林业科技大学林苑餐厅', type: 'dish', category: '轻食', price: 18, rating: 4.8, reviewCount: 16, status: 'online', tags: ['高蛋白', '清淡'], updatedAt: '2026-07-22 12:00' },
+  { id: 'D004', categoryId: 'mock-category-rice', name: '新奥尔良鸡扒饭', description: '演示生成，非门店实测菜单。', merchantId: 'M004', merchantName: '林涛餐厅', type: 'dish', category: '米饭', price: 16, rating: 4.6, reviewCount: 13, status: 'online', tags: ['微辣', '高蛋白'], updatedAt: '2026-07-22 12:00' },
+  { id: 'D005', categoryId: 'mock-category-hot-food', name: '林冠骨汤麻辣烫', description: '演示生成，非门店实测菜单。', merchantId: 'M005', merchantName: '林冠餐厅', type: 'dish', category: '热食', price: 18, rating: 4.5, reviewCount: 12, status: 'online', tags: ['香辣', '暖胃'], updatedAt: '2026-07-22 12:00' },
+  { id: 'D006', categoryId: 'mock-category-noodle', name: '林语酸辣粉', description: '演示生成，非门店实测菜单。', merchantId: 'M002', merchantName: '林语餐厅', type: 'dish', category: '面食', price: 11, rating: 4.6, reviewCount: 10, status: 'online', tags: ['酸辣', '实惠'], updatedAt: '2026-07-22 12:00' },
 ];
 
 const seedTags: TagDefinition[] = [
@@ -60,29 +81,33 @@ const seedTags: TagDefinition[] = [
   { id: 'T003', campusId: 'campus-main', name: '清淡', kind: 'taste', usageCount: 0 },
   { id: 'T004', campusId: 'campus-main', name: '高蛋白', kind: 'diet', usageCount: 0 },
   { id: 'T005', campusId: 'campus-main', name: '素食友好', kind: 'diet', usageCount: 0 },
+  { id: 'T006', campusId: 'campus-main', name: '暖胃', kind: 'taste', usageCount: 0 },
+  { id: 'T007', campusId: 'campus-main', name: '香辣', kind: 'taste', usageCount: 0 },
+  { id: 'T008', campusId: 'campus-main', name: '酸辣', kind: 'taste', usageCount: 0 },
+  { id: 'T009', campusId: 'campus-main', name: '实惠', kind: 'taste', usageCount: 0 },
 ];
 
 const seedReviews: Review[] = [
-  { id: 'R26071801', userName: '小林今天吃什么', userId: 'U10001', itemName: '招牌酸汤肥牛饭', merchantName: '学苑一食堂·风味档口', rating: 5, content: '酸汤很开胃，肥牛量也足。午饭高峰排队大约十分钟，建议十一点半前去。', images: [], status: 'pending_manual', riskLevel: 'low', createdAt: '2026-07-18 10:36' },
-  { id: 'R26071802', userName: '北门干饭王', userId: 'U10003', itemName: '重庆豌杂小面', merchantName: '北门重庆小面', rating: 2, content: '今天出餐太慢了，而且口味明显偏咸，希望商家改善。', images: [], status: 'pending_manual', riskLevel: 'medium', createdAt: '2026-07-18 09:52' },
-  { id: 'R26071803', userName: '早八也要吃饱', userId: 'U10002', itemName: '鸡胸牛油果能量碗', merchantName: '南苑轻食实验室', rating: 5, content: '蔬菜很新鲜，酱汁可以单独放，对控卡很友好。', images: [], status: 'published', riskLevel: 'low', createdAt: '2026-07-17 19:30' },
-  { id: 'R26071804', userName: '南苑小队长', userId: 'U10006', itemName: '冰美式早餐套餐', merchantName: '东区咖啡站', rating: 4, content: '面包加热得刚好，咖啡稳定，适合赶早八。', images: [], status: 'published', riskLevel: 'low', createdAt: '2026-07-17 08:12' },
-  { id: 'R26071805', userName: '匿名用户', userId: 'U10007', itemName: '重庆豌杂小面', merchantName: '北门重庆小面', rating: 1, content: '包含疑似广告联系方式，需要人工复核。', images: [], status: 'rejected', riskLevel: 'high', reason: '包含营销及联系方式', createdAt: '2026-07-16 22:08' },
-  { id: 'R26071806', userName: '图书馆常驻', userId: 'U10005', itemName: '招牌酸汤肥牛饭', merchantName: '学苑一食堂·风味档口', rating: 4, content: '整体不错，今天肥牛稍微有一点少。', images: [], status: 'hidden', riskLevel: 'low', reason: '用户申诉处理中', createdAt: '2026-07-15 12:04' },
+  { id: 'R26072201', userName: '演示同学甲', userId: 'U10001', itemName: '番茄牛腩饭', merchantName: '中南林业科技大学林海餐厅', rating: 5, content: '演示评价（非真实用户评价）：番茄风味和牛腩口感用于展示推荐结果。', images: [], status: 'pending_manual', riskLevel: 'low', createdAt: '2026-07-22 12:10' },
+  { id: 'R26072202', userName: '演示同学乙', userId: 'U10003', itemName: '菌菇鸡汤面', merchantName: '林语餐厅', rating: 4, content: '演示评价（非真实用户评价）：清淡汤面用于展示口味标签和审核流程。', images: [], status: 'pending_manual', riskLevel: 'low', createdAt: '2026-07-22 12:08' },
+  { id: 'R26072203', userName: '演示同学丙', userId: 'U10002', itemName: '鸡胸时蔬能量碗', merchantName: '中南林业科技大学林苑餐厅', rating: 5, content: '演示评价（非真实用户评价）：蛋白质和蔬菜搭配用于展示偏好匹配。', images: [], status: 'published', riskLevel: 'low', createdAt: '2026-07-22 12:06' },
+  { id: 'R26072204', userName: '演示同学丁', userId: 'U10006', itemName: '新奥尔良鸡扒饭', merchantName: '林涛餐厅', rating: 4, content: '演示评价（非真实用户评价）：价格、分量和出餐时间均为模拟值。', images: [], status: 'published', riskLevel: 'low', createdAt: '2026-07-22 12:04' },
+  { id: 'R26072205', userName: '匿名用户', userId: 'U10007', itemName: '菌菇鸡汤面', merchantName: '林语餐厅', rating: 1, content: '演示评价（非真实用户评价）：该审核样本包含疑似广告联系方式，需要人工复核。', images: [], status: 'rejected', riskLevel: 'high', reason: '包含营销及联系方式', createdAt: '2026-07-22 12:02' },
+  { id: 'R26072206', userName: '演示同学戊', userId: 'U10005', itemName: '番茄牛腩饭', merchantName: '中南林业科技大学林海餐厅', rating: 4, content: '演示评价（非真实用户评价）：用于展示隐藏和申诉状态。', images: [], status: 'hidden', riskLevel: 'low', reason: '演示申诉处理中', createdAt: '2026-07-22 12:00' },
 ];
 
 const seedImports: ImportJob[] = [
-  { id: 'IMP-260716-01', fileName: '北门商家清单.csv', type: 'merchants', status: 'completed', progress: 100, total: 28, success: 27, failed: 1, createdBy: '林老师', createdAt: '2026-07-16 15:20' },
-  { id: 'IMP-260714-02', fileName: '暑期菜品更新.csv', type: 'menu_items', status: 'completed', progress: 100, total: 86, success: 86, failed: 0, createdBy: '林老师', createdAt: '2026-07-14 10:05' },
+  { id: 'IMP-260722-01', fileName: '中南林餐饮POI候选.csv', type: 'merchants', status: 'completed', progress: 100, total: 11, success: 11, failed: 0, createdBy: '林老师', createdAt: '2026-07-22 11:20' },
+  { id: 'IMP-260722-02', fileName: '演示菜品目录.csv', type: 'menu_items', status: 'completed', progress: 100, total: 96, success: 96, failed: 0, createdBy: '林老师', createdAt: '2026-07-22 11:35' },
 ];
 
 const seedAudits: AuditLog[] = [
   { id: 'A001', actor: '林老师', role: '超级管理员', module: '评价', action: '通过评价', target: 'R26071718', ip: '10.12.8.21', createdAt: '2026-07-18 10:18', detail: '人工复核后通过，评价已公开展示。' },
   { id: 'A002', actor: '周审核员', role: '评价审核员', module: '评价', action: '驳回评价', target: 'R26071709', ip: '10.12.8.34', createdAt: '2026-07-18 09:45', detail: '驳回原因：包含无关营销信息。' },
-  { id: 'A003', actor: '林老师', role: '超级管理员', module: '商家', action: '更新商家', target: '北门重庆小面', ip: '10.12.8.21', createdAt: '2026-07-17 20:16', detail: '修改营业时间为 10:00-23:00。' },
-  { id: 'A004', actor: '陈管理员', role: '校园管理员', module: '菜品', action: '下架菜品', target: '冰美式早餐套餐', ip: '10.12.9.17', createdAt: '2026-07-16 17:46', detail: '商家暑期暂停营业，菜品同步下架。' },
-  { id: 'A005', actor: '林老师', role: '超级管理员', module: '导入', action: '执行 CSV 导入', target: '北门商家清单.csv', ip: '10.12.8.21', createdAt: '2026-07-16 15:20', detail: '共 28 行，成功 27 行，失败 1 行。' },
-  { id: 'A006', actor: '系统', role: '系统任务', module: '系统', action: '重算商家评分', target: '学苑一食堂·风味档口', ip: '127.0.0.1', createdAt: '2026-07-16 02:00', detail: '定时任务完成贝叶斯评分重算。' },
+  { id: 'A003', actor: '林老师', role: '超级管理员', module: '商家', action: '更新商家', target: '林语餐厅', ip: '10.12.8.21', createdAt: '2026-07-22 11:56', detail: '更新高德 POI 名称、地址和两套坐标。' },
+  { id: 'A004', actor: '陈管理员', role: '校园管理员', module: '菜品', action: '更新菜品', target: '新奥尔良鸡扒饭', ip: '10.12.9.17', createdAt: '2026-07-22 11:52', detail: '标记为演示生成菜单，实际供应以现场为准。' },
+  { id: 'A005', actor: '林老师', role: '超级管理员', module: '导入', action: '执行 CSV 导入', target: '中南林餐饮POI候选.csv', ip: '10.12.8.21', createdAt: '2026-07-22 11:20', detail: '共 11 行，成功 11 行，失败 0 行。' },
+  { id: 'A006', actor: '系统', role: '系统任务', module: '系统', action: '重算商家评分', target: '中南林业科技大学林海餐厅', ip: '127.0.0.1', createdAt: '2026-07-22 11:40', detail: '演示评价写入后完成贝叶斯评分重算。' },
 ];
 
 interface MockState {
@@ -95,7 +120,7 @@ interface MockState {
   audits: AuditLog[];
 }
 
-const storageKey = 'campus-foodie-admin-mock-state-v1';
+const storageKey = 'campus-foodie-admin-mock-state-v3';
 
 function createSeedState(): MockState {
   return {
@@ -151,6 +176,27 @@ function includes(value: unknown, keyword: string) {
   return String(value ?? '').toLowerCase().includes(keyword.toLowerCase());
 }
 
+function currentTags() {
+  return state.tags.map((tag) => ({
+    ...tag,
+    usageCount: state.items.filter((item) => item.tags.includes(tag.name)).length,
+  }));
+}
+
+function currentCategoryShare(): DashboardData['categoryShare'] {
+  const counts = new Map<string, number>();
+  state.items.forEach((item) => counts.set(item.category, (counts.get(item.category) ?? 0) + 1));
+  const total = Math.max(1, state.items.length);
+  const colors = ['#1677ff', '#52c41a', '#13c2c2', '#faad14', '#b37feb'];
+  return [...counts.entries()]
+    .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0], 'zh-CN'))
+    .map(([name, count], index) => ({
+      name,
+      value: Math.round(count / total * 100),
+      color: colors[index % colors.length],
+    }));
+}
+
 function audit(module: AuditLog['module'], action: string, target: string, detail: string) {
   state.audits.unshift({
     id: `A${Date.now()}`,
@@ -176,29 +222,25 @@ export const mockApi = {
     await wait();
     const pending = state.reviews.filter((item) => item.status === 'pending_manual').length;
     return {
-      users: 12846,
-      merchants: 126,
-      menuItems: 1842,
-      pendingReviews: pending + 16,
-      userGrowth: 12.6,
-      merchantGrowth: 3.2,
+      users: state.users.length,
+      merchants: state.merchants.length,
+      menuItems: state.items.length,
+      pendingReviews: pending,
+      userGrowth: 0,
+      merchantGrowth: 0,
       weeklyTraffic: [
         { date: '周一', views: 8420, recommendations: 5210 }, { date: '周二', views: 9120, recommendations: 5680 },
         { date: '周三', views: 10540, recommendations: 6240 }, { date: '周四', views: 9860, recommendations: 6010 },
         { date: '周五', views: 12680, recommendations: 7560 }, { date: '周六', views: 11240, recommendations: 6980 },
         { date: '周日', views: 10890, recommendations: 6740 },
       ],
-      categoryShare: [
-        { name: '米饭快餐', value: 36, color: '#1677ff' }, { name: '面食', value: 24, color: '#52c41a' },
-        { name: '轻食', value: 18, color: '#13c2c2' }, { name: '饮品', value: 14, color: '#faad14' },
-        { name: '其他', value: 8, color: '#b37feb' },
-      ],
+      categoryShare: currentCategoryShare(),
       recentReviews: state.reviews.slice(0, 4),
       popularItems: [
-        { name: '重庆豌杂小面', merchant: '北门重庆小面', views: 5280, rating: 4.9 },
-        { name: '招牌酸汤肥牛饭', merchant: '学苑一食堂·风味档口', views: 4310, rating: 4.8 },
-        { name: '鸡胸牛油果能量碗', merchant: '南苑轻食实验室', views: 2980, rating: 4.7 },
-        { name: '冰美式早餐套餐', merchant: '东区咖啡站', views: 2150, rating: 4.6 },
+        { name: '番茄牛腩饭', merchant: '中南林业科技大学林海餐厅', views: 5280, rating: 4.8 },
+        { name: '菌菇鸡汤面', merchant: '林语餐厅', views: 4310, rating: 4.7 },
+        { name: '鸡胸时蔬能量碗', merchant: '中南林业科技大学林苑餐厅', views: 2980, rating: 4.8 },
+        { name: '新奥尔良鸡扒饭', merchant: '林涛餐厅', views: 2150, rating: 4.6 },
       ],
     };
   },
@@ -299,10 +341,16 @@ export const mockApi = {
 
   async tags(): Promise<TagDefinition[]> {
     await wait();
-    return structuredClone(state.tags.map((tag) => ({
-      ...tag,
-      usageCount: state.items.filter((item) => item.tags.includes(tag.name)).length,
-    })));
+    return structuredClone(currentTags());
+  },
+
+  async catalogMetadata(): Promise<CatalogMetadata> {
+    await wait();
+    return {
+      areas: structuredClone(mockCatalogAreas),
+      categories: structuredClone(mockCatalogCategories),
+      tags: structuredClone(currentTags()),
+    };
   },
 
   async saveTag(input: Partial<TagDefinition> & Pick<TagDefinition, 'name' | 'kind'>): Promise<TagDefinition> {

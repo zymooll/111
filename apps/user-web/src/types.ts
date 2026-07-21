@@ -23,6 +23,7 @@ export interface CatalogData {
 
 export interface Merchant {
   id: string
+  isDemo?: boolean
   name: string
   areaId: string
   area: string
@@ -42,6 +43,7 @@ export interface Merchant {
 
 export interface Dish {
   id: string
+  isDemo?: boolean
   merchantId: string
   name: string
   subtitle: string

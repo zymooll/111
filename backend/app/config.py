@@ -26,16 +26,16 @@ class Settings(BaseSettings):
     auto_seed: bool = True
     cors_origins: Annotated[list[str], NoDecode] = Field(
         default_factory=lambda: [
-            "http://localhost:5173",
-            "http://localhost:5174",
-            "http://127.0.0.1:5173",
-            "http://127.0.0.1:5174",
+            "http://localhost:7991",
+            "http://localhost:7992",
+            "http://127.0.0.1:7991",
+            "http://127.0.0.1:7992",
         ]
     )
     upload_dir: Path = Path("./runtime/uploads")
     max_upload_bytes: int = 10 * 1024 * 1024
     oauth_providers: Annotated[list[str], NoDecode] = Field(default_factory=list)
-    user_web_origin: str = "http://localhost:5173"
+    user_web_origin: str = "http://127.0.0.1:7991"
     account_token_minutes: int = 30
 
     smtp_host: str | None = None
@@ -46,6 +46,7 @@ class Settings(BaseSettings):
     mail_from: str = "Campus Foodie <no-reply@campus-foodie.local>"
 
     redis_url: str | None = None
+    amap_web_service_key: str | None = None
     deepseek_api_key: str | None = None
     deepseek_base_url: str = "https://api.deepseek.com"
     deepseek_model: str = "deepseek-chat"

@@ -29,6 +29,7 @@ export function DishDetailPage() {
     refetchOnWindowFocus: true
   })
   const dish = dishQuery.data
+  const isDemo = Boolean(dish?.isDemo || dish?.merchant.isDemo)
 
   useEffect(() => {
     if (!dish || viewedDish.current === dish.id) return
@@ -69,14 +70,14 @@ export function DishDetailPage() {
       </section>
 
       <section className="dish-detail-main">
-        <div className="dish-title-row"><div><span className="eyebrow">{dish.category} · {dish.tags[0]}</span><h1>{dish.name}</h1></div><div className="detail-price"><small>¥</small><strong>{dish.price}</strong>{dish.originalPrice && <del>¥{dish.originalPrice}</del>}</div></div>
+        <div className="dish-title-row"><div><span className="eyebrow">{dish.category} · {dish.tags[0]}{isDemo ? ' · 演示菜品' : ''}</span><h1>{dish.name}</h1></div><div className="detail-price"><small>{isDemo ? '参考 ¥' : '¥'}</small><strong>{dish.price}</strong>{dish.originalPrice && <del>¥{dish.originalPrice}</del>}</div></div>
         <p className="dish-subtitle">{dish.subtitle}</p>
-        <div className="detail-rating-row"><span><Star size={17} fill="currentColor" /><strong>{dish.rating}</strong><small>{dish.reviewCount} 人评价</small></span><div><span className="rank-bar"><i style={{ width: `${dish.match}%` }} /></span><strong>{dish.match}% 推荐</strong></div></div>
+        <div className="detail-rating-row"><span><Star size={17} fill="currentColor" /><strong>{isDemo ? `参考评分 ${dish.rating}` : dish.rating}</strong><small>{dish.reviewCount} 条{isDemo ? '评价（含演示）' : '评价'}</small></span><div><span className="rank-bar"><i style={{ width: `${dish.match}%` }} /></span><strong>{dish.match}% {isDemo ? '参考推荐' : '推荐'}</strong></div></div>
         <div className="reason detail-reason"><Sparkles size={18} /><div><strong>为什么推荐给你</strong><span>{dish.reason}</span></div></div>
 
         <div className="nutrition-grid">
           <div><Flame size={19} /><strong>{dish.calories}</strong><span>约千卡</span></div>
-          <div><Clock3 size={19} /><strong>{dish.waitMinutes}</strong><span>预计分钟</span></div>
+          <div><Clock3 size={19} /><strong>{dish.waitMinutes}</strong><span>{isDemo ? '参考分钟' : '预计分钟'}</span></div>
           <div><Heart size={19} /><strong>{dish.ingredients.length}</strong><span>主要食材</span></div>
         </div>
         <div className="ingredient-row">{dish.ingredients.map((ingredient) => <span key={ingredient}>{ingredient}</span>)}</div>
@@ -84,12 +85,12 @@ export function DishDetailPage() {
 
       <section className="merchant-detail-card">
         <span className="merchant-detail-card__icon"><Store size={23} /></span>
-        <div><strong>{dish.merchant.name}</strong><span><b>★ {dish.merchant.rating}</b> · {dish.merchant.reviewCount} 条商家相关评价</span><small><MapPin size={13} /> {dish.merchant.area} · 营业至 {dish.merchant.openUntil}</small></div>
+        <div><strong>{dish.merchant.name}</strong><span><b>{isDemo ? `参考评分 ${dish.merchant.rating}` : `★ ${dish.merchant.rating}`}</b> · {dish.merchant.reviewCount} 条{isDemo ? '评价（含演示）' : '商家相关评价'}</span><small><MapPin size={13} /> {dish.merchant.area} · {isDemo ? '参考时段' : '营业至'} {dish.merchant.openUntil}</small></div>
         <button type="button" onClick={() => navigate('/map')}><Navigation size={18} /><span>导航</span></button>
       </section>
 
       <section className="reviews-section">
-        <header><div><h2>同学们怎么说</h2><span>{reviewsQuery.data?.length ?? 0} 条精选评价</span></div><button type="button" onClick={() => navigate(`/dish/${dish.id}/review`)}>写评价</button></header>
+        <header><div><h2>{isDemo ? '评价内容' : '同学们怎么说'}</h2><span>{reviewsQuery.data?.length ?? 0} 条{isDemo ? '评价（含演示）' : '精选评价'}</span></div><button type="button" onClick={() => navigate(`/dish/${dish.id}/review`)}>写评价</button></header>
         {reviewsQuery.data?.length ? reviewsQuery.data.map((review) => (
           <article className="review-card" key={review.id}>
             <div className="review-card__user"><span>{review.avatarText}</span><div><strong>{review.userName}</strong><small><Stars value={review.rating} size={12} /> · {review.createdAt}</small></div><button type="button" onClick={() => Toast.show('感谢你的认同')}><ThumbsUp size={15} />{review.likes}</button></div>

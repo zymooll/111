@@ -87,10 +87,10 @@ export function UsersPage() {
     <div>
       <PageHeader title="用户管理" description="查询校园用户、管理账号状态并查看行为概览" />
       <div className="summary-strip">
-        <Statistic title="用户总数" value={12846} />
-        <Statistic title="今日新增" value={86} valueStyle={{ color: '#16a34a' }} />
-        <Statistic title="近 7 日活跃" value={7642} />
-        <Statistic title="已冻结" value={31} valueStyle={{ color: '#e5484d' }} />
+        <Statistic title="当前筛选结果" value={total} />
+        <Statistic title="本页正常" value={items.filter((item) => item.status === 'active').length} valueStyle={{ color: '#16a34a' }} />
+        <Statistic title="本页待验证" value={items.filter((item) => item.status === 'unverified').length} />
+        <Statistic title="本页已冻结" value={items.filter((item) => item.status === 'frozen').length} valueStyle={{ color: '#e5484d' }} />
       </div>
       <Card bordered={false}>
         <div className="table-toolbar">
