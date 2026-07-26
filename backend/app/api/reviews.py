@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException, Request
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 
 from app.api.presenters import present_review
@@ -20,6 +20,7 @@ from app.services.campuses import (
     require_review,
 )
 from app.services.moderation import AUTHOR_LOCKED_STATUSES
+from app.services.rate_limit import REVIEW_VIEW_RULE, rate_limit
 from app.services.ratings import recalculate_item_rating
 
 router = APIRouter(tags=["评价"])
@@ -134,7 +135,11 @@ def delete_review(
     return Message(message="评价已删除")
 
 
-@router.post("/reviews/{review_id}/view", response_model=Message)
+@router.post(
+    "/reviews/{review_id}/view",
+    response_model=Message,
+    dependencies=[rate_limit(REVIEW_VIEW_RULE)],
+)
 def record_review_view(
     review_id: str,
     payload: ReviewViewRequest,
@@ -145,24 +150,50 @@ def record_review_view(
     review = require_review(db, payload.campus_id, review_id)
     if review.status != ReviewStatus.PUBLISHED:
         raise HTTPException(status_code=404, detail="评价不存在")
-    if db.scalar(select(ReviewView).where(ReviewView.event_id == payload.event_id)) is not None:
-        return Message(message="已记录")
     if principal and principal.is_user and principal.id == review.user_id:
         return Message(message="作者浏览不计入阅读量")
-    view = ReviewView(
+    bump_review_view(
+        db,
+        review_id=review.id,
         campus_id=payload.campus_id,
         event_id=payload.event_id,
-        review_id=review.id,
+        viewer_user_id=principal.id if principal and principal.is_user else None,
+        viewer_guest_id=principal.id if principal and principal.is_guest else None,
     )
-    if principal:
-        if principal.is_user:
-            view.viewer_user_id = principal.id
-        else:
-            view.viewer_guest_id = principal.id
-    db.add(view)
-    review.view_count += 1
-    try:
-        db.commit()
-    except IntegrityError:
-        db.rollback()
+    db.commit()
     return Message(message="已记录")
+
+
+def bump_review_view(
+    db,
+    *,
+    review_id: str,
+    campus_id: str,
+    event_id: str,
+    viewer_user_id: str | None,
+    viewer_guest_id: str | None,
+) -> bool:
+    """Record one view. Returns whether it counted (False when the event repeats)."""
+    # 去重不靠"先查再插"——两个并发请求会同时查不到再同时插入。让 event_id 上的唯一约束
+    # 来裁决：抢到的那个才计数，撞上的那个静默返回。
+    try:
+        with db.begin_nested():
+            db.add(
+                ReviewView(
+                    campus_id=campus_id,
+                    event_id=event_id,
+                    review_id=review_id,
+                    viewer_user_id=viewer_user_id,
+                    viewer_guest_id=viewer_guest_id,
+                )
+            )
+    except IntegrityError:
+        return False
+
+    # 自增交给数据库：Python 侧的 += 1 是读-改-写，并发下必然丢更新。
+    db.execute(
+        update(Review)
+        .where(Review.id == review_id)
+        .values(view_count=Review.view_count + 1)
+    )
+    return True

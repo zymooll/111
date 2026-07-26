@@ -536,8 +536,10 @@ class IdempotencyRecord(Base):
     scope: Mapped[str] = mapped_column(String(160), nullable=False)
     idempotency_key: Mapped[str] = mapped_column(String(120), nullable=False)
     request_hash: Mapped[str] = mapped_column(String(64), nullable=False)
-    response_status: Mapped[int] = mapped_column(Integer, nullable=False)
-    response_body: Mapped[str] = mapped_column(Text, nullable=False)
+    #: processing | completed —— 先占位再执行，占位行让并发的同键请求无法同时进入处理函数。
+    state: Mapped[str] = mapped_column(String(20), default="processing", nullable=False)
+    response_status: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    response_body: Mapped[str | None] = mapped_column(Text, nullable=True)
     content_type: Mapped[str] = mapped_column(
         String(120), default="application/json", nullable=False
     )

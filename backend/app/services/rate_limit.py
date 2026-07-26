@@ -38,6 +38,8 @@ REGISTER_RULE = RateLimitRule("register", limit=5, window_seconds=600)
 GUEST_RULE = RateLimitRule("guest", limit=20, window_seconds=600)
 ACCOUNT_EMAIL_RULE = RateLimitRule("account-email", limit=3, window_seconds=600)
 UPLOAD_RULE = RateLimitRule("upload", limit=30, window_seconds=600)
+#: 阅读量端点无需登录即可调用，没有配额就能被刷成任意数字。
+REVIEW_VIEW_RULE = RateLimitRule("review-view", limit=120, window_seconds=60)
 
 #: 连续失败达到该次数后开始锁定，锁定时长随失败次数指数增长。
 LOCKOUT_THRESHOLD = 5

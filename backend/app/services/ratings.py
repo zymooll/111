@@ -10,8 +10,25 @@ from sqlalchemy.orm import Session
 from app.models import MenuItem, Merchant, Review, ReviewStatus
 
 
+def lock_menu_item(db: Session, menu_item_id: str) -> MenuItem | None:
+    """Serialise concurrent recalculations of one item's aggregates.
+
+    必须显式发查询而不是 db.get()：后者命中身份映射时根本不发 SQL，锁也就不存在。
+    populate_existing 保证拿到的是加锁后的最新值。SQLite 不支持 FOR UPDATE，
+    SQLAlchemy 会把它编译成空——那里写入本来就被全局写锁串行化，语义一致。
+    """
+    return db.execute(
+        select(MenuItem)
+        .where(MenuItem.id == menu_item_id)
+        .with_for_update()
+        .execution_options(populate_existing=True)
+    ).scalars().first()
+
+
 def recalculate_item_rating(db: Session, menu_item_id: str) -> None:
-    item = db.get(MenuItem, menu_item_id)
+    # 先取行锁再统计：两者顺序颠倒的话，两个并发事务会各自读到对方提交前的计数，
+    # 然后互相覆盖，其中一条评价就被永久漏计了。
+    item = lock_menu_item(db, menu_item_id)
     if item is None:
         return
     average, count = db.execute(
