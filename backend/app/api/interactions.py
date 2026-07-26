@@ -12,7 +12,6 @@ from app.api.profile import router as profile_router
 from app.api.reviews import router as reviews_router
 from app.api.uploads import router as uploads_router
 
-
 router = APIRouter()
 router.include_router(favorites_router)
 router.include_router(reviews_router)

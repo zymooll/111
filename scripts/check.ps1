@@ -26,7 +26,9 @@ Push-Location $root
 try {
     & $python -m compileall -q backend\app backend\tests
     Assert-NativeSuccess 'Python compileall'
-    & $python -m pytest backend\tests -p no:cacheprovider --basetemp $pytestTemp
+    & $python -m ruff check backend\app backend\tests
+    Assert-NativeSuccess 'Backend lint'
+    & $python -m pytest backend\tests -p no:cacheprovider --basetemp $pytestTemp --cov=app --cov-fail-under=75
     Assert-NativeSuccess 'Backend tests'
     & $python scripts\static_audit.py
     Assert-NativeSuccess 'Static audit'
@@ -42,4 +44,5 @@ try {
     Assert-NativeSuccess 'Browser end-to-end tests'
 } finally {
     Pop-Location
+    Remove-Item -LiteralPath $pytestTemp -Recurse -Force -ErrorAction SilentlyContinue
 }

@@ -2,11 +2,13 @@ import { CheckCircleFilled, CloudUploadOutlined, DownloadOutlined, FileTextOutli
 import { App, Button, Card, Col, Progress, Row, Select, Space, Steps, Table, Tag, Typography, Upload } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { UploadFile } from 'antd/es/upload/interface';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { adminApi } from '../api/client';
+import { CursorPagination } from '../components/CursorPagination';
 import { PageHeader } from '../components/PageHeader';
 import { StatusTag } from '../components/StatusTag';
-import type { ImportJob, ImportValidation } from '../types';
+import { useCursorList } from '../hooks/useCursorList';
+import type { CursorQuery, ImportJob, ImportValidation } from '../types';
 
 const { Dragger } = Upload;
 
@@ -16,6 +18,8 @@ const typeLabels: Record<ImportJob['type'], string> = {
   menu_items: '菜品 / 套餐',
 };
 
+const pageSize = 8;
+
 export function ImportsPage() {
   const { message } = App.useApp();
   const [type, setType] = useState<ImportJob['type']>('merchants');
@@ -24,21 +28,17 @@ export function ImportsPage() {
   const [validation, setValidation] = useState<ImportValidation>();
   const [validating, setValidating] = useState(false);
   const [importing, setImporting] = useState(false);
-  const [jobs, setJobs] = useState<ImportJob[]>([]);
-  const [jobsLoading, setJobsLoading] = useState(false);
 
-  const loadJobs = useCallback(async () => {
-    setJobsLoading(true);
-    try {
-      setJobs(await adminApi.importJobs());
-    } catch (error) {
-      message.error(error instanceof Error ? error.message : '导入记录加载失败');
-    } finally {
-      setJobsLoading(false);
-    }
+  const handleError = useCallback((error: unknown) => {
+    message.error(error instanceof Error ? error.message : '导入记录加载失败');
   }, [message]);
 
-  useEffect(() => { void loadJobs(); }, [loadJobs]);
+  const loadPage = useCallback(
+    (query: CursorQuery, signal: AbortSignal) => adminApi.importJobs(query, signal),
+    [],
+  );
+
+  const jobs = useCursorList(loadPage, pageSize, handleError);
 
   const currentStep = useMemo(() => validation ? 2 : file ? 1 : 0, [file, validation]);
 
@@ -48,7 +48,7 @@ export function ImportsPage() {
     try {
       const result = await adminApi.validateImport(file, type);
       setValidation(result);
-      result.invalid ? message.warning(`预校验完成，发现 ${result.invalid} 条问题`) : message.success('预校验通过，可以开始导入');
+      result.invalid ? message.warning(`预校验完成，发现 ${result.invalid} 行问题`) : message.success('预校验通过，可以开始导入');
     } catch (error) {
       message.error(error instanceof Error ? error.message : '文件校验失败');
     } finally {
@@ -65,7 +65,7 @@ export function ImportsPage() {
       setFile(undefined);
       setFileList([]);
       setValidation(undefined);
-      await loadJobs();
+      jobs.reset();
     } catch (error) {
       message.error(error instanceof Error ? error.message : '导入失败');
     } finally {
@@ -76,7 +76,7 @@ export function ImportsPage() {
   const downloadTemplate = () => {
     const rows: Record<ImportJob['type'], string> = {
       areas: 'campus_id,parent_id,name,level,sort_order\n00000000-0000-0000-0000-000000000001,,东园餐饮区,1,10',
-      merchants: 'campus_id,area_id,category_id,name,description,address,latitude,longitude,gcj02_latitude,gcj02_longitude,price_level,business_hours\n00000000-0000-0000-0000-000000000001,,,待核验商家,主营面食,韶山南路498号,28.134945,112.989306,28.131567,112.994905,2,10:00-22:00',
+      merchants: 'campus_id,area_id,category_id,name,description,address,latitude,longitude,price_level,business_hours\n00000000-0000-0000-0000-000000000001,,,待核验商家,主营面食,韶山南路498号,28.134945,112.989306,2,10:00-22:00',
       menu_items: 'merchant_id,category_id,name,description,item_type,price_cents,image_url,tags\n请替换为商家ID,,招牌拌面,微辣大份,dish,1500,/images/dish-placeholder.webp,微辣|人气',
     };
     const url = URL.createObjectURL(new Blob([`\uFEFF${rows[type]}`], { type: 'text/csv;charset=utf-8' }));
@@ -93,9 +93,8 @@ export function ImportsPage() {
     { title: '状态', dataIndex: 'status', width: 100, render: (value) => <StatusTag status={value} /> },
     { title: '进度', key: 'progress', width: 180, render: (_, record) => <Progress percent={record.progress} size="small" status={record.status === 'failed' ? 'exception' : undefined} /> },
     { title: '结果', key: 'result', width: 150, render: (_, record) => <Space><span className="success-text">成功 {record.success}</span>{record.failed > 0 && <span className="error-text">失败 {record.failed}</span>}</Space> },
-    { title: '操作人', dataIndex: 'createdBy', width: 100 },
-    { title: '创建时间', dataIndex: 'createdAt', width: 160 },
-    { title: '操作', key: 'action', width: 110, render: (_, record) => record.failed ? <Button type="link" size="small" onClick={() => message.info('错误报告将在真实后端模式下生成下载链接')}>错误报告</Button> : '-' },
+    { title: '操作人', dataIndex: 'createdBy', width: 120 },
+    { title: '创建时间', dataIndex: 'createdAt', width: 165 },
   ];
 
   return (
@@ -124,12 +123,15 @@ export function ImportsPage() {
             >
               <p className="ant-upload-drag-icon"><InboxOutlined /></p>
               <p className="ant-upload-text">点击或拖拽 CSV 文件到此区域</p>
-              <p className="ant-upload-hint">文件需使用 UTF-8 编码，建议单次不超过 5,000 行</p>
+              <p className="ant-upload-hint">文件需使用 UTF-8 编码，单个文件不超过 2 MB</p>
             </Dragger>
             <div className="import-actions">
               <Button icon={<CloudUploadOutlined />} loading={validating} disabled={!file} onClick={() => void validate()}>开始预校验</Button>
               <Button type="primary" loading={importing} disabled={!validation} onClick={() => void startImport()}>确认并导入有效数据</Button>
             </div>
+            <Typography.Paragraph type="secondary" className="import-note">
+              商家坐标只需填写 WGS-84 经纬度，用户端地图使用的 GCJ-02 坐标由服务端换算。
+            </Typography.Paragraph>
           </Card>
         </Col>
         <Col xs={24} xl={9}>
@@ -146,15 +148,16 @@ export function ImportsPage() {
                 {validation.errors.length > 0 && <div className="validation-errors">
                   <Typography.Text strong>需要处理的问题</Typography.Text>
                   {validation.errors.map((error) => <div key={`${error.row}-${error.field}`}><Tag color="error">第 {error.row} 行</Tag><span><strong>{error.field}</strong>：{error.message}</span></div>)}
-                  <Typography.Text type="secondary">导入时异常行会被跳过，并生成错误报告。</Typography.Text>
+                  <Typography.Text type="secondary">导入时异常行会被跳过，只写入有效数据。请在此处修正后重新上传。</Typography.Text>
                 </div>}
               </>
             )}
           </Card>
         </Col>
       </Row>
-      <Card title="最近导入记录" bordered={false} className="dashboard-row" extra={<Button type="text" icon={<ReloadOutlined />} onClick={() => void loadJobs()}>刷新</Button>}>
-        <Table rowKey="id" columns={columns} dataSource={jobs} loading={jobsLoading} scroll={{ x: 1100 }} pagination={{ pageSize: 8, showSizeChanger: false }} />
+      <Card title="最近导入记录" bordered={false} className="dashboard-row" extra={<Button type="text" icon={<ReloadOutlined />} onClick={jobs.reload}>刷新</Button>}>
+        <Table rowKey="id" columns={columns} dataSource={jobs.items} loading={jobs.loading} scroll={{ x: 1085 }} pagination={false} />
+        <CursorPagination list={jobs} />
       </Card>
     </div>
   );

@@ -5,8 +5,8 @@ Campus Foodie 是一个面向校园场景的菜品与套餐推荐系统。用户
 ## 工作区
 
 - `backend/`：FastAPI API、数据模型、推荐与审核服务、迁移及测试。
-- `apps/user-web/`：移动端 React PWA，开发端口 `5173`。
-- `apps/admin-web/`：独立管理端 React 应用，开发端口 `5174`。
+- `apps/user-web/`：移动端 React PWA，开发端口 `7991`。
+- `apps/admin-web/`：独立管理端 React 应用，开发端口 `7992`。
 - `docs/`：架构、API、验收记录及高校餐饮调研报告。
 - `e2e/`、`playwright.config.ts`：用户端与管理端关键流程 E2E。
 - `docker-compose.yml`：PostgreSQL/PostGIS、Redis、Mailpit 和 API 的本地联调环境。
@@ -14,6 +14,20 @@ Campus Foodie 是一个面向校园场景的菜品与套餐推荐系统。用户
 - `data/csut_merchants.csv`、`data/csut_images.csv`、`assets/csut-images/`：长沙理工大学金盆岭、云塘两校区历史调研档案。
 - `data/hunan_universities_merchants.csv`、`data/hunan_universities_images.csv`、`assets/hunan-universities-images/`：湖南农大、湖南工商、中南、湖大、湖师大历史调研档案。
 - `projects/campus_foodie_ppt_ppt169_20260718/`：项目路演 PPT、讲稿、设计稿与导出文件。
+
+## 端口约定
+
+下表是本仓库端口的唯一权威说明，其余文档均引用此处。
+
+| 服务 | 本地开发 | E2E | 端口来源 |
+| --- | --- | --- | --- |
+| 用户端 | `7991` | `18001` | `apps/user-web/package.json` 的 `dev`、`e2e/ports.mjs` |
+| 管理端 | `7992` | `18002` | `apps/admin-web/package.json` 的 `dev`、`e2e/ports.mjs` |
+| FastAPI | `7993` | `18000` | 前端默认 API 基址、`e2e/ports.mjs` |
+
+- E2E 使用独立端口段，可与开发服务器同时运行，互不抢占端口。
+- 生产构建预览：用户端 `7994`，管理端复用 `7992`。
+- 容器内 FastAPI 仍监听 `8000`，由 compose 映射到宿主 `7993`。
 
 ## 本地开发
 
@@ -23,7 +37,7 @@ Campus Foodie 是一个面向校园场景的菜品与套餐推荐系统。用户
 & 'C:\Python313\python.exe' -m venv .venv
 & '.\.venv\Scripts\python.exe' -m pip install -e '.\backend[dev,postgres,redis]'
 Copy-Item .env.example .env
-& '.\.venv\Scripts\python.exe' -m uvicorn app.main:app --app-dir backend --reload --port 8000
+& '.\.venv\Scripts\python.exe' -m uvicorn app.main:app --app-dir backend --reload --port 7993
 ```
 
 前端：
@@ -34,7 +48,7 @@ pnpm dev:user
 pnpm dev:admin
 ```
 
-默认端口为用户端 `5173`、管理端 `5174`、API `8000`。用户端默认连接真实 API；如只需要查看静态演示，可设置 `VITE_API_MODE=mock`。
+用户端默认连接 `http://127.0.0.1:7993/api/v1`，管理端默认连接 `http://127.0.0.1:7993/admin/api/v1`；如只需要查看静态演示，可设置 `VITE_API_MODE=mock`。
 
 完整依赖服务可通过 `docker compose up --build` 启动。没有 Docker 时也可以使用默认 SQLite 配置直接启动 API。
 
@@ -68,8 +82,8 @@ pnpm dev:admin
 
 API 启动后可访问：
 
-- Swagger UI：`http://localhost:8000/docs`
-- ReDoc：`http://localhost:8000/redoc`
-- OpenAPI：`http://localhost:8000/openapi.json`
+- Swagger UI：`http://127.0.0.1:7993/docs`
+- ReDoc：`http://127.0.0.1:7993/redoc`
+- OpenAPI：`http://127.0.0.1:7993/openapi.json`
 
 人工维护的完整接口说明见 `backend/API.md`，前端集成摘要见 `docs/API.md`。

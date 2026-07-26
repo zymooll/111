@@ -22,6 +22,7 @@ redis = ["redis>=6,<7"]
 dev = [
   "pytest>=8.4,<9",
   "pytest-cov>=6.2,<7",
+  "ruff>=0.14,<1",
 ]
 
 [build-system]
@@ -30,6 +31,27 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["app"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "C4", "PL"]
+ignore = [
+  "B008",     # FastAPI 的 Depends()/Query() 默认值就是这个写法
+  "PLC0415",  # 部分导入刻意放在函数内以打断循环依赖
+  "PLR0911",
+  "PLR0912",  # 路由与导入校验里的分支数量由业务规则决定
+  "PLR0913",  # 依赖注入让参数个数天然偏多
+  "PLR0915",
+  "PLR0917",
+  "PLR2004",
+  "UP046",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"migrations/*" = ["I001"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

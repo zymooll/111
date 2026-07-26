@@ -1,8 +1,9 @@
-import { useRef, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
-import { Compass, Map, UserRound } from 'lucide-react'
+import { Compass, Map, TriangleAlert, UserRound } from 'lucide-react'
 import { NavLink, useLocation } from 'react-router-dom'
+import { degradedDataEvent } from '../services/httpApi'
 
 gsap.registerPlugin(useGSAP)
 
@@ -15,7 +16,14 @@ const navItems = [
 export function AppShell({ children }: { children: ReactNode }) {
   const shellRef = useRef<HTMLDivElement>(null)
   const location = useLocation()
+  const [degraded, setDegraded] = useState(false)
   const showNavigation = ['/', '/map', '/mine'].includes(location.pathname)
+
+  useEffect(() => {
+    const mark = () => setDegraded(true)
+    window.addEventListener(degradedDataEvent, mark)
+    return () => window.removeEventListener(degradedDataEvent, mark)
+  }, [])
 
   useGSAP(() => {
     const media = gsap.matchMedia()
@@ -136,6 +144,11 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div ref={shellRef} className="app-shell">
+      {degraded && (
+        <p className="degraded-banner" role="status">
+          <TriangleAlert size={15} />校园服务暂时不可用，当前浏览的是本地演示数据。
+        </p>
+      )}
       <main className={showNavigation ? 'app-main with-tabbar' : 'app-main'}>{children}</main>
       {showNavigation && (
         <nav className="bottom-nav" aria-label="主要导航">

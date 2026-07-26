@@ -12,7 +12,6 @@ from sqlalchemy.orm import Session
 from app.config import Settings
 from app.models import AccountActionToken, User
 
-
 VERIFY_EMAIL = "verify_email"
 RESET_PASSWORD = "reset_password"
 

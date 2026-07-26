@@ -9,12 +9,17 @@ from PIL import Image, UnidentifiedImageError
 
 from app.dependencies import CurrentUser
 from app.schemas import UploadRead
-
+from app.services.rate_limit import UPLOAD_RULE, rate_limit
 
 router = APIRouter(tags=["上传"])
 
 
-@router.post("/uploads/images", response_model=UploadRead, status_code=201)
+@router.post(
+    "/uploads/images",
+    response_model=UploadRead,
+    status_code=201,
+    dependencies=[rate_limit(UPLOAD_RULE)],
+)
 async def upload_image(
     request: Request,
     user: CurrentUser,

@@ -1,23 +1,25 @@
 import type {
   AdminUser,
   AuditLog,
-  AuditQuery,
   CampusUser,
   CatalogMetadata,
+  CursorPage,
+  CursorQuery,
   DashboardData,
   EntityStatus,
   ImportJob,
   ImportValidation,
-  ListQuery,
   LoginResult,
   MenuItem,
+  MenuItemListQuery,
   Merchant,
-  PageResult,
+  MerchantListQuery,
   PublishStatus,
   Review,
-  ReviewQuery,
-  ReviewStatus,
+  ReviewAction,
+  ReviewListQuery,
   TagDefinition,
+  UserListQuery,
 } from '../types';
 import { CAMPUS_NAME } from '../constants/campus';
 
@@ -59,11 +61,11 @@ const seedUsers: CampusUser[] = [
 ];
 
 const seedMerchants: Merchant[] = [
-  { id: 'M001', areaId: 'mock-area-linhai', categoryId: 'mock-category-campus', name: '中南林业科技大学林海餐厅', description: '高德 POI B0FFK85GDN；菜单与评分为演示生成。', area: '林海餐厅及周边档口', category: '校园食堂', address: '青园路357号东北80米', latitude: 28.135160, longitude: 112.989410, status: 'online', rating: 4.8, dishCount: 1, favoriteCount: 48, openingHours: '07:00-21:00', contact: '待现场核验', updatedAt: '2026-07-22 12:00' },
-  { id: 'M002', areaId: 'mock-area-east', categoryId: 'mock-category-campus', name: '林语餐厅', description: '高德 POI B0FFHS6IE6；菜单与评分为演示生成。', area: '东园餐饮区', category: '校园食堂', address: '中南林业科技大学林大路105号(近常青公寓)', latitude: 28.136507, longitude: 112.988280, status: 'online', rating: 4.7, dishCount: 2, favoriteCount: 36, openingHours: '07:00-21:00', contact: '待现场核验', updatedAt: '2026-07-22 12:00' },
-  { id: 'M003', areaId: 'mock-area-west', categoryId: 'mock-category-campus', name: '中南林业科技大学林苑餐厅', description: '高德 POI B0FFH6K3IJ；菜单与评分为演示生成。', area: '西园及后街餐饮区', category: '校园食堂', address: '中南林业科技大学北门南220米', latitude: 28.133670, longitude: 112.987409, status: 'online', rating: 4.8, dishCount: 1, favoriteCount: 41, openingHours: '07:00-21:00', contact: '待现场核验', updatedAt: '2026-07-22 12:00' },
-  { id: 'M004', areaId: 'mock-area-west', categoryId: 'mock-category-campus', name: '林涛餐厅', description: '高德 POI B0FFIIUFLZ；菜单与评分为演示生成。', area: '西园及后街餐饮区', category: '校园食堂', address: '中南林业科技大学西园14栋', latitude: 28.133036, longitude: 112.984693, status: 'online', rating: 4.6, dishCount: 1, favoriteCount: 29, openingHours: '07:00-21:00', contact: '待现场核验', updatedAt: '2026-07-22 12:00' },
-  { id: 'M005', areaId: 'mock-area-west', categoryId: 'mock-category-campus', name: '林冠餐厅', description: '高德 POI B0FFIZQWMY；菜单与评分为演示生成。', area: '西园及后街餐饮区', category: '校园食堂', address: '韶山南路498号中南林业科技大学', latitude: 28.132689, longitude: 112.984888, status: 'online', rating: 4.5, dishCount: 1, favoriteCount: 27, openingHours: '07:00-21:00', contact: '待现场核验', updatedAt: '2026-07-22 12:00' },
+  { id: 'M001', areaId: 'mock-area-linhai', categoryId: 'mock-category-campus', name: '中南林业科技大学林海餐厅', description: '高德 POI B0FFK85GDN；菜单与评分为演示生成。', area: '林海餐厅及周边档口', category: '校园食堂', address: '青园路357号东北80米', latitude: 28.135160, longitude: 112.989410, status: 'online', rating: 4.8, dishCount: 1, favoriteCount: 48, openingHours: '07:00-21:00', updatedAt: '2026-07-22 12:00' },
+  { id: 'M002', areaId: 'mock-area-east', categoryId: 'mock-category-campus', name: '林语餐厅', description: '高德 POI B0FFHS6IE6；菜单与评分为演示生成。', area: '东园餐饮区', category: '校园食堂', address: '中南林业科技大学林大路105号(近常青公寓)', latitude: 28.136507, longitude: 112.988280, status: 'online', rating: 4.7, dishCount: 2, favoriteCount: 36, openingHours: '07:00-21:00', updatedAt: '2026-07-22 12:00' },
+  { id: 'M003', areaId: 'mock-area-west', categoryId: 'mock-category-campus', name: '中南林业科技大学林苑餐厅', description: '高德 POI B0FFH6K3IJ；菜单与评分为演示生成。', area: '西园及后街餐饮区', category: '校园食堂', address: '中南林业科技大学北门南220米', latitude: 28.133670, longitude: 112.987409, status: 'online', rating: 4.8, dishCount: 1, favoriteCount: 41, openingHours: '07:00-21:00', updatedAt: '2026-07-22 12:00' },
+  { id: 'M004', areaId: 'mock-area-west', categoryId: 'mock-category-campus', name: '林涛餐厅', description: '高德 POI B0FFIIUFLZ；菜单与评分为演示生成。', area: '西园及后街餐饮区', category: '校园食堂', address: '中南林业科技大学西园14栋', latitude: 28.133036, longitude: 112.984693, status: 'online', rating: 4.6, dishCount: 1, favoriteCount: 29, openingHours: '07:00-21:00', updatedAt: '2026-07-22 12:00' },
+  { id: 'M005', areaId: 'mock-area-west', categoryId: 'mock-category-campus', name: '林冠餐厅', description: '高德 POI B0FFIZQWMY；菜单与评分为演示生成。', area: '西园及后街餐饮区', category: '校园食堂', address: '韶山南路498号中南林业科技大学', latitude: 28.132689, longitude: 112.984888, status: 'online', rating: 4.5, dishCount: 1, favoriteCount: 27, openingHours: '07:00-21:00', updatedAt: '2026-07-22 12:00' },
 ];
 
 const seedItems: MenuItem[] = [
@@ -88,12 +90,12 @@ const seedTags: TagDefinition[] = [
 ];
 
 const seedReviews: Review[] = [
-  { id: 'R26072201', userName: '演示同学甲', userId: 'U10001', itemName: '番茄牛腩饭', merchantName: '中南林业科技大学林海餐厅', rating: 5, content: '演示评价（非真实用户评价）：番茄风味和牛腩口感用于展示推荐结果。', images: [], status: 'pending_manual', riskLevel: 'low', createdAt: '2026-07-22 12:10' },
-  { id: 'R26072202', userName: '演示同学乙', userId: 'U10003', itemName: '菌菇鸡汤面', merchantName: '林语餐厅', rating: 4, content: '演示评价（非真实用户评价）：清淡汤面用于展示口味标签和审核流程。', images: [], status: 'pending_manual', riskLevel: 'low', createdAt: '2026-07-22 12:08' },
+  { id: 'R26072201', userName: '演示同学甲', userId: 'U10001', itemName: '番茄牛腩饭', merchantName: '中南林业科技大学林海餐厅', rating: 5, content: '演示评价（非真实用户评价）：番茄风味和牛腩口感用于展示推荐结果。', images: [], status: 'pending_manual', riskLevel: 'medium', createdAt: '2026-07-22 12:10' },
+  { id: 'R26072202', userName: '演示同学乙', userId: 'U10003', itemName: '菌菇鸡汤面', merchantName: '林语餐厅', rating: 4, content: '演示评价（非真实用户评价）：清淡汤面用于展示口味标签和审核流程。', images: [], status: 'pending_manual', riskLevel: 'medium', createdAt: '2026-07-22 12:08' },
   { id: 'R26072203', userName: '演示同学丙', userId: 'U10002', itemName: '鸡胸时蔬能量碗', merchantName: '中南林业科技大学林苑餐厅', rating: 5, content: '演示评价（非真实用户评价）：蛋白质和蔬菜搭配用于展示偏好匹配。', images: [], status: 'published', riskLevel: 'low', createdAt: '2026-07-22 12:06' },
   { id: 'R26072204', userName: '演示同学丁', userId: 'U10006', itemName: '新奥尔良鸡扒饭', merchantName: '林涛餐厅', rating: 4, content: '演示评价（非真实用户评价）：价格、分量和出餐时间均为模拟值。', images: [], status: 'published', riskLevel: 'low', createdAt: '2026-07-22 12:04' },
   { id: 'R26072205', userName: '匿名用户', userId: 'U10007', itemName: '菌菇鸡汤面', merchantName: '林语餐厅', rating: 1, content: '演示评价（非真实用户评价）：该审核样本包含疑似广告联系方式，需要人工复核。', images: [], status: 'rejected', riskLevel: 'high', reason: '包含营销及联系方式', createdAt: '2026-07-22 12:02' },
-  { id: 'R26072206', userName: '演示同学戊', userId: 'U10005', itemName: '番茄牛腩饭', merchantName: '中南林业科技大学林海餐厅', rating: 4, content: '演示评价（非真实用户评价）：用于展示隐藏和申诉状态。', images: [], status: 'hidden', riskLevel: 'low', reason: '演示申诉处理中', createdAt: '2026-07-22 12:00' },
+  { id: 'R26072206', userName: '演示同学戊', userId: 'U10005', itemName: '番茄牛腩饭', merchantName: '中南林业科技大学林海餐厅', rating: 4, content: '演示评价（非真实用户评价）：用于展示隐藏和恢复状态。', images: [], status: 'hidden', riskLevel: 'low', reason: '演示申诉处理中', createdAt: '2026-07-22 12:00' },
 ];
 
 const seedImports: ImportJob[] = [
@@ -102,12 +104,12 @@ const seedImports: ImportJob[] = [
 ];
 
 const seedAudits: AuditLog[] = [
-  { id: 'A001', actor: '林老师', role: '超级管理员', module: '评价', action: '通过评价', target: 'R26071718', ip: '10.12.8.21', createdAt: '2026-07-18 10:18', detail: '人工复核后通过，评价已公开展示。' },
-  { id: 'A002', actor: '周审核员', role: '评价审核员', module: '评价', action: '驳回评价', target: 'R26071709', ip: '10.12.8.34', createdAt: '2026-07-18 09:45', detail: '驳回原因：包含无关营销信息。' },
-  { id: 'A003', actor: '林老师', role: '超级管理员', module: '商家', action: '更新商家', target: '林语餐厅', ip: '10.12.8.21', createdAt: '2026-07-22 11:56', detail: '更新高德 POI 名称、地址和两套坐标。' },
-  { id: 'A004', actor: '陈管理员', role: '校园管理员', module: '菜品', action: '更新菜品', target: '新奥尔良鸡扒饭', ip: '10.12.9.17', createdAt: '2026-07-22 11:52', detail: '标记为演示生成菜单，实际供应以现场为准。' },
-  { id: 'A005', actor: '林老师', role: '超级管理员', module: '导入', action: '执行 CSV 导入', target: '中南林餐饮POI候选.csv', ip: '10.12.8.21', createdAt: '2026-07-22 11:20', detail: '共 11 行，成功 11 行，失败 0 行。' },
-  { id: 'A006', actor: '系统', role: '系统任务', module: '系统', action: '重算商家评分', target: '中南林业科技大学林海餐厅', ip: '127.0.0.1', createdAt: '2026-07-22 11:40', detail: '演示评价写入后完成贝叶斯评分重算。' },
+  { id: 'A001', actorId: 'admin-001', targetType: 'review', action: 'review.publish', target: 'R26071718', createdAt: '2026-07-18 10:18', detail: '{\n  "reason": "人工复核后通过"\n}' },
+  { id: 'A002', actorId: 'admin-002', targetType: 'review', action: 'review.reject', target: 'R26071709', createdAt: '2026-07-18 09:45', detail: '{\n  "reason": "包含无关营销信息"\n}' },
+  { id: 'A003', actorId: 'admin-001', targetType: 'merchant', action: 'merchant.update', target: 'M002', createdAt: '2026-07-22 11:56', detail: '{\n  "fields": ["address", "latitude", "longitude", "name"]\n}' },
+  { id: 'A004', actorId: 'admin-003', targetType: 'menu_item', action: 'menu_item.update', target: 'D004', createdAt: '2026-07-22 11:52', detail: '{\n  "fields": ["description"]\n}' },
+  { id: 'A005', actorId: 'admin-001', targetType: 'import', action: 'import.merchants', target: 'IMP-260722-01', createdAt: '2026-07-22 11:20', detail: '{\n  "success": 11,\n  "failed": 0\n}' },
+  { id: 'A006', actorId: 'admin-001', targetType: 'menu_item', action: 'menu_item.status.online', target: 'D001', createdAt: '2026-07-22 11:40', detail: '{}' },
 ];
 
 interface MockState {
@@ -120,7 +122,7 @@ interface MockState {
   audits: AuditLog[];
 }
 
-const storageKey = 'campus-foodie-admin-mock-state-v3';
+const storageKey = 'campus-foodie-admin-mock-state-v4';
 
 function createSeedState(): MockState {
   return {
@@ -165,11 +167,18 @@ function wait(ms = 180) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function paginate<T>(items: T[], query: ListQuery): PageResult<T> {
-  const page = query.page ?? 1;
-  const pageSize = query.pageSize ?? 10;
-  const start = (page - 1) * pageSize;
-  return { items: items.slice(start, start + pageSize), total: items.length };
+/** Mirrors the server keyset contract with a positional cursor so the UI exercises the same paging path. */
+function cursorSlice<T>(items: T[], query: CursorQuery, total?: number): CursorPage<T> {
+  const limit = Math.min(Math.max(query.limit ?? 10, 1), 100);
+  const start = Number.parseInt(query.cursor ?? '', 10) || 0;
+  const visible = items.slice(start, start + limit);
+  const hasMore = start + limit < items.length;
+  return {
+    items: structuredClone(visible),
+    nextCursor: hasMore ? String(start + limit) : null,
+    hasMore,
+    total,
+  };
 }
 
 function includes(value: unknown, keyword: string) {
@@ -183,31 +192,15 @@ function currentTags() {
   }));
 }
 
-function currentCategoryShare(): DashboardData['categoryShare'] {
-  const counts = new Map<string, number>();
-  state.items.forEach((item) => counts.set(item.category, (counts.get(item.category) ?? 0) + 1));
-  const total = Math.max(1, state.items.length);
-  const colors = ['#1677ff', '#52c41a', '#13c2c2', '#faad14', '#b37feb'];
-  return [...counts.entries()]
-    .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0], 'zh-CN'))
-    .map(([name, count], index) => ({
-      name,
-      value: Math.round(count / total * 100),
-      color: colors[index % colors.length],
-    }));
-}
-
-function audit(module: AuditLog['module'], action: string, target: string, detail: string) {
+function audit(targetType: string, action: string, target: string, detail: Record<string, unknown>) {
   state.audits.unshift({
     id: `A${Date.now()}`,
-    actor: admin.name,
-    role: '超级管理员',
-    module,
+    actorId: admin.id,
+    targetType,
     action,
     target,
-    ip: '127.0.0.1',
     createdAt: new Date().toLocaleString('zh-CN', { hour12: false }).replaceAll('/', '-'),
-    detail,
+    detail: JSON.stringify(detail, null, 2),
   });
 }
 
@@ -215,44 +208,32 @@ export const mockApi = {
   async login(username: string, password: string): Promise<LoginResult> {
     await wait(320);
     if (username !== 'admin' || password !== 'admin123') throw new Error('账号或密码错误，请使用演示账号登录');
-    return { accessToken: `mock-admin-token-${Date.now()}`, user: admin };
+    return {
+      accessToken: `mock-admin-access-${Date.now()}`,
+      refreshToken: `mock-admin-refresh-${Date.now()}`,
+      user: admin,
+    };
   },
 
   async dashboard(): Promise<DashboardData> {
     await wait();
-    const pending = state.reviews.filter((item) => item.status === 'pending_manual').length;
     return {
       users: state.users.length,
-      merchants: state.merchants.length,
-      menuItems: state.items.length,
-      pendingReviews: pending,
-      userGrowth: 0,
-      merchantGrowth: 0,
-      weeklyTraffic: [
-        { date: '周一', views: 8420, recommendations: 5210 }, { date: '周二', views: 9120, recommendations: 5680 },
-        { date: '周三', views: 10540, recommendations: 6240 }, { date: '周四', views: 9860, recommendations: 6010 },
-        { date: '周五', views: 12680, recommendations: 7560 }, { date: '周六', views: 11240, recommendations: 6980 },
-        { date: '周日', views: 10890, recommendations: 6740 },
-      ],
-      categoryShare: currentCategoryShare(),
-      recentReviews: state.reviews.slice(0, 4),
-      popularItems: [
-        { name: '番茄牛腩饭', merchant: '中南林业科技大学林海餐厅', views: 5280, rating: 4.8 },
-        { name: '菌菇鸡汤面', merchant: '林语餐厅', views: 4310, rating: 4.7 },
-        { name: '鸡胸时蔬能量碗', merchant: '中南林业科技大学林苑餐厅', views: 2980, rating: 4.8 },
-        { name: '新奥尔良鸡扒饭', merchant: '林涛餐厅', views: 2150, rating: 4.6 },
-      ],
+      merchants: state.merchants.filter((item) => item.status === 'online').length,
+      menuItems: state.items.filter((item) => item.status === 'online').length,
+      pendingReviews: state.reviews.filter((item) => item.status === 'pending_manual').length,
+      recentReviews: structuredClone(state.reviews.slice(0, 4)),
     };
   },
 
-  async users(query: ListQuery): Promise<PageResult<CampusUser>> {
+  async users(query: UserListQuery): Promise<CursorPage<CampusUser>> {
     await wait();
-    const keyword = query.keyword?.trim() ?? '';
+    const keyword = query.search?.trim() ?? '';
     const filtered = state.users.filter((item) =>
-      (!keyword || includes(item.username, keyword) || includes(item.email, keyword) || includes(item.id, keyword)) &&
-      (!query.status || item.status === query.status),
+      (!keyword || includes(item.username, keyword) || includes(item.email, keyword)) &&
+      (query.active === undefined || (item.status !== 'frozen') === query.active),
     );
-    return paginate(filtered, query);
+    return cursorSlice(filtered, query);
   },
 
   async updateUser(id: string, status: EntityStatus): Promise<CampusUser> {
@@ -260,7 +241,7 @@ export const mockApi = {
     const user = state.users.find((item) => item.id === id);
     if (!user) throw new Error('用户不存在');
     user.status = status;
-    audit('用户', status === 'frozen' ? '冻结用户' : '恢复用户', user.username, `账号状态更新为 ${status}。`);
+    audit('user', status === 'frozen' ? 'user.deactivate' : 'user.activate', user.id, {});
     saveState();
     return structuredClone(user);
   },
@@ -269,18 +250,18 @@ export const mockApi = {
     await wait();
     const user = state.users.find((item) => item.id === id);
     if (!user) throw new Error('用户不存在');
-    audit('用户', '触发密码重置', user.username, `密码重置邮件已发送至 ${user.email}。`);
+    audit('user', 'user.password_reset_requested', user.id, { email: user.email });
     saveState();
   },
 
-  async merchants(query: ListQuery): Promise<PageResult<Merchant>> {
+  async merchants(query: MerchantListQuery): Promise<CursorPage<Merchant>> {
     await wait();
-    const keyword = query.keyword?.trim() ?? '';
+    const keyword = query.search?.trim() ?? '';
     const filtered = state.merchants.filter((item) =>
-      (!keyword || includes(item.name, keyword) || includes(item.area, keyword) || includes(item.category, keyword)) &&
-      (!query.status || item.status === query.status),
+      (!keyword || includes(item.name, keyword)) &&
+      (query.active === undefined || (item.status === 'online') === query.active),
     );
-    return paginate(filtered, query);
+    return cursorSlice(filtered, query);
   },
 
   async saveMerchant(input: Partial<Merchant> & Pick<Merchant, 'name'>): Promise<Merchant> {
@@ -288,7 +269,7 @@ export const mockApi = {
     const existing = input.id ? state.merchants.find((item) => item.id === input.id) : undefined;
     if (existing) {
       Object.assign(existing, input, { updatedAt: new Date().toLocaleString('zh-CN', { hour12: false }) });
-      audit('商家', '更新商家', existing.name, '更新商家基本信息。');
+      audit('merchant', 'merchant.update', existing.id, { fields: Object.keys(input).sort() });
       saveState();
       return structuredClone(existing);
     }
@@ -305,16 +286,15 @@ export const mockApi = {
       latitude: input.latitude,
       longitude: input.longitude,
       priceLevel: input.priceLevel,
-      status: input.status ?? 'draft',
+      status: input.status ?? 'offline',
       rating: 0,
       dishCount: 0,
       favoriteCount: 0,
       openingHours: input.openingHours ?? '10:00-20:00',
-      contact: input.contact ?? '',
       updatedAt: new Date().toLocaleString('zh-CN', { hour12: false }),
     };
     state.merchants.unshift(merchant);
-    audit('商家', '新增商家', merchant.name, '创建商家草稿。');
+    audit('merchant', 'merchant.create', merchant.id, {});
     saveState();
     return structuredClone(merchant);
   },
@@ -324,18 +304,7 @@ export const mockApi = {
     const merchant = state.merchants.find((item) => item.id === id);
     if (!merchant) throw new Error('商家不存在');
     merchant.status = status;
-    audit('商家', status === 'online' ? '上架商家' : '下架商家', merchant.name, `商家状态更新为 ${status}。`);
-    saveState();
-  },
-
-  async deleteMerchant(id: string): Promise<void> {
-    await wait();
-    const merchant = state.merchants.find((item) => item.id === id);
-    if (!merchant) throw new Error('商家不存在');
-    if (merchant.status === 'online') throw new Error('请先下架商家再删除');
-    state.merchants = state.merchants.filter((item) => item.id !== id);
-    state.items = state.items.filter((item) => item.merchantId !== id);
-    audit('商家', '删除商家', merchant.name, '商家档案已软删除，关联菜品同步停止展示。');
+    audit('merchant', `merchant.status.${status}`, merchant.id, {});
     saveState();
   },
 
@@ -362,7 +331,7 @@ export const mockApi = {
     const existing = input.id ? state.tags.find((tag) => tag.id === input.id) : undefined;
     if (existing) {
       Object.assign(existing, { name: input.name.trim(), kind: input.kind });
-      audit('标签', '更新标签', existing.name, `标签类型更新为 ${existing.kind}。`);
+      audit('tag', 'tag.update', existing.id, { fields: ['kind', 'name'] });
       saveState();
       return structuredClone(existing);
     }
@@ -374,7 +343,7 @@ export const mockApi = {
       usageCount: 0,
     };
     state.tags.unshift(tag);
-    audit('标签', '新增标签', tag.name, `标签类型：${tag.kind}。`);
+    audit('tag', 'tag.create', tag.id, { kind: tag.kind });
     saveState();
     return structuredClone(tag);
   },
@@ -387,18 +356,17 @@ export const mockApi = {
       throw new Error('标签正被菜品使用，不能删除');
     }
     state.tags = state.tags.filter((entry) => entry.id !== id);
-    audit('标签', '删除标签', tag.name, '标签已从校园字典中删除。');
+    audit('tag', 'tag.delete', tag.id, {});
     saveState();
   },
 
-  async menuItems(query: ListQuery): Promise<PageResult<MenuItem>> {
+  async menuItems(query: MenuItemListQuery): Promise<CursorPage<MenuItem>> {
     await wait();
-    const keyword = query.keyword?.trim() ?? '';
     const filtered = state.items.filter((item) =>
-      (!keyword || includes(item.name, keyword) || includes(item.merchantName, keyword) || includes(item.category, keyword)) &&
-      (!query.status || item.status === query.status),
+      (!query.merchantId || item.merchantId === query.merchantId) &&
+      (query.active === undefined || (item.status === 'online') === query.active),
     );
-    return paginate(filtered, query);
+    return cursorSlice(filtered, query);
   },
 
   async saveMenuItem(input: Partial<MenuItem> & Pick<MenuItem, 'name' | 'merchantId'>): Promise<MenuItem> {
@@ -408,7 +376,7 @@ export const mockApi = {
     const existing = input.id ? state.items.find((item) => item.id === input.id) : undefined;
     if (existing) {
       Object.assign(existing, input, { merchantName: merchant.name, updatedAt: new Date().toLocaleString('zh-CN', { hour12: false }) });
-      audit('菜品', '更新菜品', existing.name, '更新菜品或套餐信息。');
+      audit('menu_item', 'menu_item.update', existing.id, { fields: Object.keys(input).sort() });
       saveState();
       return structuredClone(existing);
     }
@@ -425,14 +393,14 @@ export const mockApi = {
       price: input.price ?? 0,
       rating: 0,
       reviewCount: 0,
-      status: input.status ?? 'draft',
+      status: input.status ?? 'offline',
       tags: input.tags ?? [],
       imageUrl: input.imageUrl,
       updatedAt: new Date().toLocaleString('zh-CN', { hour12: false }),
     };
     state.items.unshift(item);
     merchant.dishCount += 1;
-    audit('菜品', '新增菜品', item.name, `归属商家：${merchant.name}。`);
+    audit('menu_item', 'menu_item.create', item.id, { merchant_id: merchant.id });
     saveState();
     return structuredClone(item);
   },
@@ -442,42 +410,26 @@ export const mockApi = {
     const item = state.items.find((entry) => entry.id === id);
     if (!item) throw new Error('菜品不存在');
     item.status = status;
-    audit('菜品', status === 'online' ? '上架菜品' : '下架菜品', item.name, `菜品状态更新为 ${status}。`);
+    audit('menu_item', `menu_item.status.${status}`, item.id, {});
     saveState();
   },
 
-  async deleteMenuItem(id: string): Promise<void> {
+  async reviews(query: ReviewListQuery): Promise<CursorPage<Review>> {
     await wait();
-    const item = state.items.find((entry) => entry.id === id);
-    if (!item) throw new Error('菜品不存在');
-    if (item.status === 'online') throw new Error('请先下架菜品再删除');
-    state.items = state.items.filter((entry) => entry.id !== id);
-    const merchant = state.merchants.find((entry) => entry.id === item.merchantId);
-    if (merchant) merchant.dishCount = Math.max(0, merchant.dishCount - 1);
-    audit('菜品', '删除菜品', item.name, '菜品档案已软删除，历史评价和审计记录继续保留。');
-    saveState();
+    const filtered = state.reviews.filter((item) => !query.status || item.status === query.status);
+    return cursorSlice(filtered, query, filtered.length);
   },
 
-  async reviews(query: ReviewQuery): Promise<PageResult<Review>> {
-    await wait();
-    const keyword = query.keyword?.trim() ?? '';
-    const filtered = state.reviews.filter((item) =>
-      (!keyword || includes(item.content, keyword) || includes(item.userName, keyword) || includes(item.itemName, keyword)) &&
-      (!query.status || item.status === query.status) &&
-      (!query.riskLevel || item.riskLevel === query.riskLevel) &&
-      (!query.rating || item.rating === query.rating),
-    );
-    return paginate(filtered, query);
-  },
-
-  async reviewAction(id: string, status: ReviewStatus, reason?: string): Promise<void> {
+  async moderateReview(id: string, action: ReviewAction, reason?: string): Promise<void> {
     await wait();
     const review = state.reviews.find((item) => item.id === id);
     if (!review) throw new Error('评价不存在');
-    review.status = status;
-    review.reason = reason;
-    const action = status === 'published' ? '通过评价' : status === 'hidden' ? '下架评价' : '驳回评价';
-    audit('评价', action, review.id, reason || '人工复核完成。');
+    if (action === 'restore' && review.status !== 'hidden') throw new Error('只有已隐藏的评价可以恢复发布');
+    if ((action === 'reject' || action === 'hide') && !reason?.trim()) throw new Error('驳回或下架必须填写原因');
+    review.status = action === 'reject' ? 'rejected' : action === 'hide' ? 'hidden' : 'published';
+    review.riskLevel = review.status === 'rejected' ? 'high' : 'low';
+    review.reason = reason?.trim() || undefined;
+    audit('review', `review.${action}`, review.id, { reason: reason ?? '' });
     saveState();
   },
 
@@ -490,8 +442,8 @@ export const mockApi = {
       valid: Math.max(0, total - 2),
       invalid: Math.min(2, total),
       errors: [
-        { row: 4, field: type === 'menu_items' ? 'price' : 'address', message: type === 'menu_items' ? '价格必须为非负数字' : '地址不能为空' },
-        { row: 7, field: 'category', message: '未找到对应分类，请检查字典值' },
+        { row: 4, field: type === 'menu_items' ? 'price_cents' : 'address', message: type === 'menu_items' ? '必须是整数' : '必填字段不能为空' },
+        { row: 7, field: 'category_id', message: '品类不属于当前校园' },
       ],
     };
   },
@@ -507,27 +459,22 @@ export const mockApi = {
       total: validation.total,
       success: validation.valid,
       failed: validation.invalid,
-      createdBy: admin.name,
+      createdBy: admin.username,
       createdAt: new Date().toLocaleString('zh-CN', { hour12: false }),
     };
     state.imports.unshift(job);
-    audit('导入', '执行 CSV 导入', file.name, `共 ${job.total} 行，成功 ${job.success} 行，失败 ${job.failed} 行。`);
+    audit('import', `import.${type}`, job.id, { success: job.success, failed: job.failed });
     saveState();
     return structuredClone(job);
   },
 
-  async importJobs(): Promise<ImportJob[]> {
+  async importJobs(query: CursorQuery): Promise<CursorPage<ImportJob>> {
     await wait();
-    return structuredClone(state.imports);
+    return cursorSlice(state.imports, query);
   },
 
-  async auditLogs(query: AuditQuery): Promise<PageResult<AuditLog>> {
+  async auditLogs(query: CursorQuery): Promise<CursorPage<AuditLog>> {
     await wait();
-    const keyword = query.keyword?.trim() ?? '';
-    const filtered = state.audits.filter((item) =>
-      (!keyword || includes(item.actor, keyword) || includes(item.action, keyword) || includes(item.target, keyword)) &&
-      (!query.module || item.module === query.module),
-    );
-    return paginate(filtered, query);
+    return cursorSlice(state.audits, query);
   },
 };

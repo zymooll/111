@@ -8,7 +8,6 @@ from sqlalchemy.orm import Session
 
 from app.models import GuestSession, InteractionEvent, MenuItem, Merchant, UserProfile
 
-
 EVENT_WEIGHTS = {
     "click": 3,
     "favorite": 4,
@@ -89,7 +88,7 @@ def recommendation_profile(
         if weight:
             weighted_signals += 1
             tags, item_area = item_context.get(str(event.menu_item_id), ([], None))
-            tag_scores.update({tag: weight for tag in tags})
+            tag_scores.update(dict.fromkeys(tags, weight))
             area_id = item_area or merchant_areas.get(str(event.merchant_id))
             if area_id:
                 area_scores[str(area_id)] += weight

@@ -7,7 +7,6 @@ import pytest
 from app.config import Settings
 from app.services.deepseek import DeepSeekClient
 
-
 CANDIDATES = [
     {"id": "dish-1", "name": "番茄牛腩饭"},
     {"id": "dish-2", "name": "菌菇鸡汤面"},

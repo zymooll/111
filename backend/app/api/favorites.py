@@ -13,7 +13,6 @@ from app.schemas import CursorPage, FavoriteRead, Message
 from app.services.campuses import require_campus, require_merchant
 from app.services.pagination import before_cursor, encode_cursor
 
-
 router = APIRouter(tags=["收藏"])
 
 

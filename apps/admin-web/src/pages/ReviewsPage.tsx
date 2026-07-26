@@ -1,11 +1,13 @@
-import { CheckOutlined, CloseOutlined, EyeInvisibleOutlined, EyeOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
-import { App, Button, Card, Descriptions, Drawer, Empty, Input, Modal, Rate, Select, Space, Statistic, Table, Tabs, Tag, Typography } from 'antd';
+import { CheckOutlined, CloseOutlined, EyeInvisibleOutlined, EyeOutlined, ReloadOutlined, UndoOutlined } from '@ant-design/icons';
+import { App, Button, Card, Descriptions, Drawer, Empty, Input, Modal, Rate, Space, Statistic, Table, Tabs, Tag, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useCallback, useEffect, useState } from 'react';
 import { adminApi } from '../api/client';
+import { CursorPagination } from '../components/CursorPagination';
 import { PageHeader } from '../components/PageHeader';
 import { StatusTag } from '../components/StatusTag';
-import type { Review, ReviewStatus } from '../types';
+import { useCursorList } from '../hooks/useCursorList';
+import type { CursorQuery, Review, ReviewStatus } from '../types';
 
 const riskConfig = {
   low: { color: 'success', label: '低风险' },
@@ -13,62 +15,65 @@ const riskConfig = {
   high: { color: 'error', label: '高风险' },
 };
 
+const summaryStatuses: ReviewStatus[] = ['pending_manual', 'published', 'rejected'];
+const pageSize = 10;
+
 export function ReviewsPage() {
   const { message, modal } = App.useApp();
-  const [items, setItems] = useState<Review[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [keyword, setKeyword] = useState('');
   const [status, setStatus] = useState('pending_manual');
-  const [riskLevel, setRiskLevel] = useState('');
-  const [rating, setRating] = useState<number>();
-  const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<Review>();
   const [actionTarget, setActionTarget] = useState<Review>();
   const [actionStatus, setActionStatus] = useState<ReviewStatus>('rejected');
   const [reason, setReason] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
-  const [summary, setSummary] = useState({ pending: 0, published: 0, rejected: 0 });
+  const [summary, setSummary] = useState<Partial<Record<ReviewStatus, number>>>({});
+  const [summaryToken, setSummaryToken] = useState(0);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const result = await adminApi.reviews({ keyword, status: status === 'all' ? '' : status, riskLevel, rating, page, pageSize: 10 });
-      setItems(result.items);
-      setTotal(result.total);
-    } catch (error) {
-      message.error(error instanceof Error ? error.message : '评价列表加载失败');
-    } finally {
-      setLoading(false);
-    }
-  }, [keyword, message, page, rating, riskLevel, status]);
+  const handleError = useCallback((error: unknown) => {
+    message.error(error instanceof Error ? error.message : '评价列表加载失败');
+  }, [message]);
 
-  const loadSummary = useCallback(async () => {
-    try {
-      const [pending, published, rejected] = await Promise.all([
-        adminApi.reviews({ status: 'pending_manual', page: 1, pageSize: 100 }),
-        adminApi.reviews({ status: 'published', page: 1, pageSize: 100 }),
-        adminApi.reviews({ status: 'rejected', page: 1, pageSize: 100 }),
-      ]);
-      setSummary({ pending: pending.total, published: published.total, rejected: rejected.total });
-    } catch {
-      // The main table surfaces request failures; summary counters remain at their last values.
-    }
-  }, []);
+  const loadPage = useCallback(
+    (query: CursorQuery, signal: AbortSignal) => adminApi.reviews({
+      ...query,
+      status: status === 'all' ? undefined : status as ReviewStatus,
+    }, signal),
+    [status],
+  );
 
-  useEffect(() => { void load(); }, [load]);
-  useEffect(() => { void loadSummary(); }, [loadSummary]);
+  const list = useCursorList(loadPage, pageSize, handleError);
 
-  const approve = (record: Review) => {
+  useEffect(() => {
+    const controller = new AbortController();
+    // The list endpoint reports a real total per status; one minimal page each keeps the counters honest.
+    Promise.all(summaryStatuses.map((value) => adminApi.reviews({ status: value, limit: 1 }, controller.signal)))
+      .then((pages) => {
+        if (controller.signal.aborted) return;
+        setSummary(Object.fromEntries(summaryStatuses.map((value, index) => [value, pages[index].total])));
+      })
+      .catch(() => undefined);
+    return () => controller.abort();
+  }, [summaryToken]);
+
+  const refresh = useCallback(() => {
+    list.reload();
+    setSummaryToken((token) => token + 1);
+  }, [list]);
+
+  const approve = (record: Review, action: 'publish' | 'restore') => {
     modal.confirm({
-      title: '确认通过这条评价？',
-      content: '通过后评价将立即公开，并参与菜品与商家评分计算。',
-      okText: '通过并发布',
+      title: action === 'restore' ? '恢复发布这条评价？' : '确认通过这条评价？',
+      content: '评价将重新公开展示，并参与菜品与商家评分计算。',
+      okText: action === 'restore' ? '恢复发布' : '通过并发布',
       async onOk() {
-        await adminApi.reviewAction(record.id, 'published');
-        message.success('评价已通过并发布');
-        setSelected(undefined);
-        await Promise.all([load(), loadSummary()]);
+        try {
+          await adminApi.moderateReview(record.id, action);
+          message.success(action === 'restore' ? '评价已恢复发布' : '评价已通过并发布');
+          setSelected(undefined);
+          refresh();
+        } catch (error) {
+          message.error(error instanceof Error ? error.message : '操作失败');
+        }
       },
     });
   };
@@ -87,11 +92,11 @@ export function ReviewsPage() {
     }
     setActionLoading(true);
     try {
-      await adminApi.reviewAction(actionTarget.id, actionStatus, reason.trim());
+      await adminApi.moderateReview(actionTarget.id, actionStatus === 'rejected' ? 'reject' : 'hide', reason.trim());
       message.success(actionStatus === 'rejected' ? '评价已驳回' : '评价已下架');
       setActionTarget(undefined);
       setSelected(undefined);
-      await Promise.all([load(), loadSummary()]);
+      refresh();
     } catch (error) {
       message.error(error instanceof Error ? error.message : '操作失败');
     } finally {
@@ -107,12 +112,13 @@ export function ReviewsPage() {
     { title: '状态', dataIndex: 'status', width: 120, render: (value) => <StatusTag status={value} /> },
     { title: '发表时间', dataIndex: 'createdAt', width: 155 },
     {
-      title: '操作', key: 'actions', fixed: 'right', width: 160,
+      title: '操作', key: 'actions', fixed: 'right', width: 175,
       render: (_, record) => <Space size={2}>
         <Button type="text" icon={<EyeOutlined />} onClick={() => setSelected(record)}>详情</Button>
-        {record.status === 'pending_manual' && <Button type="text" className="success-action" icon={<CheckOutlined />} onClick={() => approve(record)}>通过</Button>}
+        {record.status === 'pending_manual' && <Button type="text" className="success-action" icon={<CheckOutlined />} onClick={() => approve(record, 'publish')}>通过</Button>}
         {record.status === 'pending_manual' && <Button danger type="text" icon={<CloseOutlined />} onClick={() => openAction(record, 'rejected')}>驳回</Button>}
         {record.status === 'published' && <Button danger type="text" icon={<EyeInvisibleOutlined />} onClick={() => openAction(record, 'hidden')}>下架</Button>}
+        {record.status === 'hidden' && <Button type="text" className="success-action" icon={<UndoOutlined />} onClick={() => approve(record, 'restore')}>恢复</Button>}
       </Space>,
     },
   ];
@@ -121,15 +127,14 @@ export function ReviewsPage() {
     <div>
       <PageHeader title="评价审核" description="复核机器标记内容，维护真实、可信的校园餐饮评价环境" />
       <div className="summary-strip review-summary">
-        <Statistic title="待人工审核" value={summary.pending} valueStyle={{ color: '#d97706' }} />
-        <Statistic title="已发布评价" value={summary.published} valueStyle={{ color: '#16a34a' }} />
-        <Statistic title="已驳回评价" value={summary.rejected} valueStyle={{ color: '#e5484d' }} />
-        <Statistic title="当前队列总量" value={summary.pending + summary.published + summary.rejected} suffix="条" />
+        <Statistic title="待人工审核" value={summary.pending_manual ?? '—'} valueStyle={{ color: '#d97706' }} />
+        <Statistic title="已发布评价" value={summary.published ?? '—'} valueStyle={{ color: '#16a34a' }} />
+        <Statistic title="已驳回评价" value={summary.rejected ?? '—'} valueStyle={{ color: '#e5484d' }} />
       </div>
       <Card bordered={false}>
         <Tabs
           activeKey={status}
-          onChange={(value) => { setStatus(value); setPage(1); }}
+          onChange={setStatus}
           items={[
             { key: 'pending_manual', label: '待人工审核' },
             { key: 'published', label: '已发布' },
@@ -139,14 +144,19 @@ export function ReviewsPage() {
           ]}
         />
         <div className="table-toolbar review-toolbar">
-          <Space wrap>
-            <Input allowClear prefix={<SearchOutlined />} placeholder="搜索评价内容、用户或菜品" value={keyword} onChange={(event) => { setKeyword(event.target.value); setPage(1); }} className="wide-search" />
-            <Select value={riskLevel} onChange={(value) => { setRiskLevel(value); setPage(1); }} style={{ width: 130 }} options={[{ value: '', label: '全部风险' }, { value: 'low', label: '低风险' }, { value: 'medium', label: '中风险' }, { value: 'high', label: '高风险' }]} />
-            <Select allowClear value={rating} onChange={(value) => { setRating(value); setPage(1); }} placeholder="全部评分" style={{ width: 130 }} options={[5, 4, 3, 2, 1].map((value) => ({ value, label: `${value} 星` }))} />
-          </Space>
-          <Button icon={<ReloadOutlined />} onClick={() => void load()}>刷新</Button>
+          <Typography.Text type="secondary">评价按发表时间倒序排列，风险等级由服务端审核模型给出。</Typography.Text>
+          <Button icon={<ReloadOutlined />} onClick={refresh}>刷新</Button>
         </div>
-        <Table rowKey="id" columns={columns} dataSource={items} loading={loading} scroll={{ x: 1150 }} locale={{ emptyText: <Empty description="当前筛选条件下没有评价" /> }} pagination={{ current: page, pageSize: 10, total, showTotal: (value) => `共 ${value} 条评价`, onChange: setPage }} />
+        <Table
+          rowKey="id"
+          columns={columns}
+          dataSource={list.items}
+          loading={list.loading}
+          scroll={{ x: 1165 }}
+          locale={{ emptyText: <Empty description="当前状态下没有评价" /> }}
+          pagination={false}
+        />
+        <CursorPagination list={list} totalLabel={(total) => `共 ${total} 条评价`} />
       </Card>
 
       <Drawer title="评价详情" width={600} open={Boolean(selected)} onClose={() => setSelected(undefined)} extra={selected && <StatusTag status={selected.status} />}>
@@ -164,13 +174,15 @@ export function ReviewsPage() {
               <Descriptions.Item label="评价 ID">{selected.id}</Descriptions.Item>
               <Descriptions.Item label="发表用户">{selected.userName}（{selected.userId}）</Descriptions.Item>
               <Descriptions.Item label="发表时间">{selected.createdAt}</Descriptions.Item>
-              <Descriptions.Item label="机器风险"><Tag color={riskConfig[selected.riskLevel].color}>{riskConfig[selected.riskLevel].label}</Tag></Descriptions.Item>
+              <Descriptions.Item label="风险等级"><Tag color={riskConfig[selected.riskLevel].color}>{riskConfig[selected.riskLevel].label}</Tag></Descriptions.Item>
               {selected.reason && <Descriptions.Item label="处置原因">{selected.reason}</Descriptions.Item>}
             </Descriptions>
             <div className="drawer-actions">
-              {selected.status === 'pending_manual' && <Button type="primary" icon={<CheckOutlined />} onClick={() => approve(selected)}>通过并发布</Button>}
+              {selected.status === 'pending_manual' && <Button type="primary" icon={<CheckOutlined />} onClick={() => approve(selected, 'publish')}>通过并发布</Button>}
               {selected.status === 'pending_manual' && <Button danger icon={<CloseOutlined />} onClick={() => openAction(selected, 'rejected')}>驳回评价</Button>}
               {selected.status === 'published' && <Button danger icon={<EyeInvisibleOutlined />} onClick={() => openAction(selected, 'hidden')}>下架评价</Button>}
+              {selected.status === 'hidden' && <Button type="primary" icon={<UndoOutlined />} onClick={() => approve(selected, 'restore')}>恢复发布</Button>}
+              {selected.status === 'rejected' && <Typography.Text type="secondary">已驳回的评价不能直接恢复发布，需要用户重新提交后再进入审核队列。</Typography.Text>}
             </div>
           </>
         )}

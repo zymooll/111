@@ -1,8 +1,5 @@
 import { defineConfig, devices } from '@playwright/test'
-
-const apiOrigin = 'http://127.0.0.1:18000'
-const userOrigin = 'http://127.0.0.1:5173'
-const adminOrigin = 'http://127.0.0.1:5174'
+import { adminOrigin, adminWebPort, apiOrigin, userOrigin, userWebPort } from './e2e/ports.mjs'
 
 export default defineConfig({
   testDir: './e2e/tests',
@@ -39,7 +36,7 @@ export default defineConfig({
       reuseExistingServer: false,
     },
     {
-      command: 'pnpm dev:user',
+      command: `pnpm --filter @campus-foodie/user-web exec vite --host 127.0.0.1 --port ${userWebPort} --strictPort`,
       url: userOrigin,
       env: {
         VITE_API_BASE_URL: `${apiOrigin}/api/v1`,
@@ -52,7 +49,7 @@ export default defineConfig({
       reuseExistingServer: false,
     },
     {
-      command: 'pnpm --filter @campus-foodie/admin-web exec vite --host 127.0.0.1 --port 5174 --strictPort --configLoader runner',
+      command: `pnpm --filter @campus-foodie/admin-web exec vite --host 127.0.0.1 --port ${adminWebPort} --strictPort --configLoader runner`,
       url: adminOrigin,
       env: {
         VITE_ADMIN_API_BASE_URL: `${apiOrigin}/admin/api/v1`,

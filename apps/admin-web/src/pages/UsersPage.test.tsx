@@ -10,7 +10,8 @@ const api = vi.hoisted(() => ({
       { id: 'user-2', username: '待验证用户', email: 'pending@example.edu.cn', status: 'unverified', reviewCount: 0, impactViews: 0, favoriteCount: 0, createdAt: '2026-07-02', lastActive: '2026-07-22', dietaryTags: [] },
       { id: 'user-3', username: '冻结用户', email: 'frozen@example.edu.cn', status: 'frozen', reviewCount: 2, impactViews: 5, favoriteCount: 1, createdAt: '2026-07-03', lastActive: '2026-07-21', dietaryTags: [] },
     ],
-    total: 3,
+    nextCursor: null,
+    hasMore: false,
   }),
   updateUser: vi.fn(),
   resetPassword: vi.fn(),
@@ -18,14 +19,25 @@ const api = vi.hoisted(() => ({
 
 vi.mock('../api/client', () => ({ adminApi: api }));
 
-describe('UsersPage mock-sized summaries', () => {
-  it('reports the current result and visible status counts without legacy scale claims', async () => {
+describe('UsersPage page-scoped summaries', () => {
+  it('reports what the current page actually contains without legacy scale claims', async () => {
     render(<AntApp><UsersPage /></AntApp>);
 
     await waitFor(() => expect(api.users).toHaveBeenCalled());
-    for (const label of ['当前筛选结果', '本页正常', '本页待验证', '本页已冻结']) {
-      expect(screen.getByText(label).parentElement).toHaveTextContent(label === '当前筛选结果' ? '3' : '1');
+    for (const label of ['本页用户', '本页正常', '本页待验证', '本页已冻结']) {
+      expect(screen.getByText(label).parentElement).toHaveTextContent(label === '本页用户' ? '3' : '1');
     }
     expect(screen.queryByText('12,846')).not.toBeInTheDocument();
+  });
+
+  it('requests a keyset page instead of an offset page', async () => {
+    render(<AntApp><UsersPage /></AntApp>);
+
+    await waitFor(() => expect(api.users).toHaveBeenCalled());
+    expect(api.users).toHaveBeenLastCalledWith(
+      expect.objectContaining({ cursor: null, limit: 10 }),
+      expect.any(AbortSignal),
+    );
+    expect(api.users.mock.calls[0][0]).not.toHaveProperty('page');
   });
 });

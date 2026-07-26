@@ -61,6 +61,8 @@ export const merchants: Merchant[] = [
   { id: 'm6', isDemo: true, name: '中南林业科技大学学生五食堂', areaId: 'student-five-canteen', area: '韶山南路498号中南林业科技大学', categoryId: 'street', category: '校园简餐', priceLevel: 1, averagePrice: 14, rating: 4.6, reviewCount: 18, openUntil: '21:00', distance: 255, latitude: 28.130124, longitude: 112.992881, position: { x: 53, y: 64 }, tags: ['校园食堂', '西园'] }
 ]
 
+export const demoFavoriteMerchantIds = ['m1', 'm3']
+
 export const dishes: Dish[] = [
   { id: 'd1', isDemo: true, merchantId: 'm1', name: '番茄牛腩饭', subtitle: '依据综合食堂类型生成的演示菜品，实际供应以现场为准', image: '/dishes/rice-bowl.svg', gallery: ['/dishes/rice-bowl.svg', '/dishes/energy-bowl.svg'], price: 18, rating: 4.8, reviewCount: 18, categoryId: 'rice', category: '米饭套餐', tags: ['酸甜', '高蛋白'], reason: '符合你的米饭与高蛋白偏好', match: 96, calories: 680, waitMinutes: 8, ingredients: ['牛腩', '番茄', '时蔬', '米饭'] },
   { id: 'd2', isDemo: true, merchantId: 'm2', name: '菌菇鸡汤面', subtitle: '依据粉面档口类型生成的演示菜品，实际供应以现场为准', image: '/dishes/noodles.svg', gallery: ['/dishes/noodles.svg', '/dishes/rice-bowl.svg'], price: 14, rating: 4.7, reviewCount: 15, categoryId: 'noodle', category: '面食粉类', tags: ['清淡', '热汤'], reason: '清淡暖胃，适合日常午餐', match: 94, calories: 560, waitMinutes: 6, ingredients: ['鸡肉', '菌菇', '面条', '青菜'] },

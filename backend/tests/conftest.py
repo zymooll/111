@@ -1,27 +1,52 @@
 from __future__ import annotations
 
+import os
+
 import pytest
 from fastapi.testclient import TestClient
 
 from app.config import Settings
-from app.database import sqlite_memory_database
+from app.database import Database, sqlite_memory_database
 from app.main import create_app
+
+#: 设置该变量即让整套用例跑在真实 PostgreSQL 上，用于暴露 SQLite 掩盖的方言差异。
+TEST_DATABASE_URL_ENV = "CI_DATABASE_URL"
+
+
+def build_settings(tmp_path, **overrides) -> Settings:
+    defaults = {
+        "environment": "test",
+        "database_url": os.environ.get(TEST_DATABASE_URL_ENV, "sqlite://"),
+        "secret_key": "test-secret-key-with-enough-randomness",
+        "auto_seed": True,
+        "expose_debug_tokens": True,
+        # 业务用例会在同一秒内反复登录，配额单独在限流用例里打开。
+        "rate_limit_enabled": False,
+        "upload_dir": tmp_path / "uploads",
+        "cors_origins": ["http://testserver"],
+        "deepseek_api_key": None,
+    }
+    defaults.update(overrides)
+    return Settings(**defaults)
+
+
+def build_database() -> Database:
+    url = os.environ.get(TEST_DATABASE_URL_ENV)
+    if not url:
+        return sqlite_memory_database()
+    database = Database(url)
+    database.drop_all()
+    return database
+
+
+def build_client(tmp_path, **overrides) -> TestClient:
+    app = create_app(settings=build_settings(tmp_path, **overrides), database=build_database())
+    return TestClient(app)
 
 
 @pytest.fixture
 def client(tmp_path):
-    settings = Settings(
-        environment="test",
-        database_url="sqlite://",
-        secret_key="test-secret-key-with-enough-randomness",
-        auto_seed=True,
-        upload_dir=tmp_path / "uploads",
-        cors_origins=["http://testserver"],
-        deepseek_api_key=None,
-    )
-    database = sqlite_memory_database()
-    app = create_app(settings=settings, database=database)
-    with TestClient(app) as test_client:
+    with build_client(tmp_path) as test_client:
         yield test_client
 
 

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { Button, Toast } from 'antd-mobile'
 import { ChevronDown, History, LocateFixed, Search, SlidersHorizontal, Sparkles, TrendingUp } from 'lucide-react'
@@ -8,6 +8,7 @@ import { EmptyState, ErrorState, FeedSkeleton } from '../components/States'
 import { api } from '../services/api'
 import { newEventId } from '../services/interactions'
 import { useAppState } from '../store/AppState'
+import type { DishCardData, InteractionEventInput } from '../types'
 
 function findTreeLabel(tree: Array<{ id: string; label: string; children?: Array<{ id: string; label: string }> }>, id?: string) {
   if (!id) return undefined
@@ -22,9 +23,11 @@ function findTreeLabel(tree: Array<{ id: string; label: string; children?: Array
 export function HomePage() {
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
-  const { user, favorites, toggleFavorite } = useAppState()
+  const { user, isFavorite, toggleFavorite } = useAppState()
   const [search, setSearch] = useState(params.get('q') ?? '')
   const impressedItems = useRef(new Set<string>())
+  const impressions = useRef<InteractionEventInput[]>([])
+  const impressionTimer = useRef(0)
   const loadMoreRef = useRef<HTMLButtonElement | null>(null)
   const categoryId = params.get('category') ?? undefined
   const areaId = params.get('area') ?? undefined
@@ -33,10 +36,9 @@ export function HomePage() {
 
   const catalogQuery = useQuery({ queryKey: ['catalog'], queryFn: () => api.getCatalog() })
   const query = useInfiniteQuery({
-    queryKey: ['recommendations', params.toString(), favorites],
+    queryKey: ['recommendations', params.toString()],
     queryFn: ({ pageParam }) => api.getRecommendations(
       { query: params.get('q') ?? undefined, categoryId, areaId },
-      favorites,
       pageParam || undefined
     ),
     initialPageParam: null as string | null,
@@ -47,20 +49,33 @@ export function HomePage() {
   const quickCategories = useMemo(() => catalogQuery.data?.categories.flatMap((group) => group.children?.length ? group.children : [group]).slice(0, 5) ?? [], [catalogQuery.data])
   const categoryLabel = findTreeLabel(catalogQuery.data?.categories ?? [], categoryId) ?? '全部品类'
   const areaLabel = findTreeLabel(catalogQuery.data?.areas ?? [], areaId) ?? catalogQuery.data?.campusName ?? '全部地点'
-  const insight = useMemo(() => items[0]?.reason ?? '正在分析你最近的口味偏好', [items])
+  const insight = useMemo(() => items.find((item) => item.reason)?.reason, [items])
 
-  useEffect(() => {
-    const freshItems = items.filter((item) => !impressedItems.current.has(item.id))
-    if (!freshItems.length) return
-    freshItems.forEach((item) => impressedItems.current.add(item.id))
-    void api.recordInteractions(freshItems.map((item) => ({
+  const flushImpressions = useCallback(() => {
+    const events = impressions.current
+    impressions.current = []
+    if (events.length) void api.recordInteractions(events).catch(() => undefined)
+  }, [])
+
+  // 曝光以卡片真正进入视口为准，同一菜品只上报一次。
+  const recordImpression = useCallback((item: DishCardData) => {
+    if (impressedItems.current.has(item.id)) return
+    impressedItems.current.add(item.id)
+    impressions.current.push({
       eventId: newEventId('impression'),
-      eventType: 'impression' as const,
+      eventType: 'impression',
       dishId: item.id,
       merchantId: item.merchantId,
       metadata: { source: 'home_feed' }
-    }))).catch(() => undefined)
-  }, [items])
+    })
+    window.clearTimeout(impressionTimer.current)
+    impressionTimer.current = window.setTimeout(flushImpressions, 400)
+  }, [flushImpressions])
+
+  useEffect(() => () => {
+    window.clearTimeout(impressionTimer.current)
+    flushImpressions()
+  }, [flushImpressions])
 
   useEffect(() => {
     const target = loadMoreRef.current
@@ -95,7 +110,7 @@ export function HomePage() {
   }
 
   const favorite = (merchantId: string) => {
-    const wasFavorite = favorites.includes(merchantId)
+    const wasFavorite = isFavorite(merchantId)
     toggleFavorite(merchantId)
     Toast.show({ icon: 'success', content: wasFavorite ? '已取消收藏' : '已收藏商家' })
   }
@@ -119,7 +134,6 @@ export function HomePage() {
           <p>{user ? `${user.displayName}，今天想吃点什么？` : '嗨，校园美食探索家'}</p>
           <h1>把每一餐，都选得刚刚好</h1>
         </div>
-        <span className="weather-pill">☀️ 28°</span>
       </section>
 
       <section className="filter-row" aria-label="推荐筛选">
@@ -138,11 +152,13 @@ export function HomePage() {
         ))}
       </div>
 
-      <section className="ai-insight">
-        <span className="ai-insight__icon"><Sparkles size={20} /></span>
-        <div><strong>食刻懂你</strong><p>{insight}</p></div>
-        <span className="ai-insight__tag">AI 推荐</span>
-      </section>
+      {insight && (
+        <section className="ai-insight">
+          <span className="ai-insight__icon"><Sparkles size={20} /></span>
+          <div><strong>食刻懂你</strong><p>{insight}</p></div>
+          <span className="ai-insight__tag">AI 推荐</span>
+        </section>
+      )}
 
       <section className="section-heading">
         <div><span><TrendingUp size={19} /></span><div><h2>{params.get('q') ? `“${params.get('q')}”的结果` : '今日灵感'}</h2><p>根据口味、距离与目录信息综合推荐</p></div></div>
@@ -153,7 +169,7 @@ export function HomePage() {
       {query.isError && <ErrorState retry={() => query.refetch()} />}
       {query.data && items.length > 0 && (
         <div className="feed-list">
-          {items.map((item) => <DishCard key={item.id} item={item} onFavorite={favorite} onOpen={(selected) => {
+          {items.map((item) => <DishCard key={item.id} item={item} favorite={isFavorite(item.merchantId)} onFavorite={favorite} onImpression={recordImpression} onOpen={(selected) => {
             void api.recordInteractions([{
               eventId: newEventId('click'),
               eventType: 'click',

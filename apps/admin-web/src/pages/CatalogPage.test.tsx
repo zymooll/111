@@ -3,9 +3,11 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CatalogPage } from './CatalogPage';
 
+const emptyPage = { items: [], nextCursor: null, hasMore: false };
+
 const api = vi.hoisted(() => ({
-  merchants: vi.fn().mockResolvedValue({ items: [], total: 0 }),
-  menuItems: vi.fn().mockResolvedValue({ items: [], total: 0 }),
+  merchants: vi.fn().mockResolvedValue({ items: [], nextCursor: null, hasMore: false }),
+  menuItems: vi.fn().mockResolvedValue({ items: [], nextCursor: null, hasMore: false }),
   catalogMetadata: vi.fn().mockResolvedValue({
     areas: [{ id: 'area-1', name: '东园餐饮区' }],
     categories: [{ id: 'category-1', name: '米饭套餐' }],
@@ -17,10 +19,8 @@ const api = vi.hoisted(() => ({
   ]),
   saveMerchant: vi.fn(),
   updateMerchantStatus: vi.fn(),
-  deleteMerchant: vi.fn(),
   saveMenuItem: vi.fn(),
   updateMenuItemStatus: vi.fn(),
-  deleteMenuItem: vi.fn(),
   saveTag: vi.fn(),
   deleteTag: vi.fn(),
 }));
@@ -30,6 +30,8 @@ vi.mock('../api/client', () => ({ adminApi: api }));
 describe('CatalogPage completion flows', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    api.merchants.mockResolvedValue(emptyPage);
+    api.menuItems.mockResolvedValue(emptyPage);
   });
 
   it('embeds the map picker in the merchant form and synchronizes coordinates', async () => {

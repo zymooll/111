@@ -6,6 +6,7 @@ from typing import Any
 from uuid import uuid4
 
 from sqlalchemy import (
+    JSON,
     Boolean,
     CheckConstraint,
     DateTime,
@@ -13,7 +14,6 @@ from sqlalchemy import (
     ForeignKey,
     Index,
     Integer,
-    JSON,
     String,
     Text,
     UniqueConstraint,
@@ -124,6 +124,10 @@ class User(Base, TimestampMixin):
     role: Mapped[str] = mapped_column(String(30), default=UserRole.USER, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     email_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    #: 管理角色可操作的校园；NULL 表示不限校园，仅超级管理员应当如此。
+    managed_campus_id: Mapped[str | None] = mapped_column(
+        ForeignKey("campuses.id", ondelete="SET NULL"), index=True, nullable=True
+    )
 
 
 class GuestSession(Base, TimestampMixin):
@@ -322,6 +326,16 @@ class ReviewView(Base):
 
 class InteractionEvent(Base):
     __tablename__ = "interaction_events"
+    __table_args__ = (
+        # 画像查询在推荐热路径上按 actor + campus 取最近事件，这是写入量最大的表。
+        Index(
+            "ix_interaction_actor_recent",
+            "actor_type",
+            "actor_id",
+            "campus_id",
+            "occurred_at",
+        ),
+    )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
     campus_id: Mapped[str] = mapped_column(

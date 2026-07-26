@@ -9,7 +9,8 @@ from app.api.presenters import (
     favorite_merchant_ids,
     present_item,
     present_merchant,
-    present_review,
+    present_merchants,
+    present_reviews,
 )
 from app.dependencies import DbSession, OptionalPrincipal
 from app.models import (
@@ -43,7 +44,6 @@ from app.services.hierarchy import area_with_descendants, category_with_descenda
 from app.services.pagination import before_cursor, page_metadata
 from app.services.profiles import recommendation_profile
 from app.services.recommendations import fallback_reason
-
 
 router = APIRouter(tags=["校园目录"])
 
@@ -163,7 +163,7 @@ def merchants(
     )
     visible, next_cursor, has_more = page_metadata(rows, limit)
     return CursorPage(
-        items=[present_merchant(db, merchant, favorites=favorites) for merchant in visible],
+        items=present_merchants(db, visible, favorites=favorites),
         next_cursor=next_cursor,
         has_more=has_more,
     )
@@ -237,7 +237,7 @@ def menu_item_reviews(
     )
     visible, next_cursor, has_more = page_metadata(rows, limit)
     return ReviewPage(
-        items=[present_review(db, row) for row in visible],
+        items=present_reviews(db, visible),
         total=total,
         next_cursor=next_cursor,
         has_more=has_more,

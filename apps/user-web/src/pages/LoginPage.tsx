@@ -7,12 +7,15 @@ import { api } from '../services/api'
 import { useAppState } from '../store/AppState'
 import type { AuthProvider } from '../types'
 
+// 演示凭据只属于本地与预发布构建，生产构建始终从空表单开始。
+const demoCredentials = import.meta.env.PROD ? { account: '', password: '' } : { account: 'demo', password: 'Demo123!' }
+
 export function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { login } = useAppState()
-  const [account, setAccount] = useState('demo')
-  const [password, setPassword] = useState('Demo123!')
+  const [account, setAccount] = useState(demoCredentials.account)
+  const [password, setPassword] = useState(demoCredentials.password)
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [providers, setProviders] = useState<AuthProvider[]>([])
@@ -44,7 +47,7 @@ export function LoginPage() {
       </form>
       {providers.length > 0 && <><div className="auth-divider"><span />或<span /></div><div className="provider-list">{providers.map((provider) => <button className="third-party-placeholder" key={provider.id} type="button" onClick={() => window.location.assign(provider.authorizeUrl)}><span>＋</span>使用 {provider.id} 登录</button>)}</div></>}
       <p className="auth-switch">还没有账号？<Link to="/register" state={{ next }}>立即注册</Link></p>
-      <div className="auth-tip">演示账号 demo / Demo123! 已自动填入</div>
+      {!import.meta.env.PROD && <div className="auth-tip">演示账号 demo / Demo123! 已自动填入</div>}
     </div>
   )
 }

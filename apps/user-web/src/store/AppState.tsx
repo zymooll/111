@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
+import { demoFavoriteMerchantIds } from '../data/mockData'
 import { api, apiMode } from '../services/api'
 import { newEventId } from '../services/interactions'
 import type { ThemeMode, User } from '../types'
@@ -44,9 +45,9 @@ const AppStateContext = createContext<AppStateValue | null>(null)
 export function AppStateProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient()
   const [user, setUser] = useState<User | null>(() => readJson<User | null>(USER_KEY, null))
-  const [favorites, setFavorites] = useState<string[]>(() => user ? [] : readJson<string[]>(FAVORITES_KEY, apiMode === 'mock' ? ['m1', 'm3'] : []))
+  const [favorites, setFavorites] = useState<string[]>(() => user ? [] : readJson<string[]>(FAVORITES_KEY, apiMode === 'mock' ? demoFavoriteMerchantIds : []))
   const [themeMode, setThemeModeState] = useState<ThemeMode>(() => readJson<ThemeMode>(THEME_KEY, 'system'))
-  const hydratePersistedUser = useRef(Boolean(user))
+  const pendingFavorites = useRef(new Map<string, { desired: boolean; restore: boolean }>())
 
   useEffect(() => {
     if (user) localStorage.removeItem(FAVORITES_KEY)
@@ -68,12 +69,15 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener(AUTH_EXPIRED_EVENT, expire)
   }, [queryClient])
 
+  // 登录态下服务端是收藏的真相来源。守卫必须放在异步结果里：放在发起前会被 StrictMode
+  // 的二次挂载吃掉——第一轮标记已水合并被 cleanup 取消，第二轮直接返回，收藏永远是空的。
   useEffect(() => {
-    if (!user || !hydratePersistedUser.current) return
-    hydratePersistedUser.current = false
+    if (!user) return
     let active = true
     void api.getFavoriteMerchants([]).then((rows) => {
-      if (active) setFavorites(rows.map((merchant) => merchant.id))
+      if (!active) return
+      const remote = rows.map((merchant) => merchant.id)
+      setFavorites((current) => [...new Set([...current, ...remote])])
     }).catch(() => undefined)
     return () => { active = false }
   }, [user?.id])
@@ -91,46 +95,62 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     return () => media.removeEventListener('change', apply)
   }, [themeMode])
 
-  const toggleFavorite = useCallback((merchantId: string) => {
+  const applyFavorite = useCallback((merchantId: string, favorite: boolean) => {
     setFavorites((current) => {
-      const favorite = !current.includes(merchantId)
-      const next = favorite ? [...current, merchantId] : current.filter((id) => id !== merchantId)
-      void api.setFavorite(merchantId, favorite).catch(() => {
-        setFavorites((latest) => favorite
-          ? latest.filter((id) => id !== merchantId)
-          : latest.includes(merchantId) ? latest : [...latest, merchantId])
-      })
-      if (favorite) {
-        void api.recordInteractions([{
+      if (favorite === current.includes(merchantId)) return current
+      return favorite ? [...current, merchantId] : current.filter((id) => id !== merchantId)
+    })
+  }, [])
+
+  // 同一商家的连点合并为一条请求队列，最终以最后一次意图为准。
+  const syncFavorite = useCallback(async (merchantId: string, desired: boolean, restore: boolean) => {
+    const queued = pendingFavorites.current.get(merchantId)
+    if (queued) {
+      queued.desired = desired
+      return
+    }
+    const entry = { desired, restore }
+    pendingFavorites.current.set(merchantId, entry)
+    try {
+      let sent = entry.desired
+      await api.setFavorite(merchantId, sent)
+      while (sent !== entry.desired) {
+        sent = entry.desired
+        await api.setFavorite(merchantId, sent)
+      }
+      if (sent) {
+        await api.recordInteractions([{
           eventId: newEventId('favorite'),
           eventType: 'favorite',
           merchantId,
           metadata: { source: 'favorite_toggle' }
         }]).catch(() => undefined)
       }
-      return next
-    })
-  }, [])
+      void queryClient.invalidateQueries({ queryKey: ['my-stats'] })
+    } catch {
+      applyFavorite(merchantId, entry.restore)
+    } finally {
+      pendingFavorites.current.delete(merchantId)
+    }
+  }, [applyFavorite, queryClient])
+
+  const toggleFavorite = useCallback((merchantId: string) => {
+    const favorite = !favorites.includes(merchantId)
+    applyFavorite(merchantId, favorite)
+    void syncFavorite(merchantId, favorite, !favorite)
+  }, [applyFavorite, favorites, syncFavorite])
 
   const login = useCallback(async (account: string, password: string) => {
     const nextUser = await api.login(account, password)
     setUser(nextUser)
-    try {
-      const synced = await api.getFavoriteMerchants(favorites)
-      setFavorites((current) => [...new Set([...current, ...synced.map((merchant) => merchant.id)])])
-    } catch { /* Login remains successful when favorite sync is temporarily unavailable. */ }
     return nextUser
-  }, [favorites])
+  }, [])
 
   const register = useCallback(async (username: string, email: string, password: string) => {
     const nextUser = await api.register(username, email, password)
     setUser(nextUser)
-    try {
-      const synced = await api.getFavoriteMerchants(favorites)
-      setFavorites((current) => [...new Set([...current, ...synced.map((merchant) => merchant.id)])])
-    } catch { /* Registration remains successful when favorite sync is temporarily unavailable. */ }
     return nextUser
-  }, [favorites])
+  }, [])
 
   const updateUser = useCallback((nextUser: User) => setUser(nextUser), [])
   const logout = useCallback(async () => {

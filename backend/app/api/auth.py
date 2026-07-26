@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
-from fastapi import APIRouter, HTTPException, Request, status
+from fastapi import APIRouter, HTTPException, Request
 from sqlalchemy import or_, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -33,8 +33,8 @@ from app.schemas import (
     PasswordResetRequest,
     RefreshRequest,
     RegisterRequest,
-    TokenRequest,
     TokenPair,
+    TokenRequest,
     UserRead,
 )
 from app.security import TokenError, create_token, decode_token, hash_password, verify_password
@@ -47,7 +47,16 @@ from app.services.accounts import (
     send_account_email,
     verification_link,
 )
-
+from app.services.rate_limit import (
+    ACCOUNT_EMAIL_RULE,
+    ADMIN_LOGIN_RULE,
+    GUEST_RULE,
+    LOGIN_RULE,
+    REGISTER_RULE,
+    client_identity,
+    get_rate_limiter,
+    rate_limit,
+)
 
 router = APIRouter(prefix="/auth", tags=["鉴权"])
 admin_auth_router = APIRouter(prefix="/auth", tags=["管理端鉴权"])
@@ -163,7 +172,9 @@ def _merge_guest(request: Request, db: Session, user: User, guest_token: str | N
     db.flush()
 
 
-@router.post("/guest", response_model=GuestToken, status_code=201)
+@router.post(
+    "/guest", response_model=GuestToken, status_code=201, dependencies=[rate_limit(GUEST_RULE)]
+)
 def create_guest(request: Request, db: DbSession) -> GuestToken:
     settings = request.app.state.settings
     guest = GuestSession()
@@ -184,7 +195,12 @@ def create_guest(request: Request, db: DbSession) -> GuestToken:
     )
 
 
-@router.post("/register", response_model=TokenPair, status_code=201)
+@router.post(
+    "/register",
+    response_model=TokenPair,
+    status_code=201,
+    dependencies=[rate_limit(REGISTER_RULE)],
+)
 def register(payload: RegisterRequest, request: Request, db: DbSession) -> TokenPair:
     existing = db.scalar(
         select(User).where(
@@ -231,6 +247,13 @@ def _login(
     *,
     admin: bool,
 ) -> TokenPair:
+    limiter = get_rate_limiter(request)
+    scope = "admin-login" if admin else "login"
+    # 账号维度与来源维度分别锁定：前者挡住撞库，后者挡住单一来源的广撒网尝试。
+    account_key = payload.identifier.strip().lower()
+    limiter.guard_lockout(scope, account_key)
+    limiter.guard_lockout(scope, client_identity(request))
+
     user = db.scalar(
         select(User).where(
             or_(
@@ -240,7 +263,11 @@ def _login(
         )
     )
     if user is None or not verify_password(payload.password, user.password_hash):
+        limiter.record_failure(scope, account_key)
+        limiter.record_failure(scope, client_identity(request))
         raise HTTPException(status_code=401, detail="账号或密码错误")
+    limiter.clear_failures(scope, account_key)
+    limiter.clear_failures(scope, client_identity(request))
     if not user.is_active:
         raise HTTPException(status_code=403, detail="账号已停用")
     if admin and user.role == "user":
@@ -252,12 +279,14 @@ def _login(
     return _issue_pair(request, db, user, audience=audience)
 
 
-@router.post("/login", response_model=TokenPair)
+@router.post("/login", response_model=TokenPair, dependencies=[rate_limit(LOGIN_RULE)])
 def login(payload: LoginRequest, request: Request, db: DbSession) -> TokenPair:
     return _login(payload, request, db, admin=False)
 
 
-@admin_auth_router.post("/login", response_model=TokenPair)
+@admin_auth_router.post(
+    "/login", response_model=TokenPair, dependencies=[rate_limit(ADMIN_LOGIN_RULE)]
+)
 def admin_login(payload: LoginRequest, request: Request, db: DbSession) -> TokenPair:
     return _login(payload, request, db, admin=True)
 
@@ -332,7 +361,11 @@ def auth_me(user: CurrentUser) -> UserRead:
     return UserRead.model_validate(user)
 
 
-@router.post("/email-verification/request", response_model=AccountActionResponse)
+@router.post(
+    "/email-verification/request",
+    response_model=AccountActionResponse,
+    dependencies=[rate_limit(ACCOUNT_EMAIL_RULE)],
+)
 def request_email_verification(
     request: Request,
     db: DbSession,
@@ -355,7 +388,7 @@ def request_email_verification(
     )
     return AccountActionResponse(
         message="验证邮件已发送",
-        debug_token=None if settings.production else token,
+        debug_token=token if settings.expose_debug_tokens else None,
     )
 
 
@@ -370,7 +403,11 @@ def confirm_email_verification(payload: TokenRequest, db: DbSession) -> UserRead
     return UserRead.model_validate(user)
 
 
-@router.post("/password/forgot", response_model=AccountActionResponse)
+@router.post(
+    "/password/forgot",
+    response_model=AccountActionResponse,
+    dependencies=[rate_limit(ACCOUNT_EMAIL_RULE)],
+)
 def forgot_password(
     payload: PasswordForgotRequest,
     request: Request,
@@ -392,7 +429,7 @@ def forgot_password(
             subject="重置你的 Campus Foodie 密码",
             body=f"请在 {settings.account_token_minutes} 分钟内打开以下链接：\n{reset_link(settings, token)}",
         )
-        if not settings.production:
+        if settings.expose_debug_tokens:
             debug_token = token
     return AccountActionResponse(
         message="如果邮箱已注册，重置邮件将很快送达",

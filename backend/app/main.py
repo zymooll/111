@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from contextlib import asynccontextmanager
+import asyncio
 import logging
-from pathlib import Path
+from contextlib import asynccontextmanager, suppress
 from uuid import uuid4
 
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.exceptions import RequestValidationError, ResponseValidationError
+from fastapi import FastAPI, Request
 from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError, ResponseValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -19,7 +19,8 @@ from app.config import Settings, get_settings
 from app.database import Database
 from app.seed import seed_demo_data
 from app.services.idempotency import idempotency_middleware
-
+from app.services.rate_limit import RateLimiter
+from app.services.retention import retention_loop
 
 logger = logging.getLogger(__name__)
 
@@ -30,12 +31,28 @@ def create_app(settings: Settings | None = None, database: Database | None = Non
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        database.create_all()
-        if settings.auto_seed:
-            with database.session_factory() as db:
-                seed_demo_data(db)
+        if settings.production:
+            # 生产库结构只由 alembic 负责，见 backend/docker-entrypoint.sh。
+            logger.info("Production start-up: skipping create_all and demo seeding")
+        else:
+            database.create_all()
+            if settings.auto_seed:
+                with database.session_factory() as db:
+                    seed_demo_data(db)
         settings.upload_dir.mkdir(parents=True, exist_ok=True)
+        sweeper = None
+        if not settings.testing:
+            sweeper = asyncio.create_task(
+                retention_loop(
+                    database.session_factory,
+                    idempotency_retention_hours=settings.idempotency_retention_hours,
+                )
+            )
         yield
+        if sweeper is not None:
+            sweeper.cancel()
+            with suppress(asyncio.CancelledError):
+                await sweeper
         database.dispose()
 
     app = FastAPI(
@@ -45,24 +62,20 @@ def create_app(settings: Settings | None = None, database: Database | None = Non
             "校园饮食推荐系统 API。用户端位于 `/api/v1`，管理端位于 "
             "`/admin/api/v1`；DeepSeek 未配置时推荐会确定性降级。"
         ),
-        docs_url="/docs",
-        redoc_url="/redoc",
-        openapi_url="/openapi.json",
+        docs_url=None if settings.production else "/docs",
+        redoc_url=None if settings.production else "/redoc",
+        openapi_url=None if settings.production else "/openapi.json",
         lifespan=lifespan,
     )
     app.state.settings = settings
     app.state.database = database
+    app.state.rate_limiter = RateLimiter(
+        settings.redis_url, enabled=settings.rate_limit_enabled
+    )
     settings.upload_dir.mkdir(parents=True, exist_ok=True)
 
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=settings.cors_origins,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-        expose_headers=["X-Request-ID"],
-    )
-
+    # add_middleware 是头插：最后注册的位于最外层。顺序必须让 CORS 包住幂等中间件，
+    # 否则幂等的重放/409 短路响应不经过 CORS，浏览器会把重试当成跨域失败。
     app.middleware("http")(idempotency_middleware)
 
     @app.middleware("http")
@@ -72,6 +85,15 @@ def create_app(settings: Settings | None = None, database: Database | None = Non
         response = await call_next(request)
         response.headers["X-Request-ID"] = request_id
         return response
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+        expose_headers=["X-Request-ID", "Idempotency-Replayed"],
+    )
 
     @app.exception_handler(StarletteHTTPException)
     async def http_exception_handler(request: Request, exc: StarletteHTTPException):

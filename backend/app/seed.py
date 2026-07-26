@@ -23,7 +23,6 @@ from app.security import hash_password
 from app.seed_catalog import EXTENDED_CATALOG
 from app.services.ratings import recalculate_item_rating
 
-
 DEMO_IDS = {
     "campus": "00000000-0000-0000-0000-000000000001",
     "area_north": "00000000-0000-0000-0000-000000000011",

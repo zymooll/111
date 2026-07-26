@@ -3,7 +3,6 @@ import type {
   AccountActionResult,
   AuthProvider,
   CatalogData,
-  Dish,
   DishCardData,
   FeedFilters,
   FoodieApi,
@@ -23,6 +22,7 @@ const accessTokenKey = 'campus-foodie:access-token'
 const refreshTokenKey = 'campus-foodie:refresh-token'
 const guestTokenKey = 'campus-foodie:guest-token'
 const authExpiredEvent = 'campus-foodie:auth-expired'
+export const degradedDataEvent = 'campus-foodie:degraded-data'
 const apiOrigin = new URL(baseUrl, window.location.origin).origin
 const configuredCampusId = import.meta.env.VITE_CAMPUS_ID
 
@@ -143,6 +143,19 @@ function pageItems<T>(value: Page<T> | T[]): T[] {
   return Array.isArray(value) ? value : value.items
 }
 
+// 列表接口只提供 keyset 游标，需要完整集合时按 next_cursor 逐页取回。
+async function collectPages<T>(path: string, query: Record<string, string | number | boolean | undefined>): Promise<T[]> {
+  const items: T[] = []
+  let cursor: string | undefined
+  for (let page = 0; page < 20; page += 1) {
+    const response = await request<Page<T> | T[]>(`${path}${params({ ...query, limit: 50, cursor })}`)
+    items.push(...pageItems(response))
+    cursor = Array.isArray(response) ? undefined : response.next_cursor || undefined
+    if (!cursor) break
+  }
+  return items
+}
+
 function localAsset(url: string) {
   if (!url) return '/dishes/rice-bowl.svg'
   return url.startsWith('/media/') ? new URL(url, apiOrigin).toString() : url
@@ -222,14 +235,25 @@ function toMerchant(value: ApiMerchant, catalog: CatalogData): Merchant {
     categoryId: value.category_id || '',
     category: categoryName(catalog, value.category_id),
     priceLevel: Math.max(1, Math.min(3, value.price_level)) as 1 | 2 | 3,
-    averagePrice: value.price_level * 12,
-    rating: value.rating_avg || 0,
-    reviewCount: 0,
-    openUntil: hours[1] || value.business_hours,
-    distance: 400,
+    rating: value.rating_avg || undefined,
+    openUntil: hours[1] || value.business_hours || undefined,
     longitude: value.gcj02_longitude,
     latitude: value.gcj02_latitude,
     position: mapPosition(value.gcj02_longitude, value.gcj02_latitude),
+    tags: [categoryName(catalog, value.category_id)]
+  }
+}
+
+// 推荐流只回传商家名称与地址，其余商家字段留空由渲染层隐藏。
+function feedMerchant(value: ApiMenuItem, catalog: CatalogData): Merchant {
+  if (value.merchant) return toMerchant(value.merchant, catalog)
+  return {
+    id: value.merchant_id,
+    name: value.merchant_name || '',
+    areaId: '',
+    area: value.merchant_address || '',
+    categoryId: value.category_id || '',
+    category: categoryName(catalog, value.category_id),
     tags: [categoryName(catalog, value.category_id)]
   }
 }
@@ -249,12 +273,9 @@ function toDish(value: ApiMenuItem, merchant: Merchant, catalog: CatalogData): D
     categoryId: value.category_id || '',
     category: categoryName(catalog, value.category_id),
     tags: value.tags,
-    reason: value.recommendation_reason || '结合评分、距离与校园热度为你推荐',
-    match: Math.max(72, Math.min(98, Math.round(72 + value.rating_avg * 5))),
-    waitMinutes: 8,
+    reason: value.recommendation_reason || undefined,
     ingredients: value.tags,
-    merchant,
-    favorite: Boolean(value.is_merchant_favorite)
+    merchant
   }
 }
 
@@ -431,49 +452,29 @@ class HttpFoodieApi implements FoodieApi {
     return catalog()
   }
 
-  async getRecommendations(filters: FeedFilters, favorites: string[], cursor?: string) {
+  async getRecommendations(filters: FeedFilters, cursor?: string) {
     const catalogData = await this.getCatalog()
-    const [page, merchantRows] = await Promise.all([
-      request<Page<ApiMenuItem>>(`/recommendations/feed${params({
-        campus_id: catalogData.campusId,
-        category_id: filters.categoryId,
-        area_id: filters.areaId,
-        search: filters.query,
-        cursor
-      })}`),
-      request<Page<ApiMerchant> | ApiMerchant[]>(`/merchants${params({ campus_id: catalogData.campusId, limit: 100 })}`)
-    ])
-    const merchants = new Map(pageItems(merchantRows).map((item) => [item.id, toMerchant(item, catalogData)]))
-    const items = page.items.map((item) => {
-      const merchant = merchants.get(item.merchant_id) || toMerchant({
-        id: item.merchant_id,
-        area_id: null,
-        category_id: item.category_id,
-        name: item.merchant_name || '校园商家',
-        description: '',
-        address: item.merchant_address || '校园内',
-        gcj02_latitude: CAMPUS_CENTER_GCJ02.latitude,
-        gcj02_longitude: CAMPUS_CENTER_GCJ02.longitude,
-        price_level: 2,
-        business_hours: '07:00-21:00',
-        is_favorite: favorites.includes(item.merchant_id),
-        rating_avg: item.rating_avg
-      }, catalogData)
-      const dish = toDish(item, merchant, catalogData)
-      dish.favorite = favorites.includes(item.merchant_id) || Boolean(item.is_merchant_favorite)
-      return dish
-    })
+    const page = await request<Page<ApiMenuItem>>(`/recommendations/feed${params({
+      campus_id: catalogData.campusId,
+      category_id: filters.categoryId,
+      area_id: filters.areaId,
+      search: filters.query,
+      cursor
+    })}`)
+    const items = page.items.map((item) => toDish(item, feedMerchant(item, catalogData), catalogData))
     return { items, nextCursor: page.next_cursor || undefined }
   }
 
-  async getDish(id: string, favorites: string[]) {
+  async getDish(id: string) {
     const catalogData = await this.getCatalog()
     const item = await request<ApiMenuItem>(`/menu-items/${id}${params({ campus_id: catalogData.campusId })}`)
+      .catch((error) => {
+        if (error instanceof HttpApiError && error.status === 404) return undefined
+        throw error
+      })
+    if (!item) return undefined
     const merchantValue = item.merchant || await request<ApiMerchant>(`/merchants/${item.merchant_id}${params({ campus_id: catalogData.campusId })}`)
-    const resolved = toMerchant(merchantValue, catalogData)
-    const dish = toDish(item, resolved, catalogData)
-    dish.favorite = favorites.includes(item.merchant_id) || Boolean(item.is_merchant_favorite)
-    return dish
+    return toDish(item, toMerchant(merchantValue, catalogData), catalogData)
   }
 
   async getDishReviews(id: string) {
@@ -482,7 +483,7 @@ class HttpFoodieApi implements FoodieApi {
     return page.items.map(toReview)
   }
 
-  async getMerchants(filters: MapFilters, favorites: string[]) {
+  async getMerchants(filters: MapFilters) {
     const catalogData = await this.getCatalog()
     const query = new URLSearchParams({ campus_id: catalogData.campusId, zoom: '18' })
     if (filters.priceLevel) query.append('price_level', String(filters.priceLevel))
@@ -492,81 +493,47 @@ class HttpFoodieApi implements FoodieApi {
     if (filters.favoriteOnly) query.set('favorite_only', 'true')
     const [collection, merchantRows] = await Promise.all([
       request<{ features: MerchantFeature[] }>(`/map/merchants?${query}`),
-      request<Page<ApiMerchant> | ApiMerchant[]>(`/merchants${params({ campus_id: catalogData.campusId, limit: 100 })}`)
+      collectPages<ApiMerchant>('/merchants', { campus_id: catalogData.campusId })
     ])
-    const merchantDetails = new Map(pageItems(merchantRows).map((merchant) => [merchant.id, merchant]))
+    const merchantDetails = new Map(merchantRows.map((merchant) => [merchant.id, merchant]))
     const features = collection.features.filter((feature) => feature.properties.kind === 'merchant')
     const positions = normalizedMapPositions(features)
-    return features
-      .map((feature, index) => {
-        const id = String(feature.properties.id)
-        const details = merchantDetails.get(id)
-        const hours = details?.business_hours.split('-') ?? []
-        const [longitude, latitude] = feature.geometry.coordinates
-        return {
-          id,
-          isDemo: isDemoDescription(details?.description),
-          name: String(feature.properties.name),
-          areaId: '',
-          area: String(feature.properties.address || '校园内'),
-          categoryId: String(feature.properties.category_id || ''),
-          category: categoryName(catalogData, String(feature.properties.category_id || '')),
-          priceLevel: Math.max(1, Math.min(3, Number(feature.properties.price_level || 2))) as 1 | 2 | 3,
-          averagePrice: Number(feature.properties.price_level || 2) * 12,
-          rating: Number(feature.properties.rating_avg || 0),
-          reviewCount: 0,
-          openUntil: hours[1] || details?.business_hours || '待核验',
-          distance: 400,
-          longitude,
-          latitude,
-          position: positions[index],
-          tags: [categoryName(catalogData, String(feature.properties.category_id || ''))],
-          favorite: Boolean(feature.properties.is_favorite) || favorites.includes(id)
-        }
-      })
-      .filter((merchant) => !filters.favoriteOnly || merchant.favorite)
+    return features.map((feature, index): Merchant => {
+      const id = String(feature.properties.id)
+      const details = merchantDetails.get(id)
+      const hours = details?.business_hours.split('-') ?? []
+      const [longitude, latitude] = feature.geometry.coordinates
+      return {
+        id,
+        isDemo: isDemoDescription(details?.description),
+        name: String(feature.properties.name),
+        areaId: '',
+        area: String(feature.properties.address || ''),
+        categoryId: String(feature.properties.category_id || ''),
+        category: categoryName(catalogData, String(feature.properties.category_id || '')),
+        priceLevel: Math.max(1, Math.min(3, Number(feature.properties.price_level || 2))) as 1 | 2 | 3,
+        rating: Number(feature.properties.rating_avg) || undefined,
+        openUntil: hours[1] || details?.business_hours || undefined,
+        longitude,
+        latitude,
+        position: positions[index],
+        tags: [categoryName(catalogData, String(feature.properties.category_id || ''))]
+      }
+    })
   }
 
-  async getFavoriteMerchants(ids: string[]) {
+  async getFavoriteMerchants(_ids: string[]) {
     const catalogData = await this.getCatalog()
-    const response = await request<Page<{ merchant: ApiMerchant }> | Array<{ merchant: ApiMerchant }>>(`/me/favorites${params({ campus_id: catalogData.campusId, limit: 100 })}`)
-    const merchants = pageItems(response).map((item) => toMerchant(item.merchant, catalogData))
-    const known = new Set(merchants.map((merchant) => merchant.id))
-    const missingIds = ids.filter((id) => !known.has(id))
-    if (missingIds.length) {
-      const merchantCatalog = await request<Page<ApiMerchant> | ApiMerchant[]>(`/merchants${params({ campus_id: catalogData.campusId, limit: 100 })}`)
-      pageItems(merchantCatalog).forEach((item) => {
-        if (missingIds.includes(item.id) && !known.has(item.id)) {
-          merchants.push(toMerchant(item, catalogData))
-          known.add(item.id)
-        }
-      })
-    }
-    return merchants
+    const rows = await collectPages<{ merchant: ApiMerchant }>('/me/favorites', { campus_id: catalogData.campusId })
+    return rows.map((item) => toMerchant(item.merchant, catalogData))
   }
 
   async getMyReviews(_userId: string) {
     const catalogData = await this.getCatalog()
-    const page = await request<Page<ApiReview>>(`/me/reviews${params({ campus_id: catalogData.campusId, limit: 100 })}`)
-    return page.items.map((value) => ({
+    const rows = await collectPages<ApiReview>('/me/reviews', { campus_id: catalogData.campusId })
+    return rows.map((value) => ({
       ...toReview(value),
-      dish: value.menu_item_name ? {
-        id: value.menu_item_id,
-        merchantId: '',
-        name: value.menu_item_name,
-        subtitle: '',
-        image: '/dishes/rice-bowl.svg',
-        gallery: [],
-        price: 0,
-        rating: value.rating,
-        reviewCount: 0,
-        categoryId: '',
-        category: '校园餐饮',
-        tags: [],
-        reason: '',
-        match: 0,
-        ingredients: []
-      } satisfies Dish : undefined
+      dish: value.menu_item_name ? { id: value.menu_item_id, name: value.menu_item_name } : undefined
     }))
   }
 
@@ -740,34 +707,36 @@ async function attempt<T>(primary: () => Promise<T>, fallback: () => Promise<T>)
   try { return await primary() } catch (error) {
     if (!isRemoteUnavailable(error)) throw error
     console.warn('[User API] Remote request failed, using mock fallback.', error)
+    window.dispatchEvent(new Event(degradedDataEvent))
     return fallback()
   }
 }
 
+// 只有公开的展示型只读数据可以降级到演示数据；认证、个人数据和写操作必须如实失败。
 export function createFallbackFoodieApi(primary: FoodieApi, secondary: FoodieApi): FoodieApi {
   return {
     getCatalog: () => attempt(() => primary.getCatalog(), () => secondary.getCatalog()),
-    getRecommendations: (filters, favorites, cursor) => attempt(() => primary.getRecommendations(filters, favorites, cursor), () => secondary.getRecommendations(filters, favorites, cursor)),
-    getDish: (id, favorites) => attempt(() => primary.getDish(id, favorites), () => secondary.getDish(id, favorites)),
+    getRecommendations: (filters, cursor) => attempt(() => primary.getRecommendations(filters, cursor), () => secondary.getRecommendations(filters, cursor)),
+    getDish: (id) => attempt(() => primary.getDish(id), () => secondary.getDish(id)),
     getDishReviews: (id) => attempt(() => primary.getDishReviews(id), () => secondary.getDishReviews(id)),
-    getMerchants: (filters, favorites) => attempt(() => primary.getMerchants(filters, favorites), () => secondary.getMerchants(filters, favorites)),
-    getFavoriteMerchants: (ids) => attempt(() => primary.getFavoriteMerchants(ids), () => secondary.getFavoriteMerchants(ids)),
-    getMyReviews: (userId) => attempt(() => primary.getMyReviews(userId), () => secondary.getMyReviews(userId)),
-    getMyStats: () => attempt(() => primary.getMyStats(), () => secondary.getMyStats()),
-    login: (account, password) => attempt(() => primary.login(account, password), () => secondary.login(account, password)),
-    register: (username, email, password) => attempt(() => primary.register(username, email, password), () => secondary.register(username, email, password)),
-    submitReview: (user, draft) => attempt(() => primary.submitReview(user, draft), () => secondary.submitReview(user, draft)),
-    setFavorite: (merchantId, favorite) => attempt(() => primary.setFavorite(merchantId, favorite), () => secondary.setFavorite(merchantId, favorite)),
-    logout: () => attempt(() => primary.logout(), () => secondary.logout()),
-    getAuthProviders: () => attempt(() => primary.getAuthProviders(), () => secondary.getAuthProviders()),
-    requestEmailVerification: () => attempt(() => primary.requestEmailVerification(), () => secondary.requestEmailVerification()),
-    confirmEmailVerification: (token) => attempt(() => primary.confirmEmailVerification(token), () => secondary.confirmEmailVerification(token)),
-    forgotPassword: (email) => attempt(() => primary.forgotPassword(email), () => secondary.forgotPassword(email)),
-    resetPassword: (token, password) => attempt(() => primary.resetPassword(token, password), () => secondary.resetPassword(token, password)),
-    getPreferences: () => attempt(() => primary.getPreferences(), () => secondary.getPreferences()),
-    updatePreferences: (preferences) => attempt(() => primary.updatePreferences(preferences), () => secondary.updatePreferences(preferences)),
-    recordInteractions: (events) => attempt(() => primary.recordInteractions(events), () => secondary.recordInteractions(events)),
-    viewReview: (reviewId, eventId) => attempt(() => primary.viewReview(reviewId, eventId), () => secondary.viewReview(reviewId, eventId))
+    getMerchants: (filters) => attempt(() => primary.getMerchants(filters), () => secondary.getMerchants(filters)),
+    getFavoriteMerchants: (ids) => primary.getFavoriteMerchants(ids),
+    getMyReviews: (userId) => primary.getMyReviews(userId),
+    getMyStats: () => primary.getMyStats(),
+    login: (account, password) => primary.login(account, password),
+    register: (username, email, password) => primary.register(username, email, password),
+    submitReview: (user, draft) => primary.submitReview(user, draft),
+    setFavorite: (merchantId, favorite) => primary.setFavorite(merchantId, favorite),
+    logout: () => primary.logout(),
+    getAuthProviders: () => primary.getAuthProviders(),
+    requestEmailVerification: () => primary.requestEmailVerification(),
+    confirmEmailVerification: (token) => primary.confirmEmailVerification(token),
+    forgotPassword: (email) => primary.forgotPassword(email),
+    resetPassword: (token, password) => primary.resetPassword(token, password),
+    getPreferences: () => primary.getPreferences(),
+    updatePreferences: (preferences) => primary.updatePreferences(preferences),
+    recordInteractions: (events) => primary.recordInteractions(events),
+    viewReview: (reviewId, eventId) => primary.viewReview(reviewId, eventId)
   }
 }
 

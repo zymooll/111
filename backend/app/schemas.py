@@ -117,7 +117,7 @@ class TreeNode(BaseModel):
     parent_id: str | None = None
     level: int | None = None
     icon: str | None = None
-    children: list["TreeNode"] = Field(default_factory=list)
+    children: list[TreeNode] = Field(default_factory=list)
 
 
 class TagRead(ORMModel):
@@ -490,3 +490,9 @@ class ImportJobRead(BaseModel):
     failed: int
     created_by: str
     created_at: datetime
+
+
+class ImportJobDetailRead(ImportJobRead):
+    """列表只给摘要，逐行错误报告单独取，避免列表响应被错误明细撑大。"""
+
+    errors: list[ImportErrorRead]

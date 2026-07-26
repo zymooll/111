@@ -10,7 +10,6 @@ from app.api.profile import router as profile_router
 from app.api.reviews import router as reviews_router
 from app.api.uploads import router as uploads_router
 
-
 router = APIRouter(prefix="/api/v1")
 router.include_router(auth_router)
 router.include_router(discovery_router)

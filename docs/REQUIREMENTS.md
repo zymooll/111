@@ -47,7 +47,7 @@
 ## 管理端
 
 - [x] 管理 Web 使用独立端口和登录态。
-  - 实现证据：`apps/admin-web/vite.config.ts` 固定 `5174`；`AuthContext.tsx` 使用独立 sessionStorage 令牌。
+  - 实现证据：`apps/admin-web/package.json` 的 `dev` 固定 `7992`（端口表见 `README.md`）；`AuthContext.tsx` 使用独立 sessionStorage 令牌。
 - [x] 用户可查询、冻结和恢复，不能查看或修改明文密码。
   - 实现证据：`UsersPage.tsx` 和管理 `/users` 接口；数据模型只保存 `password_hash`。
   - 测试证据：管理 CRUD 与 audience 隔离测试。

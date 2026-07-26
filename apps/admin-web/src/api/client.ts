@@ -2,29 +2,33 @@ import { mockApi } from './mockApi';
 import { CAMPUS_CENTER_WGS84, CAMPUS_NAME } from '../constants/campus';
 import type {
   AuditLog,
-  AuditQuery,
   CatalogMetadata,
   CampusUser,
+  CursorPage,
+  CursorQuery,
   DashboardData,
   EntityStatus,
   ImportJob,
   ImportValidation,
-  ListQuery,
   LoginResult,
   MenuItem,
+  MenuItemListQuery,
   Merchant,
-  PageResult,
+  MerchantListQuery,
   PublishStatus,
   Review,
-  ReviewQuery,
-  ReviewStatus,
+  ReviewAction,
+  ReviewListQuery,
+  RiskLevel,
   TagDefinition,
+  UserListQuery,
 } from '../types';
 
 const baseUrl = (import.meta.env.VITE_ADMIN_API_BASE_URL || 'http://127.0.0.1:7993/admin/api/v1').replace(/\/$/, '');
 const apiOrigin = new URL(baseUrl, window.location.origin).origin;
 export const apiMode = import.meta.env.VITE_API_MODE || 'remote';
 export const adminTokenKey = 'campus-foodie-admin-access-token';
+export const adminRefreshTokenKey = 'campus-foodie-admin-refresh-token';
 
 class HttpError extends Error {
   constructor(message: string, readonly status: number) {
@@ -42,16 +46,93 @@ function queryString(query: object) {
   return value ? `?${value}` : '';
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const token = sessionStorage.getItem(adminTokenKey);
+export function storeSession(tokens: { accessToken: string; refreshToken: string }) {
+  sessionStorage.setItem(adminTokenKey, tokens.accessToken);
+  sessionStorage.setItem(adminRefreshTokenKey, tokens.refreshToken);
+}
+
+export function clearSession() {
+  sessionStorage.removeItem(adminTokenKey);
+  sessionStorage.removeItem(adminRefreshTokenKey);
+}
+
+const sessionListeners = new Set<() => void>();
+
+/** Notifies the auth layer that renewal failed and the operator has to sign in again. */
+export function onSessionExpired(listener: () => void) {
+  sessionListeners.add(listener);
+  return () => {
+    sessionListeners.delete(listener);
+  };
+}
+
+const fallbackListeners = new Set<(active: boolean) => void>();
+let fallbackActive = false;
+
+export function onFallbackChange(listener: (active: boolean) => void) {
+  fallbackListeners.add(listener);
+  return () => {
+    fallbackListeners.delete(listener);
+  };
+}
+
+export function isFallbackActive() {
+  return fallbackActive;
+}
+
+function setFallback(active: boolean) {
+  if (fallbackActive === active) return;
+  fallbackActive = active;
+  fallbackListeners.forEach((listener) => listener(active));
+}
+
+function isAbortError(error: unknown) {
+  return error instanceof Error && error.name === 'AbortError';
+}
+
+function send(path: string, init: RequestInit | undefined, token: string | null) {
   const headers = new Headers(init?.headers);
   headers.set('Accept', 'application/json');
   if (!(init?.body instanceof FormData)) headers.set('Content-Type', 'application/json');
   if (token) headers.set('Authorization', `Bearer ${token}`);
-  const response = await fetch(`${baseUrl}${path}`, {
-    ...init,
-    headers,
-  });
+  return fetch(`${baseUrl}${path}`, { ...init, headers });
+}
+
+let renewal: Promise<string> | null = null;
+
+async function exchangeRefreshToken(refreshToken: string): Promise<string> {
+  const expired = new HttpError('登录状态已过期，请重新登录', 401);
+  const response = await send('/auth/refresh', {
+    method: 'POST',
+    body: JSON.stringify({ refresh_token: refreshToken }),
+  }, null);
+  if (!response.ok) throw expired;
+  const body = object(await response.json());
+  const accessToken = stringValue(body.access_token ?? body.accessToken);
+  if (!accessToken) throw expired;
+  storeSession({ accessToken, refreshToken: stringValue(body.refresh_token ?? body.refreshToken, refreshToken) });
+  return accessToken;
+}
+
+/** Exchanges the stored refresh token once, even when several requests hit 401 at the same time. */
+function renewAccessToken(refreshToken: string): Promise<string> {
+  if (!renewal) {
+    renewal = exchangeRefreshToken(refreshToken).catch((error) => {
+      clearSession();
+      sessionListeners.forEach((listener) => listener());
+      throw error;
+    });
+    void renewal.catch(() => undefined).then(() => { renewal = null; });
+  }
+  return renewal;
+}
+
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  let response = await send(path, init, sessionStorage.getItem(adminTokenKey));
+  const refreshToken = sessionStorage.getItem(adminRefreshTokenKey);
+  if (response.status === 401 && refreshToken && !path.startsWith('/auth/')) {
+    response = await send(path, init, await renewAccessToken(refreshToken));
+  }
   if (!response.ok) {
     let message = `请求失败（${response.status}）`;
     try {
@@ -72,22 +153,30 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return body as T;
 }
 
-async function execute<T>(remote: () => Promise<T>, mock: () => Promise<T>): Promise<T> {
+/** Read-only data may degrade to the bundled demo set; the layout surfaces that state to the operator. */
+async function read<T>(remote: () => Promise<T>, mock: () => Promise<T>): Promise<T> {
   if (apiMode === 'mock') return mock();
   if (apiMode === 'remote') return remote();
   try {
-    return await remote();
+    const value = await remote();
+    setFallback(false);
+    return value;
   } catch (error) {
-    if (error instanceof HttpError && error.status < 500) throw error;
-    console.warn('[Admin API] Remote request failed, using mock fallback.', error);
+    if (isAbortError(error) || (error instanceof HttpError && error.status < 500)) throw error;
+    console.warn('[Admin API] 只读接口不可用，已改用演示数据。', error);
+    setFallback(true);
     return mock();
   }
+}
+
+/** Writes never degrade: a failed save has to reach the operator as a failure. */
+function write<T>(remote: () => Promise<T>, mock: () => Promise<T>): Promise<T> {
+  return apiMode === 'mock' ? mock() : remote();
 }
 
 type JsonObject = Record<string, unknown>;
 
 const defaultCampusId = '00000000-0000-0000-0000-000000000001';
-const trafficLabels = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
 
 function object(value: unknown): JsonObject {
   return typeof value === 'object' && value !== null ? value as JsonObject : {};
@@ -124,16 +213,15 @@ function displayDate(value: unknown) {
   return Number.isNaN(date.getTime()) ? raw : date.toLocaleString('zh-CN', { hour12: false }).replaceAll('/', '-');
 }
 
-function localPage<T>(items: T[], query: ListQuery): PageResult<T> {
-  const page = query.page ?? 1;
-  const pageSize = query.pageSize ?? 10;
-  const start = (page - 1) * pageSize;
-  return { items: items.slice(start, start + pageSize), total: items.length };
-}
-
-function includesKeyword(values: unknown[], keyword?: string) {
-  const normalized = keyword?.trim().toLowerCase();
-  return !normalized || values.some((value) => String(value ?? '').toLowerCase().includes(normalized));
+function cursorPage<T>(value: unknown, normalize: (entry: unknown) => T): CursorPage<T> {
+  const raw = object(value);
+  const total = raw.total;
+  return {
+    items: listValue(raw.items).map(normalize),
+    nextCursor: stringValue(raw.next_cursor ?? raw.nextCursor) || null,
+    hasMore: booleanValue(raw.has_more ?? raw.hasMore),
+    total: typeof total === 'number' && Number.isFinite(total) ? total : undefined,
+  };
 }
 
 function normalizeLogin(value: unknown): LoginResult {
@@ -148,6 +236,7 @@ function normalizeLogin(value: unknown): LoginResult {
   const username = stringValue(rawUser.username, '管理员');
   return {
     accessToken: stringValue(raw.access_token ?? raw.accessToken),
+    refreshToken: stringValue(raw.refresh_token ?? raw.refreshToken),
     user: {
       id: stringValue(rawUser.id, 'admin'),
       username,
@@ -166,16 +255,7 @@ function normalizeDashboard(value: unknown): DashboardData {
     merchants: numberValue(raw.active_merchants ?? raw.merchants),
     menuItems: numberValue(raw.active_menu_items ?? raw.menuItems),
     pendingReviews: numberValue(raw.pending_reviews ?? raw.pendingReviews),
-    userGrowth: 0,
-    merchantGrowth: 0,
-    weeklyTraffic: trafficLabels.map((date) => ({ date, views: 0, recommendations: 0 })),
-    categoryShare: [
-      { name: '米饭快餐', value: 0, color: '#1677ff' }, { name: '面食', value: 0, color: '#52c41a' },
-      { name: '轻食', value: 0, color: '#13c2c2' }, { name: '饮品', value: 0, color: '#faad14' },
-      { name: '其他', value: 0, color: '#b37feb' },
-    ],
     recentReviews: [],
-    popularItems: [],
   };
 }
 
@@ -198,8 +278,6 @@ function normalizeUser(value: unknown): CampusUser {
 
 function normalizeMerchant(value: unknown): Merchant {
   const raw = object(value);
-  const statusValue = stringValue(raw.status);
-  const status: PublishStatus = statusValue === 'draft' ? 'draft' : booleanValue(raw.is_active, statusValue === 'online') ? 'online' : 'offline';
   return {
     id: stringValue(raw.id),
     campusId: stringValue(raw.campus_id ?? raw.campusId, defaultCampusId),
@@ -213,20 +291,17 @@ function normalizeMerchant(value: unknown): Merchant {
     latitude: numberValue(raw.latitude),
     longitude: numberValue(raw.longitude),
     priceLevel: numberValue(raw.price_level ?? raw.priceLevel, 2),
-    status,
+    status: booleanValue(raw.is_active, true) ? 'online' : 'offline',
     rating: numberValue(raw.rating_avg ?? raw.rating),
     dishCount: numberValue(raw.dish_count ?? raw.dishCount),
     favoriteCount: numberValue(raw.favorite_count ?? raw.favoriteCount),
     openingHours: stringValue(raw.business_hours ?? raw.openingHours, '—'),
-    contact: stringValue(raw.contact, '—'),
     updatedAt: displayDate(raw.updated_at ?? raw.updatedAt),
   };
 }
 
 function normalizeMenuItem(value: unknown): MenuItem {
   const raw = object(value);
-  const statusValue = stringValue(raw.status);
-  const status: PublishStatus = statusValue === 'draft' ? 'draft' : booleanValue(raw.is_active, statusValue === 'online') ? 'online' : 'offline';
   return {
     id: stringValue(raw.id),
     campusId: stringValue(raw.campus_id ?? raw.campusId, defaultCampusId),
@@ -240,7 +315,7 @@ function normalizeMenuItem(value: unknown): MenuItem {
     price: numberValue(raw.price_cents, numberValue(raw.price) * 100) / 100,
     rating: numberValue(raw.rating_avg ?? raw.rating),
     reviewCount: numberValue(raw.review_count ?? raw.reviewCount),
-    status,
+    status: booleanValue(raw.is_active, true) ? 'online' : 'offline',
     tags: listValue(raw.tags).map((item) => stringValue(item)).filter(Boolean),
     imageUrl: stringValue(raw.image_url ?? raw.imageUrl),
     updatedAt: displayDate(raw.updated_at ?? raw.updatedAt),
@@ -265,9 +340,10 @@ function normalizeTag(value: unknown): TagDefinition {
 function normalizeReview(value: unknown): Review {
   const raw = object(value);
   const statusValue = stringValue(raw.status, 'pending_manual');
-  const status: ReviewStatus = ['pending_machine', 'pending_manual', 'published', 'rejected', 'hidden'].includes(statusValue)
-    ? statusValue as ReviewStatus
+  const status = ['pending_machine', 'pending_manual', 'published', 'rejected', 'hidden'].includes(statusValue)
+    ? statusValue as Review['status']
     : 'pending_manual';
+  const riskValue = stringValue(raw.risk_level ?? raw.riskLevel);
   return {
     id: stringValue(raw.id),
     userName: stringValue(raw.username ?? raw.userName, '匿名用户'),
@@ -278,7 +354,7 @@ function normalizeReview(value: unknown): Review {
     content: stringValue(raw.text ?? raw.content),
     images: listValue(raw.images).map((item) => stringValue(item)).filter(Boolean).map(assetUrl),
     status,
-    riskLevel: status === 'rejected' ? 'high' : status === 'pending_manual' ? 'medium' : 'low',
+    riskLevel: ['low', 'medium', 'high'].includes(riskValue) ? riskValue as RiskLevel : 'low',
     createdAt: displayDate(raw.created_at ?? raw.createdAt),
     reason: stringValue(raw.moderation_reason ?? raw.reason) || undefined,
   };
@@ -286,20 +362,13 @@ function normalizeReview(value: unknown): Review {
 
 function normalizeAudit(value: unknown): AuditLog {
   const raw = object(value);
-  const targetType = stringValue(raw.target_type);
-  const modules: Record<string, AuditLog['module']> = { user: '用户', merchant: '商家', menu_item: '菜品', tag: '标签', review: '评价', import: '导入' };
-  const rawModule = stringValue(raw.module);
-  const knownModules: AuditLog['module'][] = ['用户', '商家', '菜品', '标签', '评价', '导入', '系统'];
-  const moduleName = knownModules.includes(rawModule as AuditLog['module']) ? rawModule as AuditLog['module'] : modules[targetType] ?? '系统';
   const detail = raw.detail;
   return {
     id: stringValue(raw.id),
-    actor: stringValue(raw.actor ?? raw.admin_user_id, '系统'),
-    role: stringValue(raw.role, '管理员'),
-    module: moduleName,
-    action: stringValue(raw.action, '系统操作'),
-    target: stringValue(raw.target ?? raw.target_id, '—'),
-    ip: stringValue(raw.ip, '—'),
+    actorId: stringValue(raw.admin_user_id ?? raw.adminUserId, '—'),
+    targetType: stringValue(raw.target_type ?? raw.targetType),
+    action: stringValue(raw.action, '—'),
+    target: stringValue(raw.target_id ?? raw.targetId, '—'),
     createdAt: displayDate(raw.created_at ?? raw.createdAt),
     detail: typeof detail === 'string' ? detail : JSON.stringify(detail ?? {}, null, 2),
   };
@@ -323,6 +392,7 @@ function normalizeImportJob(value: unknown): ImportJob {
   };
 }
 
+/** The server owns the WGS-84 → GCJ-02 conversion, so the admin only ever submits the picked coordinates. */
 function merchantPayload(input: Partial<Merchant> & Pick<Merchant, 'name'>) {
   const common: JsonObject = {
     name: input.name,
@@ -332,7 +402,7 @@ function merchantPayload(input: Partial<Merchant> & Pick<Merchant, 'name'>) {
     longitude: input.longitude ?? CAMPUS_CENTER_WGS84.longitude,
     price_level: input.priceLevel ?? 2,
     business_hours: input.openingHours ?? '10:00-20:00',
-    is_active: input.status === 'online',
+    is_active: input.status !== 'offline',
   };
   if (input.areaId) common.area_id = input.areaId;
   if (input.categoryId) common.category_id = input.categoryId;
@@ -349,7 +419,7 @@ function menuItemPayload(input: Partial<MenuItem> & Pick<MenuItem, 'name' | 'mer
     price_cents: Math.round((input.price ?? 0) * 100),
     image_url: input.imageUrl || '/images/dish-placeholder.webp',
     tags: input.tags ?? [],
-    is_active: input.status === 'online',
+    is_active: input.status !== 'offline',
   };
   if (!input.id) payload.campus_id = input.campusId ?? defaultCampusId;
   if (input.categoryId) payload.category_id = input.categoryId;
@@ -358,46 +428,49 @@ function menuItemPayload(input: Partial<MenuItem> & Pick<MenuItem, 'name' | 'mer
 
 export const adminApi = {
   login(username: string, password: string) {
-    return execute(
+    return write(
       () => request<unknown>('/auth/login', { method: 'POST', body: JSON.stringify({ identifier: username, username, password }) }).then(normalizeLogin),
       () => mockApi.login(username, password),
     );
   },
-  dashboard() {
-    return execute(async () => {
-      const dashboard = normalizeDashboard(await request<unknown>(`/dashboard${queryString({ campus_id: defaultCampusId })}`));
-      const reviews = await request<unknown>(`/reviews${queryString({ campus_id: defaultCampusId, limit: 4 })}`).catch(() => ({ items: [] }));
-      dashboard.recentReviews = listValue(object(reviews).items).map(normalizeReview).slice(0, 4);
+  dashboard(signal?: AbortSignal) {
+    return read(async () => {
+      const dashboard = normalizeDashboard(await request<unknown>(`/dashboard${queryString({ campus_id: defaultCampusId })}`, { signal }));
+      const reviews = await request<unknown>(`/reviews${queryString({ campus_id: defaultCampusId, limit: 4 })}`, { signal }).catch(() => ({ items: [] }));
+      dashboard.recentReviews = listValue(object(reviews).items).map(normalizeReview);
       return dashboard;
     }, () => mockApi.dashboard());
   },
-  users(query: ListQuery) {
-    return execute(async () => {
-      const active = query.status === 'active' ? true : query.status === 'frozen' ? false : undefined;
-      const raw = await request<unknown>(`/users${queryString({ campus_id: defaultCampusId, search: query.keyword, active, limit: 100 })}`);
-      let items = collectionValue(raw).map(normalizeUser);
-      if (query.status) items = items.filter((item) => item.status === query.status);
-      return localPage(items, query);
-    }, () => mockApi.users(query));
+  users(query: UserListQuery, signal?: AbortSignal) {
+    return read(
+      () => request<unknown>(`/users${queryString({
+        campus_id: defaultCampusId,
+        search: query.search,
+        active: query.active,
+        cursor: query.cursor,
+        limit: query.limit,
+      })}`, { signal }).then((value) => cursorPage(value, normalizeUser)),
+      () => mockApi.users(query),
+    );
   },
   updateUser(id: string, status: EntityStatus): Promise<CampusUser> {
-    return execute(
+    return write(
       () => request<unknown>(`/users/${id}${queryString({ campus_id: defaultCampusId })}`, { method: 'PATCH', body: JSON.stringify({ is_active: status !== 'frozen' }) }).then(normalizeUser),
       () => mockApi.updateUser(id, status),
     );
   },
   resetPassword(id: string) {
-    return execute(
+    return write(
       () => request<void>(`/users/${id}/password-reset${queryString({ campus_id: defaultCampusId })}`, { method: 'POST' }),
       () => mockApi.resetPassword(id),
     );
   },
-  catalogMetadata(): Promise<CatalogMetadata> {
-    return execute(async () => {
+  catalogMetadata(signal?: AbortSignal): Promise<CatalogMetadata> {
+    return read(async () => {
       const [areasRaw, categoriesRaw, tagsRaw] = await Promise.all([
-        request<unknown>(`/areas${queryString({ campus_id: defaultCampusId })}`),
-        request<unknown>(`/categories${queryString({ campus_id: defaultCampusId })}`),
-        request<unknown>(`/tags${queryString({ campus_id: defaultCampusId })}`),
+        request<unknown>(`/areas${queryString({ campus_id: defaultCampusId })}`, { signal }),
+        request<unknown>(`/categories${queryString({ campus_id: defaultCampusId })}`, { signal }),
+        request<unknown>(`/tags${queryString({ campus_id: defaultCampusId })}`, { signal }),
       ]);
       return {
         areas: listValue(areasRaw).map((entry) => object(entry)).map((entry) => ({ id: stringValue(entry.id), name: stringValue(entry.name) })).filter((entry) => entry.id && entry.name),
@@ -406,9 +479,9 @@ export const adminApi = {
       };
     }, () => mockApi.catalogMetadata());
   },
-  tags(): Promise<TagDefinition[]> {
-    return execute(
-      () => request<unknown>(`/tags${queryString({ campus_id: defaultCampusId })}`).then((value) => collectionValue(value).map(normalizeTag)),
+  tags(signal?: AbortSignal): Promise<TagDefinition[]> {
+    return read(
+      () => request<unknown>(`/tags${queryString({ campus_id: defaultCampusId })}`, { signal }).then((value) => collectionValue(value).map(normalizeTag)),
       () => mockApi.tags(),
     );
   },
@@ -416,7 +489,7 @@ export const adminApi = {
     const body = input.id
       ? { name: input.name, kind: input.kind }
       : { campus_id: input.campusId || defaultCampusId, name: input.name, kind: input.kind };
-    return execute(
+    return write(
       () => request<unknown>(input.id ? `/tags/${input.id}${queryString({ campus_id: input.campusId || defaultCampusId })}` : '/tags', {
         method: input.id ? 'PATCH' : 'POST',
         body: JSON.stringify(body),
@@ -425,91 +498,74 @@ export const adminApi = {
     );
   },
   deleteTag(id: string) {
-    return execute(
+    return write(
       () => request<void>(`/tags/${id}${queryString({ campus_id: defaultCampusId })}`, { method: 'DELETE' }),
       () => mockApi.deleteTag(id),
     );
   },
-  merchants(query: ListQuery) {
-    return execute(async () => {
-      const active = query.status === 'online' ? true : query.status === 'offline' ? false : undefined;
-      const raw = await request<unknown>(`/merchants${queryString({ campus_id: defaultCampusId, search: query.keyword, active, limit: 100 })}`);
-      let items = collectionValue(raw).map(normalizeMerchant);
-      if (query.status) items = items.filter((item) => item.status === query.status);
-      return localPage(items, query);
-    }, () => mockApi.merchants(query));
+  merchants(query: MerchantListQuery, signal?: AbortSignal) {
+    return read(
+      () => request<unknown>(`/merchants${queryString({
+        campus_id: defaultCampusId,
+        search: query.search,
+        active: query.active,
+        cursor: query.cursor,
+        limit: query.limit,
+      })}`, { signal }).then((value) => cursorPage(value, normalizeMerchant)),
+      () => mockApi.merchants(query),
+    );
   },
   saveMerchant(input: Partial<Merchant> & Pick<Merchant, 'name'>) {
-    return execute(
+    return write(
       () => request<unknown>(input.id ? `/merchants/${input.id}${queryString({ campus_id: input.campusId || defaultCampusId })}` : '/merchants', { method: input.id ? 'PATCH' : 'POST', body: JSON.stringify(merchantPayload(input)) }).then(normalizeMerchant),
       () => mockApi.saveMerchant(input),
     );
   },
   updateMerchantStatus(id: string, status: PublishStatus) {
-    return execute(
+    return write(
       () => request<void>(`/merchants/${id}${queryString({ campus_id: defaultCampusId })}`, { method: 'PATCH', body: JSON.stringify({ is_active: status === 'online' }) }),
       () => mockApi.updateMerchantStatus(id, status),
     );
   },
-  deleteMerchant(id: string) {
-    return execute(
-      () => request<void>(`/merchants/${id}${queryString({ campus_id: defaultCampusId })}`, { method: 'DELETE' }),
-      () => mockApi.deleteMerchant(id),
+  menuItems(query: MenuItemListQuery, signal?: AbortSignal) {
+    return read(
+      () => request<unknown>(`/menu-items${queryString({
+        campus_id: defaultCampusId,
+        merchant_id: query.merchantId,
+        active: query.active,
+        cursor: query.cursor,
+        limit: query.limit,
+      })}`, { signal }).then((value) => cursorPage(value, normalizeMenuItem)),
+      () => mockApi.menuItems(query),
     );
   },
-  menuItems(query: ListQuery) {
-    return execute(async () => {
-      const active = query.status === 'online' ? true : query.status === 'offline' ? false : undefined;
-      const raw = await request<unknown>(`/menu-items${queryString({ campus_id: defaultCampusId, active, limit: 100 })}`);
-      let items = collectionValue(raw).map(normalizeMenuItem)
-        .filter((item) => includesKeyword([item.name, item.merchantName, item.category], query.keyword));
-      if (query.status) items = items.filter((item) => item.status === query.status);
-      return localPage(items, query);
-    }, () => mockApi.menuItems(query));
-  },
   saveMenuItem(input: Partial<MenuItem> & Pick<MenuItem, 'name' | 'merchantId'>) {
-    return execute(
+    return write(
       () => request<unknown>(input.id ? `/menu-items/${input.id}${queryString({ campus_id: input.campusId || defaultCampusId })}` : '/menu-items', { method: input.id ? 'PATCH' : 'POST', body: JSON.stringify(menuItemPayload(input)) }).then(normalizeMenuItem),
       () => mockApi.saveMenuItem(input),
     );
   },
   updateMenuItemStatus(id: string, status: PublishStatus) {
-    return execute(
+    return write(
       () => request<void>(`/menu-items/${id}${queryString({ campus_id: defaultCampusId })}`, { method: 'PATCH', body: JSON.stringify({ is_active: status === 'online' }) }),
       () => mockApi.updateMenuItemStatus(id, status),
     );
   },
-  deleteMenuItem(id: string) {
-    return execute(
-      () => request<void>(`/menu-items/${id}${queryString({ campus_id: defaultCampusId })}`, { method: 'DELETE' }),
-      () => mockApi.deleteMenuItem(id),
-    );
-  },
-  reviews(query: ReviewQuery) {
-    return execute(async () => {
-      const needsClientFilter = Boolean(query.keyword || query.riskLevel || query.rating);
-      const page = query.page ?? 1;
-      const pageSize = query.pageSize ?? 10;
-      const raw = object(await request<unknown>(`/reviews${queryString({
+  reviews(query: ReviewListQuery, signal?: AbortSignal) {
+    return read(
+      () => request<unknown>(`/reviews${queryString({
         campus_id: defaultCampusId,
         status: query.status,
-        offset: needsClientFilter ? 0 : (page - 1) * pageSize,
-        limit: needsClientFilter ? 100 : pageSize,
-      })}`));
-      let items = listValue(raw.items).map(normalizeReview).filter((item) =>
-        includesKeyword([item.content, item.userName, item.itemName], query.keyword) &&
-        (!query.riskLevel || item.riskLevel === query.riskLevel) &&
-        (!query.rating || item.rating === query.rating),
-      );
-      if (query.status) items = items.filter((item) => item.status === query.status);
-      return needsClientFilter ? localPage(items, query) : { items, total: numberValue(raw.total, items.length) };
-    }, () => mockApi.reviews(query));
+        cursor: query.cursor,
+        limit: query.limit,
+      })}`, { signal }).then((value) => cursorPage(value, normalizeReview)),
+      () => mockApi.reviews(query),
+    );
   },
-  reviewAction(id: string, status: ReviewStatus, reason?: string) {
-    const action = status === 'published' ? 'publish' : status === 'hidden' ? 'hide' : 'reject';
-    return execute(
+  moderateReview(id: string, action: ReviewAction, reason?: string) {
+    return write(
       () => request<void>(`/reviews/${id}/moderate${queryString({ campus_id: defaultCampusId })}`, { method: 'POST', body: JSON.stringify({ action, reason: reason ?? '' }) }),
-      () => mockApi.reviewAction(id, status, reason),
+      () => mockApi.moderateReview(id, action, reason),
     );
   },
   validateImport(file: File, type: ImportJob['type']): Promise<ImportValidation> {
@@ -517,7 +573,7 @@ export const adminApi = {
     form.append('file', file);
     form.append('type', type);
     form.append('campus_id', defaultCampusId);
-    return execute(
+    return write(
       () => request<ImportValidation>('/imports/validate', { method: 'POST', body: form }),
       () => mockApi.validateImport(file, type),
     );
@@ -527,20 +583,23 @@ export const adminApi = {
     form.append('file', file);
     form.append('type', type);
     form.append('campus_id', defaultCampusId);
-    return execute(
+    return write(
       () => request<unknown>('/imports', { method: 'POST', body: form }).then(normalizeImportJob),
       () => mockApi.startImport(file, type, validation),
     );
   },
-  importJobs() {
-    return execute(() => request<unknown>(`/imports${queryString({ campus_id: defaultCampusId })}`).then((value) => collectionValue(value).map(normalizeImportJob)), () => mockApi.importJobs());
+  importJobs(query: CursorQuery, signal?: AbortSignal) {
+    return read(
+      () => request<unknown>(`/imports${queryString({ campus_id: defaultCampusId, cursor: query.cursor, limit: query.limit })}`, { signal })
+        .then((value) => cursorPage(value, normalizeImportJob)),
+      () => mockApi.importJobs(query),
+    );
   },
-  auditLogs(query: AuditQuery) {
-    return execute(async () => {
-      const raw = await request<unknown>(`/audit-logs${queryString({ campus_id: defaultCampusId, limit: 100 })}`);
-      let items = collectionValue(raw).map(normalizeAudit).filter((item) => includesKeyword([item.actor, item.action, item.target], query.keyword));
-      if (query.module) items = items.filter((item) => item.module === query.module);
-      return localPage(items, query);
-    }, () => mockApi.auditLogs(query));
+  auditLogs(query: CursorQuery, signal?: AbortSignal) {
+    return read(
+      () => request<unknown>(`/audit-logs${queryString({ campus_id: defaultCampusId, cursor: query.cursor, limit: query.limit })}`, { signal })
+        .then((value) => cursorPage(value, normalizeAudit)),
+      () => mockApi.auditLogs(query),
+    );
   },
 };

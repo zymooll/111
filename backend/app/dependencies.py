@@ -10,7 +10,6 @@ from sqlalchemy.orm import Session
 from app.models import GuestSession, User, UserRole
 from app.security import TokenError, decode_token
 
-
 USER_AUDIENCE = "campus-food-user"
 ADMIN_AUDIENCE = "campus-food-admin"
 
@@ -128,3 +127,31 @@ def require_admin(
 
 
 CurrentAdmin = Annotated[User, Depends(require_admin)]
+
+
+def authorize_campus(db: Session, admin: User, campus_id: str) -> str:
+    """Prove ``admin`` may manage ``campus_id``.
+
+    校园归属由服务端根据管理员账号判定，客户端传入的 ``campus_id`` 只是选择目标，
+    不构成授权；未授予校园的管理账号一律拒绝（fail-close）。
+    """
+    from app.services.campuses import require_campus
+
+    require_campus(db, campus_id)
+    if admin.role == UserRole.SUPER_ADMIN:
+        return campus_id
+    if admin.managed_campus_id is None:
+        raise HTTPException(
+            status_code=403,
+            detail="该管理账号尚未分配可管理的校园，请联系超级管理员",
+        )
+    if admin.managed_campus_id != campus_id:
+        raise HTTPException(status_code=403, detail="没有该校园的管理权限")
+    return campus_id
+
+
+def require_admin_campus(campus_id: str, db: DbSession, admin: CurrentAdmin) -> str:
+    return authorize_campus(db, admin, campus_id)
+
+
+AdminCampusId = Annotated[str, Depends(require_admin_campus)]

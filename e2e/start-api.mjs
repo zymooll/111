@@ -3,6 +3,7 @@ import { spawn } from 'node:child_process'
 import path from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
+import { apiPort, corsOrigins, userOrigin } from './ports.mjs'
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url))
 const root = path.resolve(scriptDir, '..')
@@ -28,7 +29,7 @@ const child = spawn(python, [
   '-m', 'uvicorn', 'app.main:app',
   '--app-dir', path.join(root, 'backend'),
   '--host', '127.0.0.1',
-  '--port', '18000',
+  '--port', String(apiPort),
   '--log-level', 'warning',
 ], {
   cwd: root,
@@ -41,8 +42,9 @@ const child = spawn(python, [
     AUTO_SEED: 'true',
     SECRET_KEY: 'e2e-only-secret-key-with-enough-randomness',
     DEEPSEEK_API_KEY: '',
-    CORS_ORIGINS: 'http://127.0.0.1:5173,http://127.0.0.1:5174,http://localhost:5173,http://localhost:5174',
-    USER_WEB_ORIGIN: 'http://127.0.0.1:5173',
+    EXPOSE_DEBUG_TOKENS: 'true',
+    CORS_ORIGINS: corsOrigins.join(','),
+    USER_WEB_ORIGIN: userOrigin,
   },
   stdio: 'inherit',
 })

@@ -18,6 +18,10 @@ export function FeedSkeleton() {
   )
 }
 
+export function LoadingState({ label }: { label: string }) {
+  return <p className="inline-loading" role="status">{label}</p>
+}
+
 export function EmptyState({ title, description, action }: { title: string; description: string; action?: ReactNode }) {
   return (
     <div className="empty-state">

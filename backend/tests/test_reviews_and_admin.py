@@ -4,7 +4,6 @@ import base64
 
 from tests.conftest import admin_login, bearer, login
 
-
 ONE_PIXEL_PNG = base64.b64decode(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNgYAAAAAMAASsJTYQAAAAASUVORK5CYII="
 )
@@ -297,7 +296,7 @@ def test_admin_csv_validation_and_import(client, demo_ids):
     csv_content = (
         "campus_id,name,level,sort_order\n"
         f"{demo_ids['campus']},测试导入区域,1,90\n"
-    ).encode("utf-8")
+    ).encode()
     files = {"file": ("areas.csv", csv_content, "text/csv")}
     validated = client.post(
         "/admin/api/v1/imports/validate",

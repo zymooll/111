@@ -10,7 +10,6 @@ from sqlalchemy.exc import IntegrityError
 
 from app.models import IdempotencyRecord
 
-
 SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
 
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from sqlalchemy import func, select
 from fastapi.testclient import TestClient
+from sqlalchemy import func, select
 
 from app.api.catalog import router as catalog_router
 from app.api.discovery import router as discovery_router
@@ -305,7 +305,6 @@ def test_deepseek_profile_excludes_raw_search_text(client, demo_ids, monkeypatch
 
     async def capture_profile(_adapter, _candidates, preferences):
         captured.update(preferences)
-        return None
 
     monkeypatch.setattr("app.api.discovery.DeepSeekClient.rerank", capture_profile)
     guest = client.post("/api/v1/auth/guest").json()

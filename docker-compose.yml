@@ -8,7 +8,7 @@ services:
       POSTGRES_USER: campus_foodie
       POSTGRES_PASSWORD: campus_foodie
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -20,7 +20,7 @@ services:
   redis:
     image: redis:8-alpine
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
       - redis_data:/data
@@ -40,11 +40,13 @@ services:
     build:
       context: ./backend
     environment:
-      ENVIRONMENT: production
+      # 这是本地联调栈，不是生产：生产请使用 compose.production.yml。
+      ENVIRONMENT: development
       DATABASE_URL: postgresql+psycopg://campus_foodie:campus_foodie@db:5432/campus_foodie
       REDIS_URL: redis://redis:6379/0
-      SECRET_KEY: ${SECRET_KEY:-change-this-before-production}
+      SECRET_KEY: ${SECRET_KEY:-local-development-only-secret-key-0123456789}
       AUTO_SEED: ${AUTO_SEED:-true}
+      EXPOSE_DEBUG_TOKENS: ${EXPOSE_DEBUG_TOKENS:-true}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:7991,http://localhost:7992,http://127.0.0.1:7991,http://127.0.0.1:7992}
       USER_WEB_ORIGIN: ${USER_WEB_ORIGIN:-http://127.0.0.1:7991}
       SMTP_HOST: mailpit

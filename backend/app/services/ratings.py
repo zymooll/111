@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Sequence
+from dataclasses import dataclass
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -41,6 +43,22 @@ def recalculate_item_rating(db: Session, menu_item_id: str) -> None:
         confidence / (review_count + confidence)
     ) * prior
     item.rating_avg = round(bayesian, 2)
+
+
+@dataclass(frozen=True)
+class MerchantStats:
+    """Aggregates for a whole page of merchants, fetched in two queries instead of 2N."""
+
+    ratings: dict[str, float]
+    review_counts: dict[str, int]
+
+
+def merchant_stats(db: Session, merchant_ids: Sequence[str]) -> MerchantStats:
+    ids = list(dict.fromkeys(merchant_ids))
+    return MerchantStats(
+        ratings=merchant_scores(db, ids),
+        review_counts=merchant_review_counts(db, ids),
+    )
 
 
 def merchant_scores(db: Session, merchant_ids: list[str]) -> dict[str, float]:

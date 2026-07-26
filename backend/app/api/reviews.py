@@ -19,8 +19,8 @@ from app.services.campuses import (
     require_merchant,
     require_review,
 )
+from app.services.moderation import AUTHOR_LOCKED_STATUSES
 from app.services.ratings import recalculate_item_rating
-
 
 router = APIRouter(tags=["评价"])
 
@@ -101,11 +101,17 @@ async def update_review(
     result = require_image_review(
         await moderate_review(request, payload.text), payload.images
     )
+    was_locked = review.status in AUTHOR_LOCKED_STATUSES
     review.rating = payload.rating
     review.text = payload.text
     review.images = payload.images
-    review.status = result.status
-    review.moderation_reason = result.reason
+    if was_locked:
+        # 编辑不能撤销管理员的处置：机审即使判通过，也只能回到人工队列。
+        review.status = ReviewStatus.PENDING_MANUAL
+        review.moderation_reason = "内容已修改，等待管理员复核"
+    else:
+        review.status = result.status
+        review.moderation_reason = result.reason
     db.flush()
     recalculate_item_rating(db, review.menu_item_id)
     db.commit()

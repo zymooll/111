@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Annotated, Any
 
 from fastapi import APIRouter, HTTPException, Query
-from sqlalchemy import String, cast, func, or_, select
+from sqlalchemy import String, cast, or_, select
 
 from app.api.presenters import favorite_merchant_ids
 from app.dependencies import DbSession, OptionalPrincipal
@@ -12,7 +12,6 @@ from app.services.campuses import require_campus, require_category
 from app.services.hierarchy import category_with_descendants
 from app.services.map_clusters import merchant_geojson
 from app.services.ratings import merchant_scores
-
 
 router = APIRouter(tags=["地图"])
 

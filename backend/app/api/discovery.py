@@ -6,7 +6,7 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException, Query, Request
 from sqlalchemy import and_, or_, select
 
-from app.api.presenters import favorite_merchant_ids, present_item, present_merchant
+from app.api.presenters import favorite_merchant_ids, present_item, present_merchants
 from app.dependencies import DbSession, OptionalPrincipal
 from app.models import MenuItem, Merchant
 from app.schemas import CursorPage, SearchResults, SearchSuggestion
@@ -19,7 +19,6 @@ from app.services.deepseek import DeepSeekClient
 from app.services.hierarchy import area_with_descendants, category_with_descendants
 from app.services.profiles import recommendation_profile
 from app.services.recommendations import deterministic_rank, fallback_reason
-
 
 router = APIRouter(tags=["发现与搜索"])
 
@@ -35,8 +34,8 @@ def _decode_cursor(value: str | None) -> int:
         return 0
     try:
         return max(0, int(base64.urlsafe_b64decode(value + "==").decode()))
-    except (ValueError, UnicodeDecodeError):
-        raise HTTPException(status_code=422, detail="游标无效")
+    except (ValueError, UnicodeDecodeError) as exc:
+        raise HTTPException(status_code=422, detail="游标无效") from exc
 
 
 def _encode_cursor(offset: int) -> str:
@@ -246,8 +245,5 @@ def search(
             present_item(item, merchant, favorites=favorites)
             for item, merchant in item_rows
         ],
-        merchants=[
-            present_merchant(db, merchant, favorites=favorites)
-            for merchant in merchants
-        ],
+        merchants=present_merchants(db, merchants, favorites=favorites),
     )

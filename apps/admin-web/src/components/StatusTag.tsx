@@ -9,7 +9,6 @@ const statusMap: Record<Status, { color: string; label: string }> = {
   unverified: { color: 'default', label: '待验证' },
   online: { color: 'success', label: '已上架' },
   offline: { color: 'default', label: '已下架' },
-  draft: { color: 'processing', label: '草稿' },
   pending_machine: { color: 'processing', label: '机器审核中' },
   pending_manual: { color: 'warning', label: '待人工审核' },
   published: { color: 'success', label: '已发布' },

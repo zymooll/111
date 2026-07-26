@@ -3,15 +3,19 @@ import { api } from './api'
 
 describe('mock Foodie API', () => {
   it('filters recommendations by hierarchical category', async () => {
-    const result = await api.getRecommendations({ categoryId: 'healthy' }, [])
+    const result = await api.getRecommendations({ categoryId: 'healthy' })
     expect(result.items).toHaveLength(1)
     expect(result.items[0].categoryId).toBe('salad')
   })
 
-  it('marks favorite merchants at the API adapter boundary', async () => {
-    const result = await api.getRecommendations({}, ['m1'])
-    expect(result.items.find((item) => item.merchantId === 'm1')?.favorite).toBe(true)
-    expect(result.items.find((item) => item.merchantId !== 'm1')?.favorite).toBe(false)
+  it('keeps the favorite filter on the API side instead of the caller', async () => {
+    await api.setFavorite('m2', true)
+    const favorited = await api.getMerchants({ favoriteOnly: true })
+    expect(favorited.map((merchant) => merchant.id)).toContain('m2')
+
+    await api.setFavorite('m2', false)
+    const remaining = await api.getMerchants({ favoriteOnly: true })
+    expect(remaining.map((merchant) => merchant.id)).not.toContain('m2')
   })
 
   it('enforces the mock login password rule', async () => {

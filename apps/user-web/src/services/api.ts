@@ -1,10 +1,11 @@
 import { CAMPUS_NAME } from '../data/campus'
-import { areaTree, categoryTree, demoUser, dishes, initialReviews, merchants } from '../data/mockData'
+import { areaTree, categoryTree, demoFavoriteMerchantIds, demoUser, dishes, initialReviews, merchants } from '../data/mockData'
 import type { CatalogData, DishCardData, FoodieApi, FoodPreferences, MapFilters, Review, ReviewDraft, User } from '../types'
 import { createFallbackFoodieApi, httpApi } from './httpApi'
 
 const wait = (ms = 180) => new Promise((resolve) => window.setTimeout(resolve, ms))
 const reviews = [...initialReviews]
+const favoriteMerchantIds = new Set(demoFavoriteMerchantIds)
 let mockPreferences: FoodPreferences = {
   tastes: ['清淡', '高蛋白'],
   avoid: [],
@@ -24,12 +25,12 @@ function matchesArea(itemArea: string, selected?: string) {
   return areaTree.find((parent) => parent.id === selected)?.children?.some((child) => child.id === itemArea) ?? false
 }
 
-function dishCard(id: string, favorites: string[]): DishCardData | undefined {
+function dishCard(id: string): DishCardData | undefined {
   const dish = dishes.find((item) => item.id === id)
   if (!dish) return undefined
   const merchant = merchants.find((item) => item.id === dish.merchantId)
   if (!merchant) return undefined
-  return { ...dish, merchant, favorite: favorites.includes(merchant.id) }
+  return { ...dish, merchant }
 }
 
 class MockFoodieApi implements FoodieApi {
@@ -54,22 +55,22 @@ class MockFoodieApi implements FoodieApi {
     }
   }
 
-  async getRecommendations(filters: { query?: string; categoryId?: string; areaId?: string }, favorites: string[], _cursor?: string) {
+  async getRecommendations(filters: { query?: string; categoryId?: string; areaId?: string }, _cursor?: string) {
     await wait()
     const query = filters.query?.trim().toLowerCase()
     const items = dishes
-      .map((dish) => dishCard(dish.id, favorites))
+      .map((dish) => dishCard(dish.id))
       .filter((item): item is DishCardData => Boolean(item))
       .filter((item) => matchesCategory(item.categoryId, filters.categoryId))
       .filter((item) => matchesArea(item.merchant.areaId, filters.areaId))
       .filter((item) => !query || [item.name, item.subtitle, item.merchant.name, ...item.tags].join(' ').toLowerCase().includes(query))
-      .sort((a, b) => b.match - a.match)
+      .sort((a, b) => (b.match ?? 0) - (a.match ?? 0))
     return { items }
   }
 
-  async getDish(id: string, favorites: string[]) {
+  async getDish(id: string) {
     await wait(100)
-    return dishCard(id, favorites)
+    return dishCard(id)
   }
 
   async getDishReviews(id: string) {
@@ -77,16 +78,16 @@ class MockFoodieApi implements FoodieApi {
     return reviews.filter((review) => review.dishId === id && review.status !== 'pending')
   }
 
-  async getMerchants(filters: MapFilters, favorites: string[]) {
+  async getMerchants(filters: MapFilters) {
     await wait(160)
     const query = filters.query?.trim().toLowerCase()
     return merchants
       .filter((merchant) => !filters.priceLevel || merchant.priceLevel === filters.priceLevel)
       .filter((merchant) => matchesCategory(merchant.categoryId, filters.categoryId))
       .filter((merchant) => !filters.taste || merchant.tags.includes(filters.taste))
-      .filter((merchant) => !filters.favoriteOnly || favorites.includes(merchant.id))
+      .filter((merchant) => !filters.favoriteOnly || favoriteMerchantIds.has(merchant.id))
       .filter((merchant) => !query || [merchant.name, merchant.area, merchant.category, ...merchant.tags].join(' ').toLowerCase().includes(query))
-      .map((merchant) => ({ ...merchant, favorite: favorites.includes(merchant.id) }))
+      .map((merchant) => ({ ...merchant }))
   }
 
   async getFavoriteMerchants(ids: string[]) {
@@ -143,7 +144,11 @@ class MockFoodieApi implements FoodieApi {
     return review
   }
 
-  async setFavorite() { await wait(20) }
+  async setFavorite(merchantId: string, favorite: boolean) {
+    await wait(20)
+    if (favorite) favoriteMerchantIds.add(merchantId)
+    else favoriteMerchantIds.delete(merchantId)
+  }
   async logout() { await wait(20) }
   async getAuthProviders() { return [] }
   async requestEmailVerification() {

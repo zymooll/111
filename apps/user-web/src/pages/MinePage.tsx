@@ -1,8 +1,9 @@
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import { Dialog, Toast } from 'antd-mobile'
 import { Bookmark, ChevronRight, Eye, LogIn, LogOut, MessageSquareText, Moon, Settings2, ShieldCheck, Sparkles, Star, Sun, UserRound } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
-import { EmptyState } from '../components/States'
+import { EmptyState, ErrorState, LoadingState } from '../components/States'
 import { api } from '../services/api'
 import { useAppState } from '../store/AppState'
 import type { ThemeMode } from '../types'
@@ -24,18 +25,35 @@ const reviewStatusLabels = {
 export function MinePage() {
   const navigate = useNavigate()
   const { user, favorites, themeMode, setThemeMode, logout, toggleFavorite } = useAppState()
-  const favoriteQuery = useQuery({ queryKey: ['favorite-merchants', favorites], queryFn: () => api.getFavoriteMerchants(favorites) })
+  const favoriteQuery = useQuery({
+    queryKey: ['favorite-merchants', favorites],
+    queryFn: () => api.getFavoriteMerchants(favorites),
+    placeholderData: keepPreviousData
+  })
   const reviewQuery = useQuery({ queryKey: ['my-reviews', user?.id], queryFn: () => api.getMyReviews(user!.id), enabled: Boolean(user) })
   const statsQuery = useQuery({
     queryKey: ['my-stats', user?.id],
     queryFn: () => api.getMyStats(),
     enabled: Boolean(user),
     staleTime: 0,
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
-    refetchInterval: 5_000,
-    refetchIntervalInBackground: false
+    refetchOnMount: 'always'
   })
+
+  // 阅读量由别人浏览产生，本地没有任何事件能感知；回到页面时重新拉一次即可，
+  // 不必为此保留轮询。显式监听而不依赖 react-query 的 focus 管理器，行为可预期。
+  const refetchStats = statsQuery.refetch
+  useEffect(() => {
+    if (!user) return
+    const refresh = () => {
+      if (document.visibilityState === 'visible') void refetchStats()
+    }
+    window.addEventListener('focus', refresh)
+    document.addEventListener('visibilitychange', refresh)
+    return () => {
+      window.removeEventListener('focus', refresh)
+      document.removeEventListener('visibilitychange', refresh)
+    }
+  }, [refetchStats, user])
 
   const signOut = async () => {
     const confirmed = await Dialog.confirm({ content: '退出后会清除账号派生的收藏与个人缓存，并切换为新的游客会话。确定退出吗？', confirmText: '退出登录' })
@@ -67,27 +85,35 @@ export function MinePage() {
 
       <section className="mine-section">
         <div className="mine-section__heading"><div><span className="section-icon amber"><Star size={18} fill="currentColor" /></span><h2>我的收藏</h2><b>{favorites.length}</b></div><Link to="/map">地图查看 <ChevronRight size={15} /></Link></div>
-        {favoriteQuery.data && favoriteQuery.data.length > 0 ? (
-          <div className="favorite-scroll">
-            {favoriteQuery.data.map((merchant) => (
-              <article key={merchant.id} className="favorite-place-card">
-                <div><span>{merchant.category.includes('饮') ? '☕' : merchant.category.includes('轻食') ? '🥗' : '🍜'}</span><button type="button" aria-label="取消收藏" onClick={() => toggleFavorite(merchant.id)}><Star size={16} fill="currentColor" /></button></div>
-                <strong>{merchant.name}</strong><small><b>{merchant.isDemo ? `参考评分 ${merchant.rating}` : `★ ${merchant.rating}`}</b> · {merchant.distance}m</small>
-              </article>
-            ))}
-          </div>
-        ) : <EmptyState title="还没有收藏" description="看到喜欢的商家，点亮星星就会出现在这里。" />}
+        {favoriteQuery.isError ? <ErrorState retry={() => favoriteQuery.refetch()} />
+          : favoriteQuery.isPending ? <LoadingState label="正在读取收藏…" />
+          : favoriteQuery.data.length > 0 ? (
+            <div className="favorite-scroll">
+              {favoriteQuery.data.map((merchant) => (
+                <article key={merchant.id} className="favorite-place-card">
+                  <div><span>{merchant.category.includes('饮') ? '☕' : merchant.category.includes('轻食') ? '🥗' : '🍜'}</span><button type="button" aria-label="取消收藏" onClick={() => toggleFavorite(merchant.id)}><Star size={16} fill="currentColor" /></button></div>
+                  <strong>{merchant.name}</strong>
+                  <small>
+                    {merchant.rating !== undefined && <b>{merchant.isDemo ? `参考评分 ${merchant.rating}` : `★ ${merchant.rating}`}</b>}
+                    {merchant.distance !== undefined && `${merchant.rating !== undefined ? ' · ' : ''}${merchant.distance}m`}
+                  </small>
+                </article>
+              ))}
+            </div>
+          ) : <EmptyState title="还没有收藏" description="看到喜欢的商家，点亮星星就会出现在这里。" />}
       </section>
 
       <section className="mine-section">
-        <div className="mine-section__heading"><div><span className="section-icon blue"><MessageSquareText size={18} /></span><h2>我的评价</h2>{user && <b>{reviewQuery.data?.length ?? 0}</b>}</div>{user && <button type="button" onClick={() => navigate('/review/new')}>去评价 <ChevronRight size={15} /></button>}</div>
+        <div className="mine-section__heading"><div><span className="section-icon blue"><MessageSquareText size={18} /></span><h2>我的评价</h2>{user && reviewQuery.data && <b>{reviewQuery.data.length}</b>}</div>{user && <button type="button" onClick={() => navigate('/review/new')}>去评价 <ChevronRight size={15} /></button>}</div>
         {!user ? (
           <button className="login-inline-card" type="button" onClick={() => navigate('/login')}>
             <span><UserRound size={22} /></span><div><strong>登录后查看评价记录</strong><small>你分享的真实体验，会帮助更多同学</small></div><ChevronRight size={19} />
           </button>
-        ) : reviewQuery.data && reviewQuery.data.length ? (
-          <div className="my-review-list">{reviewQuery.data.slice(0, 3).map((review) => <div key={review.id}><span>{review.dish?.name ?? '校园美食'}</span><strong>{'★'.repeat(review.rating)}</strong><small>{reviewStatusLabels[review.status]} · {review.createdAt}</small></div>)}</div>
-        ) : <EmptyState title="还没有发表评价" description="吃到好味道后，别忘了回来分享体验。" />}
+        ) : reviewQuery.isError ? <ErrorState retry={() => reviewQuery.refetch()} />
+          : reviewQuery.isPending ? <LoadingState label="正在读取评价记录…" />
+          : reviewQuery.data.length ? (
+            <div className="my-review-list">{reviewQuery.data.slice(0, 3).map((review) => <div key={review.id}><span>{review.dish?.name ?? '校园美食'}</span><strong>{'★'.repeat(review.rating)}</strong><small>{reviewStatusLabels[review.status]} · {review.createdAt}</small></div>)}</div>
+          ) : <EmptyState title="还没有发表评价" description="吃到好味道后，别忘了回来分享体验。" />}
       </section>
 
       <section className="settings-card">

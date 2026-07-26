@@ -29,15 +29,15 @@ export interface Merchant {
   area: string
   categoryId: string
   category: string
-  priceLevel: 1 | 2 | 3
-  averagePrice: number
-  rating: number
-  reviewCount: number
-  openUntil: string
-  distance: number
+  priceLevel?: 1 | 2 | 3
+  averagePrice?: number
+  rating?: number
+  reviewCount?: number
+  openUntil?: string
+  distance?: number
   longitude?: number
   latitude?: number
-  position: { x: number; y: number }
+  position?: { x: number; y: number }
   tags: string[]
 }
 
@@ -56,8 +56,8 @@ export interface Dish {
   categoryId: string
   category: string
   tags: string[]
-  reason: string
-  match: number
+  reason?: string
+  match?: number
   calories?: number
   waitMinutes?: number
   ingredients: string[]
@@ -65,7 +65,11 @@ export interface Dish {
 
 export interface DishCardData extends Dish {
   merchant: Merchant
-  favorite: boolean
+}
+
+export interface ReviewedDish {
+  id: string
+  name: string
 }
 
 export interface Review {
@@ -151,12 +155,12 @@ export interface RecommendationPage {
 
 export interface FoodieApi {
   getCatalog(): Promise<CatalogData>
-  getRecommendations(filters: FeedFilters, favorites: string[], cursor?: string): Promise<RecommendationPage>
-  getDish(id: string, favorites: string[]): Promise<DishCardData | undefined>
+  getRecommendations(filters: FeedFilters, cursor?: string): Promise<RecommendationPage>
+  getDish(id: string): Promise<DishCardData | undefined>
   getDishReviews(id: string): Promise<Review[]>
-  getMerchants(filters: MapFilters, favorites: string[]): Promise<Array<Merchant & { favorite: boolean }>>
+  getMerchants(filters: MapFilters): Promise<Merchant[]>
   getFavoriteMerchants(ids: string[]): Promise<Merchant[]>
-  getMyReviews(userId: string): Promise<Array<Review & { dish?: Dish }>>
+  getMyReviews(userId: string): Promise<Array<Review & { dish?: ReviewedDish }>>
   getMyStats(): Promise<UserStats>
   login(account: string, password: string): Promise<User>
   register(username: string, email: string, password: string): Promise<User>

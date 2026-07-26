@@ -1,5 +1,6 @@
-import { createContext, useContext, useMemo, useState, type PropsWithChildren } from 'react';
-import { adminApi, adminTokenKey } from '../api/client';
+import { App as AntApp } from 'antd';
+import { createContext, useContext, useEffect, useMemo, useState, type PropsWithChildren } from 'react';
+import { adminApi, clearSession, onSessionExpired, storeSession } from '../api/client';
 import type { AdminUser } from '../types';
 
 const adminUserKey = 'campus-foodie-admin-user';
@@ -27,6 +28,13 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: PropsWithChildren) {
   const [user, setUser] = useState<AdminUser | null>(() => readUser());
   const [loading, setLoading] = useState(false);
+  const { message } = AntApp.useApp();
+
+  useEffect(() => onSessionExpired(() => {
+    sessionStorage.removeItem(adminUserKey);
+    setUser(null);
+    message.warning('登录状态已过期，请重新登录');
+  }), [message]);
 
   const value = useMemo<AuthContextValue>(() => ({
     user,
@@ -35,7 +43,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       setLoading(true);
       try {
         const result = await adminApi.login(username, password);
-        sessionStorage.setItem(adminTokenKey, result.accessToken);
+        storeSession({ accessToken: result.accessToken, refreshToken: result.refreshToken });
         sessionStorage.setItem(adminUserKey, JSON.stringify(result.user));
         setUser(result.user);
       } finally {
@@ -43,7 +51,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       }
     },
     logout() {
-      sessionStorage.removeItem(adminTokenKey);
+      clearSession();
       sessionStorage.removeItem(adminUserKey);
       setUser(null);
     },

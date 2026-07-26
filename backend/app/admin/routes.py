@@ -6,10 +6,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy import func, or_, select
 
 from app.api.presenters import present_item, present_merchant, present_review
-from app.dependencies import CurrentAdmin, DbSession
+from app.dependencies import AdminCampusId, CurrentAdmin, DbSession, authorize_campus
 from app.models import (
     AdminAuditLog,
-    Campus,
     CampusArea,
     Category,
     Favorite,
@@ -29,24 +28,20 @@ from app.schemas import (
     AdminReviewPage,
     AdminReviewRead,
     AdminUserRead,
-    AuditLogRead,
     AreaCreate,
     AreaUpdate,
+    AuditLogRead,
     CategoryCreate,
     CategoryUpdate,
     CursorPage,
     MenuItemCreate,
-    MenuItemSummary,
     MenuItemUpdate,
     MerchantCreate,
-    MerchantRead,
     MerchantUpdate,
     Message,
     ModerationRequest,
     PublishStatusCompat,
     ReviewModerationCompat,
-    ReviewPage,
-    ReviewRead,
     TagCreate,
     TagRead,
     TagUpdate,
@@ -54,8 +49,12 @@ from app.schemas import (
     UserRead,
     UserStatusCompat,
 )
-from app.services.ratings import recalculate_item_rating
-from app.services.accounts import RESET_PASSWORD, issue_account_token, reset_link, send_account_email
+from app.services.accounts import (
+    RESET_PASSWORD,
+    issue_account_token,
+    reset_link,
+    send_account_email,
+)
 from app.services.campuses import (
     require_area,
     require_campus,
@@ -65,9 +64,11 @@ from app.services.campuses import (
     require_review,
     require_tag,
 )
+from app.services.geo import wgs84_to_gcj02
 from app.services.hierarchy import area_with_descendants, category_with_descendants
+from app.services.moderation import ADMIN_TRANSITIONS
 from app.services.pagination import before_cursor, page_metadata
-
+from app.services.ratings import recalculate_item_rating
 
 router = APIRouter(tags=["管理后台"])
 
@@ -79,6 +80,35 @@ def _manager(admin: CurrentAdmin) -> User:
 
 
 Manager = Annotated[User, Depends(_manager)]
+
+ROLE_RANK = {
+    UserRole.USER: 0,
+    UserRole.REVIEWER: 1,
+    UserRole.CAMPUS_ADMIN: 2,
+    UserRole.SUPER_ADMIN: 3,
+}
+
+
+def _require_manageable(admin: User, target: User) -> None:
+    """Refuse actions against accounts at or above the actor's own privilege level."""
+    if ROLE_RANK.get(target.role, 0) >= ROLE_RANK.get(admin.role, 0):
+        raise HTTPException(status_code=403, detail="不能操作同级或更高权限的账号")
+
+
+def _campus_user_condition(campus_id: str):
+    """Users are campus-scoped by their activity, which is what this view already reports."""
+    return or_(
+        select(Review.id)
+        .where(Review.user_id == User.id, Review.campus_id == campus_id)
+        .exists(),
+        select(InteractionEvent.id)
+        .where(
+            InteractionEvent.actor_type == "user",
+            InteractionEvent.actor_id == User.id,
+            InteractionEvent.campus_id == campus_id,
+        )
+        .exists(),
+    )
 
 
 def _audit(
@@ -211,7 +241,7 @@ def _validate_menu_item_tags(db, campus_id: str, tags: list[str] | None) -> None
 
 
 @router.get("/dashboard")
-def dashboard(db: DbSession, admin: CurrentAdmin, campus_id: str) -> dict[str, int]:
+def dashboard(db: DbSession, admin: CurrentAdmin, campus_id: AdminCampusId) -> dict[str, int]:
     require_campus(db, campus_id)
     return {
         "users": int(db.scalar(select(func.count(User.id))) or 0),
@@ -250,14 +280,19 @@ def dashboard(db: DbSession, admin: CurrentAdmin, campus_id: str) -> dict[str, i
 def list_users(
     db: DbSession,
     admin: Manager,
-    campus_id: str,
+    campus_id: AdminCampusId,
     search: str | None = Query(default=None, max_length=100),
     active: bool | None = None,
     cursor: str | None = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
 ) -> CursorPage[AdminUserRead]:
-    require_campus(db, campus_id)
     query = select(User)
+    if admin.role != UserRole.SUPER_ADMIN:
+        # 校园管理员只看得到本校园有行为的普通用户，且看不到任何管理账号。
+        query = query.where(
+            _campus_user_condition(campus_id),
+            User.role == UserRole.USER,
+        )
     if search:
         keyword = f"%{search}%"
         query = query.where(or_(User.username.like(keyword), User.email.like(keyword)))
@@ -285,7 +320,7 @@ def update_user(
     payload: UserAdminUpdate,
     db: DbSession,
     admin: Manager,
-    campus_id: str,
+    campus_id: AdminCampusId,
 ) -> AdminUserRead:
     require_campus(db, campus_id)
     user = db.get(User, user_id)
@@ -293,6 +328,7 @@ def update_user(
         raise HTTPException(status_code=404, detail="用户不存在")
     if user.id == admin.id and not payload.is_active:
         raise HTTPException(status_code=409, detail="不能停用当前管理员账号")
+    _require_manageable(admin, user)
     user.is_active = payload.is_active
     _audit(
         db,
@@ -313,7 +349,7 @@ def update_user_status_compat(
     payload: UserStatusCompat,
     db: DbSession,
     admin: Manager,
-    campus_id: str,
+    campus_id: AdminCampusId,
 ) -> AdminUserRead:
     require_campus(db, campus_id)
     user = db.get(User, user_id)
@@ -322,6 +358,7 @@ def update_user_status_compat(
     requested_status = payload.status or ("active" if payload.is_active else "frozen")
     if user.id == admin.id and requested_status == "frozen":
         raise HTTPException(status_code=409, detail="不能冻结当前管理员账号")
+    _require_manageable(admin, user)
     user.is_active = requested_status != "frozen"
     if requested_status == "unverified":
         user.email_verified = False
@@ -344,12 +381,13 @@ def trigger_password_reset(
     request: Request,
     db: DbSession,
     admin: Manager,
-    campus_id: str,
+    campus_id: AdminCampusId,
 ) -> Message:
     require_campus(db, campus_id)
     user = db.get(User, user_id)
     if user is None:
         raise HTTPException(status_code=404, detail="用户不存在")
+    _require_manageable(admin, user)
     settings = request.app.state.settings
     token = issue_account_token(
         db,
@@ -380,7 +418,7 @@ def trigger_password_reset(
 def list_merchants(
     db: DbSession,
     admin: Manager,
-    campus_id: str,
+    campus_id: AdminCampusId,
     search: str | None = Query(default=None, max_length=100),
     active: bool | None = None,
     cursor: str | None = None,
@@ -422,7 +460,7 @@ def _validate_merchant_refs(db, payload: MerchantCreate | MerchantUpdate, mercha
 
 
 @router.get("/categories")
-def admin_categories(db: DbSession, admin: Manager, campus_id: str) -> list[dict]:
+def admin_categories(db: DbSession, admin: Manager, campus_id: AdminCampusId) -> list[dict]:
     require_campus(db, campus_id)
     rows = db.scalars(
         select(Category)
@@ -474,7 +512,7 @@ def update_category(
     payload: CategoryUpdate,
     db: DbSession,
     admin: Manager,
-    campus_id: str,
+    campus_id: AdminCampusId,
 ) -> dict:
     require_campus(db, campus_id)
     category = require_category(db, campus_id, category_id)
@@ -506,7 +544,7 @@ def update_category(
 
 @router.delete("/categories/{category_id}", response_model=Message)
 def delete_category(
-    category_id: str, db: DbSession, admin: Manager, campus_id: str
+    category_id: str, db: DbSession, admin: Manager, campus_id: AdminCampusId
 ) -> Message:
     require_campus(db, campus_id)
     category = require_category(db, campus_id, category_id)
@@ -534,7 +572,7 @@ def delete_category(
 
 @router.get("/tags", response_model=list[TagRead])
 def admin_tags(
-    db: DbSession, admin: Manager, campus_id: str, kind: str | None = None
+    db: DbSession, admin: Manager, campus_id: AdminCampusId, kind: str | None = None
 ) -> list[TagRead]:
     require_campus(db, campus_id)
     query = select(Tag).where(Tag.campus_id == campus_id)
@@ -580,7 +618,7 @@ def update_tag(
     payload: TagUpdate,
     db: DbSession,
     admin: Manager,
-    campus_id: str,
+    campus_id: AdminCampusId,
 ) -> TagRead:
     require_campus(db, campus_id)
     tag = require_tag(db, campus_id, tag_id)
@@ -622,7 +660,7 @@ def update_tag(
 
 @router.delete("/tags/{tag_id}", response_model=Message)
 def delete_tag(
-    tag_id: str, db: DbSession, admin: Manager, campus_id: str
+    tag_id: str, db: DbSession, admin: Manager, campus_id: AdminCampusId
 ) -> Message:
     require_campus(db, campus_id)
     tag = require_tag(db, campus_id, tag_id)
@@ -651,7 +689,7 @@ def delete_tag(
 def admin_areas(
     db: DbSession,
     admin: Manager,
-    campus_id: str,
+    campus_id: AdminCampusId,
 ) -> list[dict]:
     require_campus(db, campus_id)
     query = select(CampusArea).where(CampusArea.campus_id == campus_id)
@@ -701,7 +739,7 @@ def update_area(
     payload: AreaUpdate,
     db: DbSession,
     admin: Manager,
-    campus_id: str,
+    campus_id: AdminCampusId,
 ) -> dict:
     require_campus(db, campus_id)
     area = db.get(CampusArea, area_id)
@@ -738,7 +776,7 @@ def update_area(
 
 @router.delete("/areas/{area_id}", response_model=Message)
 def delete_area(
-    area_id: str, db: DbSession, admin: Manager, campus_id: str
+    area_id: str, db: DbSession, admin: Manager, campus_id: AdminCampusId
 ) -> Message:
     require_campus(db, campus_id)
     area = db.get(CampusArea, area_id)
@@ -771,12 +809,14 @@ def create_merchant(
     db: DbSession,
     admin: Manager,
 ) -> AdminMerchantRead:
+    # 该端点的目标校园来自请求体而非查询参数，仍需服务端确认管理员有权操作。
+    authorize_campus(db, admin, payload.campus_id)
     _validate_merchant_refs(db, payload)
     data = payload.model_dump()
-    if data["gcj02_latitude"] is None:
-        data["gcj02_latitude"] = data["latitude"]
-    if data["gcj02_longitude"] is None:
-        data["gcj02_longitude"] = data["longitude"]
+    if data["gcj02_latitude"] is None or data["gcj02_longitude"] is None:
+        gcj_latitude, gcj_longitude = wgs84_to_gcj02(data["latitude"], data["longitude"])
+        data["gcj02_latitude"] = data["gcj02_latitude"] or gcj_latitude
+        data["gcj02_longitude"] = data["gcj02_longitude"] or gcj_longitude
     merchant = Merchant(**data)
     db.add(merchant)
     db.flush()
@@ -799,7 +839,7 @@ def update_merchant(
     payload: MerchantUpdate,
     db: DbSession,
     admin: Manager,
-    campus_id: str,
+    campus_id: AdminCampusId,
 ) -> AdminMerchantRead:
     require_campus(db, campus_id)
     merchant = require_merchant(db, campus_id, merchant_id)
@@ -807,6 +847,12 @@ def update_merchant(
     changes = payload.model_dump(exclude_unset=True)
     for key, value in changes.items():
         setattr(merchant, key, value)
+    moved = "latitude" in changes or "longitude" in changes
+    if moved and "gcj02_latitude" not in changes and "gcj02_longitude" not in changes:
+        # 管理端只提交 WGS-84，用户端地图读的是 GCJ-02，这里补齐换算。
+        merchant.gcj02_latitude, merchant.gcj02_longitude = wgs84_to_gcj02(
+            merchant.latitude, merchant.longitude
+        )
     _audit(
         db,
         admin,
@@ -827,7 +873,7 @@ def update_merchant_status_compat(
     payload: PublishStatusCompat,
     db: DbSession,
     admin: Manager,
-    campus_id: str,
+    campus_id: AdminCampusId,
 ) -> AdminMerchantRead:
     require_campus(db, campus_id)
     merchant = require_merchant(db, campus_id, merchant_id)
@@ -848,7 +894,7 @@ def update_merchant_status_compat(
 
 @router.delete("/merchants/{merchant_id}", response_model=Message)
 def deactivate_merchant(
-    merchant_id: str, db: DbSession, admin: Manager, campus_id: str
+    merchant_id: str, db: DbSession, admin: Manager, campus_id: AdminCampusId
 ) -> Message:
     require_campus(db, campus_id)
     merchant = require_merchant(db, campus_id, merchant_id)
@@ -869,7 +915,7 @@ def deactivate_merchant(
 def list_menu_items(
     db: DbSession,
     admin: Manager,
-    campus_id: str,
+    campus_id: AdminCampusId,
     merchant_id: str | None = None,
     active: bool | None = None,
     cursor: str | None = None,
@@ -939,7 +985,7 @@ def update_menu_item(
     payload: MenuItemUpdate,
     db: DbSession,
     admin: Manager,
-    campus_id: str,
+    campus_id: AdminCampusId,
 ) -> AdminMenuItemRead:
     require_campus(db, campus_id)
     item = require_menu_item(db, campus_id, menu_item_id)
@@ -969,7 +1015,7 @@ def update_menu_item_status_compat(
     payload: PublishStatusCompat,
     db: DbSession,
     admin: Manager,
-    campus_id: str,
+    campus_id: AdminCampusId,
 ) -> AdminMenuItemRead:
     require_campus(db, campus_id)
     item = require_menu_item(db, campus_id, menu_item_id)
@@ -991,7 +1037,7 @@ def update_menu_item_status_compat(
 
 @router.delete("/menu-items/{menu_item_id}", response_model=Message)
 def deactivate_menu_item(
-    menu_item_id: str, db: DbSession, admin: Manager, campus_id: str
+    menu_item_id: str, db: DbSession, admin: Manager, campus_id: AdminCampusId
 ) -> Message:
     require_campus(db, campus_id)
     item = require_menu_item(db, campus_id, menu_item_id)
@@ -1012,7 +1058,7 @@ def deactivate_menu_item(
 def list_reviews(
     db: DbSession,
     admin: CurrentAdmin,
-    campus_id: str,
+    campus_id: AdminCampusId,
     review_status: str | None = Query(default=None, alias="status"),
     cursor: str | None = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
@@ -1051,19 +1097,19 @@ def moderate_review(
     payload: ModerationRequest,
     db: DbSession,
     admin: CurrentAdmin,
-    campus_id: str,
+    campus_id: AdminCampusId,
 ) -> AdminReviewRead:
     require_campus(db, campus_id)
     review = require_review(db, campus_id, review_id)
-    transitions = {
-        "publish": ReviewStatus.PUBLISHED,
-        "reject": ReviewStatus.REJECTED,
-        "hide": ReviewStatus.HIDDEN,
-        "restore": ReviewStatus.PUBLISHED,
-    }
     if payload.action in {"reject", "hide"} and not payload.reason.strip():
         raise HTTPException(status_code=422, detail="驳回或下架必须填写原因")
-    review.status = transitions[payload.action]
+    target_status, allowed_from = ADMIN_TRANSITIONS[payload.action]
+    if review.status not in allowed_from:
+        raise HTTPException(
+            status_code=409,
+            detail=f"当前状态（{review.status}）不允许执行 {payload.action}",
+        )
+    review.status = target_status
     review.moderation_reason = payload.reason.strip() or None
     _audit(
         db,
@@ -1087,7 +1133,7 @@ def moderate_review_compat(
     payload: ReviewModerationCompat,
     db: DbSession,
     admin: CurrentAdmin,
-    campus_id: str,
+    campus_id: AdminCampusId,
 ) -> AdminReviewRead:
     actions = {
         "published": "publish",
@@ -1127,7 +1173,7 @@ def moderate_review_compat(
 def audit_logs(
     db: DbSession,
     admin: Manager,
-    campus_id: str,
+    campus_id: AdminCampusId,
     cursor: str | None = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
 ) -> CursorPage[AuditLogRead]:

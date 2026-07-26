@@ -9,7 +9,6 @@ from app.models import InteractionEvent
 from app.schemas import InteractionBatch, Message
 from app.services.campuses import require_campus, require_menu_item, require_merchant
 
-
 router = APIRouter(tags=["行为事件"])
 
 

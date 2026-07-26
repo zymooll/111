@@ -1,11 +1,34 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
 import { api } from './services/api'
 import { AppStateProvider } from './store/AppState'
+
+type Observed = { callback: IntersectionObserverCallback; elements: Element[] }
+
+function stubIntersectionObserver() {
+  const observers: Observed[] = []
+  class FakeIntersectionObserver {
+    private observed: Observed
+    constructor(callback: IntersectionObserverCallback) {
+      this.observed = { callback, elements: [] }
+      observers.push(this.observed)
+    }
+    observe(element: Element) { this.observed.elements.push(element) }
+    unobserve() { /* not needed by the feed */ }
+    disconnect() { this.observed.elements = [] }
+  }
+  vi.stubGlobal('IntersectionObserver', FakeIntersectionObserver)
+  return () => act(() => {
+    observers.forEach((observed) => observed.elements.forEach((element) => observed.callback(
+      [{ isIntersecting: true, target: element } as IntersectionObserverEntry],
+      {} as IntersectionObserver
+    )))
+  })
+}
 
 describe('user app navigation shell', () => {
   beforeEach(() => {
@@ -14,6 +37,7 @@ describe('user app navigation shell', () => {
   })
   afterEach(() => {
     cleanup()
+    vi.unstubAllGlobals()
     vi.restoreAllMocks()
   })
 
@@ -55,7 +79,7 @@ describe('user app navigation shell', () => {
 
   it('uses nextCursor to continue loading the home feed', async () => {
     const user = userEvent.setup()
-    const source = await api.getRecommendations({}, [])
+    const source = await api.getRecommendations({})
     const getRecommendations = vi.spyOn(api, 'getRecommendations')
       .mockResolvedValueOnce({ items: [source.items[0]], nextCursor: 'cursor-2' })
       .mockResolvedValueOnce({ items: [source.items[1]] })
@@ -71,7 +95,7 @@ describe('user app navigation shell', () => {
     expect(await screen.findByText(source.items[0].name)).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: '继续发现更多菜品' }))
     expect(await screen.findByText(source.items[1].name)).toBeInTheDocument()
-    expect(getRecommendations).toHaveBeenNthCalledWith(2, expect.any(Object), expect.any(Array), 'cursor-2')
+    expect(getRecommendations).toHaveBeenNthCalledWith(2, expect.any(Object), 'cursor-2')
   })
 
   it('renders the editable de-identified preference profile', async () => {
@@ -137,7 +161,7 @@ describe('user app navigation shell', () => {
       id: 'u1', username: 'demo', email: 'demo@example.com', displayName: '演示用户',
       publishedReviews: 0, views: 0, emailVerified: true
     }))
-    const initialDish = await api.getDish('d1', [])
+    const initialDish = await api.getDish('d1')
     expect(initialDish).toBeDefined()
     const refreshedDish = {
       ...initialDish!,
@@ -196,6 +220,97 @@ describe('user app navigation shell', () => {
     expect(await screen.findByText(/参考评分 4\.8/)).toBeInTheDocument()
     expect(await screen.findByText(/参考 ¥16\/人/)).toBeInTheDocument()
     expect(screen.getByText(/参考时段 21:00/)).toBeInTheDocument()
+  })
+
+  it('keeps the loaded feed when a merchant is favorited', async () => {
+    const user = userEvent.setup()
+    const getRecommendations = vi.spyOn(api, 'getRecommendations')
+    const setFavorite = vi.spyOn(api, 'setFavorite').mockResolvedValue()
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    render(
+      <QueryClientProvider client={client}>
+        <MemoryRouter initialEntries={['/']}>
+          <AppStateProvider><App /></AppStateProvider>
+        </MemoryRouter>
+      </QueryClientProvider>
+    )
+
+    expect(await screen.findByText('番茄牛腩饭')).toBeInTheDocument()
+    const requests = getRecommendations.mock.calls.length
+    const marked = screen.getAllByRole('button', { name: '取消收藏商家' }).length
+    await user.click(screen.getAllByRole('button', { name: '收藏商家' })[0])
+
+    await waitFor(() => expect(setFavorite).toHaveBeenCalledTimes(1))
+    expect(screen.getAllByRole('button', { name: '取消收藏商家' })).toHaveLength(marked + 1)
+    expect(screen.getByText('番茄牛腩饭')).toBeInTheDocument()
+    expect(screen.queryByLabelText('正在加载推荐')).not.toBeInTheDocument()
+    expect(getRecommendations).toHaveBeenCalledTimes(requests)
+  })
+
+  it('reports feed impressions only after a card becomes visible', async () => {
+    const triggerVisibility = stubIntersectionObserver()
+    const recordInteractions = vi.spyOn(api, 'recordInteractions').mockResolvedValue()
+    const impressions = () => recordInteractions.mock.calls
+      .flatMap(([events]) => events)
+      .filter((event) => event.eventType === 'impression')
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    render(
+      <QueryClientProvider client={client}>
+        <MemoryRouter initialEntries={['/']}>
+          <AppStateProvider><App /></AppStateProvider>
+        </MemoryRouter>
+      </QueryClientProvider>
+    )
+
+    expect(await screen.findByText('番茄牛腩饭')).toBeInTheDocument()
+    expect(impressions()).toHaveLength(0)
+
+    triggerVisibility()
+    await waitFor(() => expect(impressions().length).toBeGreaterThan(0))
+    const reported = impressions().length
+    expect(new Set(impressions().map((event) => event.dishId)).size).toBe(reported)
+
+    triggerVisibility()
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    expect(impressions()).toHaveLength(reported)
+  })
+
+  it('opens a dish from the card with the keyboard', async () => {
+    const user = userEvent.setup()
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    render(
+      <QueryClientProvider client={client}>
+        <MemoryRouter initialEntries={['/']}>
+          <AppStateProvider><App /></AppStateProvider>
+        </MemoryRouter>
+      </QueryClientProvider>
+    )
+
+    const link = await screen.findByRole('link', { name: '番茄牛腩饭' })
+    expect(link).toHaveAttribute('href', '/dish/d1')
+    link.focus()
+    await user.keyboard('{Enter}')
+
+    expect(await screen.findByRole('button', { name: '我也吃过' })).toBeInTheDocument()
+  })
+
+  it('separates a failed dish request from a delisted dish', async () => {
+    const user = userEvent.setup()
+    vi.spyOn(api, 'getDish').mockRejectedValueOnce(new Error('network is down'))
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    render(
+      <QueryClientProvider client={client}>
+        <MemoryRouter initialEntries={['/dish/d1']}>
+          <AppStateProvider><App /></AppStateProvider>
+        </MemoryRouter>
+      </QueryClientProvider>
+    )
+
+    expect(await screen.findByText('暂时没端上来')).toBeInTheDocument()
+    expect(screen.queryByText('这道菜暂时下架了')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '重新加载' }))
+    expect(await screen.findByText('番茄牛腩饭')).toBeInTheDocument()
   })
 
   it('reads current profile statistics instead of the login snapshot', async () => {

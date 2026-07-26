@@ -5,13 +5,12 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy import func, select
 
-from app.api.presenters import present_review
+from app.api.presenters import present_reviews
 from app.dependencies import CurrentUser, DbSession, PrincipalRequired
 from app.models import Favorite, GuestSession, Review, ReviewStatus, UserProfile
 from app.schemas import MyStats, PreferencesRead, PreferencesUpdate, ReviewPage
 from app.services.campuses import require_area, require_campus
 from app.services.pagination import before_cursor, page_metadata
-
 
 router = APIRouter(tags=["个人中心"])
 
@@ -42,7 +41,7 @@ def my_reviews(
     )
     visible, next_cursor, has_more = page_metadata(rows, limit)
     return ReviewPage(
-        items=[present_review(db, row) for row in visible],
+        items=present_reviews(db, visible),
         total=total,
         next_cursor=next_cursor,
         has_more=has_more,

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { FoodieApi } from '../types'
-import { createFallbackFoodieApi, HttpApiError, httpApi, resetHttpApiCacheForTests } from './httpApi'
+import { createFallbackFoodieApi, degradedDataEvent, HttpApiError, httpApi, resetHttpApiCacheForTests } from './httpApi'
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -51,7 +51,7 @@ describe('HTTP Foodie API', () => {
     })
     vi.stubGlobal('fetch', fetchMock)
 
-    await expect(httpApi.getRecommendations({}, [])).resolves.toEqual({ items: [], nextCursor: undefined })
+    await expect(httpApi.getRecommendations({})).resolves.toEqual({ items: [], nextCursor: undefined })
     expect(fetchMock.mock.calls.filter(([input]) => String(input).endsWith('/auth/guest'))).toHaveLength(1)
   })
 
@@ -95,7 +95,7 @@ describe('HTTP Foodie API', () => {
     })
     vi.stubGlobal('fetch', fetchMock)
 
-    const dish = await httpApi.getDish('dish-1', [])
+    const dish = await httpApi.getDish('dish-1')
 
     expect(dish?.image).toBe('http://127.0.0.1:7993/media/user-1/review.jpg')
     expect(dish).toMatchObject({ isDemo: true, merchant: { isDemo: true } })
@@ -131,7 +131,7 @@ describe('HTTP Foodie API', () => {
     })
     vi.stubGlobal('fetch', fetchMock)
 
-    const result = await httpApi.getMerchants({}, [])
+    const result = await httpApi.getMerchants({})
 
     expect(result).toHaveLength(1)
     expect(result[0]).toMatchObject({ isDemo: true, openUntil: '21:00' })
@@ -158,7 +158,7 @@ describe('HTTP Foodie API', () => {
       categories: [{ id: 'category-1', label: '测试餐饮' }],
       tags: [{ name: '清淡', kind: 'taste' }]
     })
-    await expect(httpApi.getRecommendations({ categoryId: 'category-1', areaId: 'area-1' }, [], 'page-cursor')).resolves.toEqual({ items: [], nextCursor: 'next-page' })
+    await expect(httpApi.getRecommendations({ categoryId: 'category-1', areaId: 'area-1' }, 'page-cursor')).resolves.toEqual({ items: [], nextCursor: 'next-page' })
 
     expect(urls.some((url) => url.includes('campus_id=campus-1') && url.includes('category_id=category-1') && url.includes('area_id=area-1') && url.includes('cursor=page-cursor'))).toBe(true)
   })
@@ -191,6 +191,104 @@ describe('HTTP Foodie API', () => {
 
     await expect(fallback.login('demo', 'wrong-pass')).rejects.toThrow('账号或密码错误')
     expect(secondaryLogin).not.toHaveBeenCalled()
+  })
+
+  it('keeps authentication, writes and personal data out of the demo fallback', async () => {
+    const outage = () => Promise.reject(new HttpApiError('服务暂时不可用', 503))
+    const secondary = {
+      login: vi.fn().mockResolvedValue({ id: 'mock-user' }),
+      setFavorite: vi.fn().mockResolvedValue(undefined),
+      getMyStats: vi.fn().mockResolvedValue({ publishedReviews: 9, totalViews: 9, favoriteMerchants: 9 }),
+      getRecommendations: vi.fn().mockResolvedValue({ items: [] })
+    } as unknown as FoodieApi
+    const primary = {
+      login: outage,
+      setFavorite: outage,
+      getMyStats: outage,
+      getRecommendations: outage
+    } as unknown as FoodieApi
+    const fallback = createFallbackFoodieApi(primary, secondary)
+    const degraded = vi.fn()
+    window.addEventListener(degradedDataEvent, degraded)
+
+    await expect(fallback.login('demo', 'Demo123!')).rejects.toThrow('服务暂时不可用')
+    await expect(fallback.setFavorite('merchant-1', true)).rejects.toThrow('服务暂时不可用')
+    await expect(fallback.getMyStats()).rejects.toThrow('服务暂时不可用')
+    expect(secondary.login).not.toHaveBeenCalled()
+    expect(secondary.setFavorite).not.toHaveBeenCalled()
+    expect(secondary.getMyStats).not.toHaveBeenCalled()
+
+    await expect(fallback.getRecommendations({})).resolves.toEqual({ items: [] })
+    expect(degraded).toHaveBeenCalledTimes(1)
+    window.removeEventListener(degradedDataEvent, degraded)
+  })
+
+  it('leaves unavailable presentation metrics empty instead of inventing them', async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input)
+      const catalog = catalogResponse(url)
+      if (catalog) return catalog
+      if (url.endsWith('/auth/guest')) return json({ access_token: 'guest-token' }, 201)
+      if (url.includes('/recommendations/feed')) {
+        return json({
+          items: [{
+            id: 'dish-1',
+            merchant_id: merchant.id,
+            category_id: null,
+            name: '测试菜品',
+            description: '',
+            item_type: 'dish',
+            price_cents: 1200,
+            image_url: '',
+            rating_avg: 4.6,
+            review_count: 3,
+            tags: ['清淡'],
+            merchant_name: merchant.name,
+            merchant_address: merchant.address
+          }],
+          next_cursor: null,
+          has_more: false
+        })
+      }
+      return json({ detail: 'unexpected request' }, 500)
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const { items } = await httpApi.getRecommendations({})
+
+    expect(items[0]).toMatchObject({ rating: 4.6, reviewCount: 3 })
+    expect(items[0].match).toBeUndefined()
+    expect(items[0].waitMinutes).toBeUndefined()
+    expect(items[0].calories).toBeUndefined()
+    expect(items[0].reason).toBeUndefined()
+    expect(items[0].merchant).toMatchObject({ name: merchant.name })
+    expect(items[0].merchant.distance).toBeUndefined()
+    expect(items[0].merchant.averagePrice).toBeUndefined()
+    expect(items[0].merchant.reviewCount).toBeUndefined()
+  })
+
+  it('walks the favorites cursor instead of asking for one oversized page', async () => {
+    const urls: string[] = []
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input)
+      urls.push(url)
+      const catalog = catalogResponse(url)
+      if (catalog) return catalog
+      if (url.endsWith('/auth/guest')) return json({ access_token: 'guest-token' }, 201)
+      if (url.includes('/me/favorites')) {
+        return url.includes('cursor=page-2')
+          ? json({ items: [{ merchant: { ...merchant, id: 'merchant-2', name: '第二家' } }], next_cursor: null, has_more: false })
+          : json({ items: [{ merchant }], next_cursor: 'page-2', has_more: true })
+      }
+      return json({ detail: 'unexpected request' }, 500)
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const favorites = await httpApi.getFavoriteMerchants([])
+
+    expect(favorites.map((item) => item.id)).toEqual(['merchant-1', 'merchant-2'])
+    expect(urls.some((url) => url.includes('/me/favorites') && url.includes('cursor=page-2'))).toBe(true)
+    expect(urls.every((url) => !url.includes('limit=100'))).toBe(true)
   })
 
   it('maps preferences, behavior events and review views to FastAPI contracts', async () => {

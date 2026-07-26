@@ -1,0 +1,31 @@
+# 生产入口：Caddy 自动申请并续期证书，容器内服务一律不对外发布端口。
+# 需要纯 HTTP 的内网部署时，把三个 *_DOMAIN 设成 :80 形式的站点地址即可。
+
+(security_headers) {
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+}
+
+{$API_DOMAIN} {
+	import security_headers
+	reverse_proxy api:8000
+}
+
+{$USER_WEB_DOMAIN} {
+	import security_headers
+	reverse_proxy user-web:80
+}
+
+{$ADMIN_WEB_DOMAIN} {
+	import security_headers
+	# 管理端建议收敛到办公网出口，默认放行需在 ADMIN_ALLOWED_CIDR 中显式覆盖。
+	@blocked not remote_ip {$ADMIN_ALLOWED_CIDR}
+	respond @blocked "Forbidden" 403
+
+	reverse_proxy admin-web:80
+}

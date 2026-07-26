@@ -1,7 +1,9 @@
 export type AdminRole = 'super_admin' | 'campus_admin' | 'review_moderator';
 export type EntityStatus = 'active' | 'frozen' | 'unverified';
-export type PublishStatus = 'online' | 'offline' | 'draft';
+export type PublishStatus = 'online' | 'offline';
 export type ReviewStatus = 'pending_machine' | 'pending_manual' | 'published' | 'rejected' | 'hidden';
+export type ReviewAction = 'publish' | 'reject' | 'hide' | 'restore';
+export type RiskLevel = 'low' | 'medium' | 'high';
 
 export interface AdminUser {
   id: string;
@@ -14,6 +16,7 @@ export interface AdminUser {
 
 export interface LoginResult {
   accessToken: string;
+  refreshToken: string;
   user: AdminUser;
 }
 
@@ -22,12 +25,7 @@ export interface DashboardData {
   merchants: number;
   menuItems: number;
   pendingReviews: number;
-  userGrowth: number;
-  merchantGrowth: number;
-  weeklyTraffic: Array<{ date: string; views: number; recommendations: number }>;
-  categoryShare: Array<{ name: string; value: number; color: string }>;
   recentReviews: Review[];
-  popularItems: Array<{ name: string; merchant: string; views: number; rating: number }>;
 }
 
 export interface CampusUser {
@@ -61,7 +59,6 @@ export interface Merchant {
   dishCount: number;
   favoriteCount: number;
   openingHours: string;
-  contact: string;
   updatedAt: string;
 }
 
@@ -103,7 +100,7 @@ export interface Review {
   content: string;
   images: string[];
   status: ReviewStatus;
-  riskLevel: 'low' | 'medium' | 'high';
+  riskLevel: RiskLevel;
   createdAt: string;
   reason?: string;
 }
@@ -130,12 +127,10 @@ export interface ImportJob {
 
 export interface AuditLog {
   id: string;
-  actor: string;
-  role: string;
-  module: '用户' | '商家' | '菜品' | '标签' | '评价' | '导入' | '系统';
+  actorId: string;
+  targetType: string;
   action: string;
   target: string;
-  ip: string;
   createdAt: string;
   detail: string;
 }
@@ -146,23 +141,34 @@ export interface CatalogMetadata {
   tags: TagDefinition[];
 }
 
-export interface PageResult<T> {
+/** Keyset page shape shared by every admin list endpoint; `total` only exists where the API reports it. */
+export interface CursorPage<T> {
   items: T[];
-  total: number;
+  nextCursor: string | null;
+  hasMore: boolean;
+  total?: number;
 }
 
-export interface ListQuery {
-  keyword?: string;
-  status?: string;
-  page?: number;
-  pageSize?: number;
+export interface CursorQuery {
+  cursor?: string | null;
+  limit?: number;
 }
 
-export interface ReviewQuery extends ListQuery {
-  riskLevel?: string;
-  rating?: number;
+export interface UserListQuery extends CursorQuery {
+  search?: string;
+  active?: boolean;
 }
 
-export interface AuditQuery extends ListQuery {
-  module?: string;
+export interface MerchantListQuery extends CursorQuery {
+  search?: string;
+  active?: boolean;
+}
+
+export interface MenuItemListQuery extends CursorQuery {
+  merchantId?: string;
+  active?: boolean;
+}
+
+export interface ReviewListQuery extends CursorQuery {
+  status?: ReviewStatus;
 }

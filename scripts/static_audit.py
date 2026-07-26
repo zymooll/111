@@ -3,7 +3,6 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -287,7 +286,10 @@ def main() -> None:
         "has-star",
     )
     require_terms("apps/user-web/src/data/mockData.ts", "latitude:", "longitude:")
-    require_terms("apps/user-web/.env.example", "VITE_CAMPUS_ID", "VITE_AMAP_KEY", "VITE_AMAP_SECURITY_CODE")
+    require_terms("apps/user-web/.env.example", "VITE_CAMPUS_ID", "VITE_AMAP_KEY")
+    # securityJsCode 属于服务端凭据，不允许再出现在任何前端产物或模板里。
+    forbid_terms("apps/user-web/.env.example", "VITE_AMAP_SECURITY_CODE")
+    forbid_terms("apps/user-web/src/pages/MapPage.tsx", "_AMapSecurityConfig")
     require_terms("apps/user-web/vite.config.ts", "VitePWA", "navigateFallback", "manifest")
     require_terms("apps/user-web/src/components/AppShell.tsx", "首页", "地图", "我的")
     forbid_terms("apps/user-web/src/components/AppShell.tsx", "我也吃过", "quick-review", "/review/new")
@@ -359,10 +361,19 @@ def main() -> None:
     require_terms("docs/ARCHITECTURE.md", "discovery.py", "校园隔离", "幂等", "游标")
     require_terms("docs/REQUIREMENTS.md", "实现证据", "最终运行证据", "Idempotency-Key")
 
+    # 生产安全基线：这些默认值一旦被改回去，部署出来的实例就会重新变得可被接管。
+    require_terms("backend/app/config.py", "enforce_production_baseline", "InsecureProductionSettings")
+    forbid_terms("compose.production.yml", "AUTO_SEED: ${AUTO_SEED:-true}")
+    require_terms("compose.production.yml", 'AUTO_SEED: "false"', "SECRET_KEY:?", "SMTP_HOST:?")
+    require_terms("deploy/production.env.example", "AUTO_SEED=false", "https://")
+    forbid_terms("deploy/production.env.example", "AUTO_SEED=true")
+    # 幂等中间件必须在 CORS 内层，否则重放与 409 响应会丢掉跨域头。
+    require_terms("backend/app/main.py", "idempotency_middleware", "docs_url=None if settings.production")
+
     print(
         "Static audit passed: "
         f"{len(required_files)} artifacts plus routing, campus isolation, cursor, "
-        "idempotency, dynamic catalog, AMap and evidence contracts"
+        "idempotency, dynamic catalog, AMap, production baseline and evidence contracts"
     )
 
 

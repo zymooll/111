@@ -5,8 +5,7 @@ import { Camera, CheckCircle2, ChevronDown, ImagePlus, LogIn, Send, Sparkles, X 
 import { useNavigate, useParams } from 'react-router-dom'
 import { PageHeader } from '../components/PageHeader'
 import { RatingInput } from '../components/Stars'
-import { dishes } from '../data/mockData'
-import { api, apiMode } from '../services/api'
+import { api } from '../services/api'
 import { useAppState } from '../store/AppState'
 
 const ratingLabels = ['', '不太满意', '有待改进', '还不错', '值得推荐', '好吃到想安利']
@@ -15,18 +14,18 @@ export function ReviewPage() {
   const { dishId: routeDishId } = useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { user, favorites } = useAppState()
+  const { user } = useAppState()
   const [dishId, setDishId] = useState(routeDishId ?? '')
   const [rating, setRating] = useState(0)
   const [content, setContent] = useState('')
   const [images, setImages] = useState<string[]>([])
   const [dishPicker, setDishPicker] = useState(!routeDishId)
-  const dishQuery = useQuery({ queryKey: ['dish', dishId, favorites], queryFn: () => api.getDish(dishId, favorites), enabled: Boolean(dishId) })
+  const dishQuery = useQuery({ queryKey: ['dish', dishId], queryFn: () => api.getDish(dishId), enabled: Boolean(dishId) })
   const dishOptionsQuery = useQuery({
-    queryKey: ['review-dish-options', favorites],
-    queryFn: () => api.getRecommendations({}, favorites)
+    queryKey: ['review-dish-options'],
+    queryFn: () => api.getRecommendations({})
   })
-  const dishOptions = dishOptionsQuery.data?.items ?? (apiMode === 'mock' ? dishes : [])
+  const dishOptions = dishOptionsQuery.data?.items ?? []
   const selectedDish = dishQuery.data ?? dishOptions.find((dish) => dish.id === dishId)
   const draftKey = `campus-foodie:review-draft:${dishId || 'new'}`
 
@@ -115,7 +114,13 @@ export function ReviewPage() {
           {selectedDish ? <><img src={selectedDish.image} alt="" /><span><small>正在评价</small><strong>{selectedDish.name}</strong></span></> : <><span className="selector-placeholder">🍜</span><span><small>先选择吃过的菜品</small><strong>选择菜品或套餐</strong></span></>}
           <ChevronDown size={19} />
         </button>
-        {dishPicker && <div className="dish-picker-list">{dishOptions.map((dish) => <button type="button" key={dish.id} onClick={() => { setDishId(dish.id); setDishPicker(false); setRating(0); setContent(''); setImages([]) }}><img src={dish.image} alt="" /><span><strong>{dish.name}</strong><small>{dish.category} · ¥{dish.price}</small></span>{dishId === dish.id && <CheckCircle2 size={18} />}</button>)}</div>}
+        {dishPicker && (
+          <div className="dish-picker-list">
+            {dishOptions.map((dish) => <button type="button" key={dish.id} onClick={() => { setDishId(dish.id); setDishPicker(false); setRating(0); setContent(''); setImages([]) }}><img src={dish.image} alt="" /><span><strong>{dish.name}</strong><small>{dish.category} · ¥{dish.price}</small></span>{dishId === dish.id && <CheckCircle2 size={18} />}</button>)}
+            {dishOptionsQuery.isLoading && <span className="catalog-inline-state">正在读取菜品…</span>}
+            {dishOptionsQuery.isError && <button type="button" onClick={() => dishOptionsQuery.refetch()}>菜品读取失败，点击重试</button>}
+          </div>
+        )}
       </section>
 
       <section className="rating-panel"><span className="eyebrow">这次吃得怎么样？</span><RatingInput value={rating} onChange={setRating} /><strong className={rating ? 'has-value' : ''}>{helper}</strong></section>

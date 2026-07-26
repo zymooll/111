@@ -96,10 +96,10 @@ Campus Foodie 是一个面向校园场景的智能饮食推荐系统。系统以
 
 ```mermaid
 flowchart LR
-    U["学生 / 游客"] --> UW["用户端 React PWA\n端口 5173"]
-    A["管理员"] --> AW["管理端 React Web\n端口 5174"]
+    U["学生 / 游客"] --> UW["用户端 React PWA\n端口 7991"]
+    A["管理员"] --> AW["管理端 React Web\n端口 7992"]
 
-    UW -->|"/api/v1"| API["FastAPI 模块化 API\n端口 8000"]
+    UW -->|"/api/v1"| API["FastAPI 模块化 API\n端口 7993"]
     AW -->|"/admin/api/v1"| API
 
     API --> DB[("SQLite / PostgreSQL")]
@@ -190,7 +190,7 @@ flowchart LR
 
 ## 9. 管理端功能设计
 
-管理端使用独立端口 `5174` 和独立登录态，避免用户令牌与管理员令牌混用。
+管理端使用独立端口 `7992` 和独立登录态，避免用户令牌与管理员令牌混用。
 
 ### 9.1 用户管理
 
@@ -418,8 +418,8 @@ erDiagram
 - 地图 API 返回 GeoJSON，并明确 `coordinate_system`。
 - 低缩放级别按 Web-Mercator 像素网格进行服务端聚合。
 - 普通点包含 `is_favorite`，聚合点包含 `has_favorite`。
-- 管理端地图选点输出 WGS-84 坐标。
-- 正式导入商业地图数据时，应提供准确的 GCJ-02 坐标或接入合规转换服务。
+- 管理端地图选点只输出 WGS-84 坐标，GCJ-02 由服务端换算后保存。
+- 已有准确 GCJ-02 数据的批量导入可显式提供该列，服务端按给定值保存。
 
 ## 16. 安全与隐私设计
 
@@ -469,14 +469,16 @@ erDiagram
 
 ### 18.1 本地开发端口
 
+端口的权威定义见 `README.md` 的端口表，本节只列出对应地址。
+
 | 服务 | 默认地址 |
 | --- | --- |
-| 用户端 | `http://localhost:5173` |
-| 管理端 | `http://localhost:5174` |
-| FastAPI | `http://localhost:8000` |
-| Swagger UI | `http://localhost:8000/docs` |
-| ReDoc | `http://localhost:8000/redoc` |
-| OpenAPI | `http://localhost:8000/openapi.json` |
+| 用户端 | `http://127.0.0.1:7991` |
+| 管理端 | `http://127.0.0.1:7992` |
+| FastAPI | `http://127.0.0.1:7993` |
+| Swagger UI | `http://127.0.0.1:7993/docs` |
+| ReDoc | `http://127.0.0.1:7993/redoc` |
+| OpenAPI | `http://127.0.0.1:7993/openapi.json` |
 
 ### 18.2 本地启动命令
 
@@ -484,7 +486,7 @@ erDiagram
 # 后端
 & 'C:\Python313\python.exe' -m venv .venv
 & '.\.venv\Scripts\python.exe' -m pip install -e '.\backend[dev,postgres,redis]'
-& '.\.venv\Scripts\python.exe' -m uvicorn app.main:app --app-dir backend --reload --port 8000
+& '.\.venv\Scripts\python.exe' -m uvicorn app.main:app --app-dir backend --reload --port 7993
 
 # 前端
 pnpm install
@@ -823,9 +825,9 @@ HTTP 写请求支持 `Idempotency-Key`，相同请求可以安全重放；收藏
 
 API 文档入口：
 
-- Swagger UI：`http://127.0.0.1:8000/docs`
-- ReDoc：`http://127.0.0.1:8000/redoc`
-- OpenAPI：`http://127.0.0.1:8000/openapi.json`
+- Swagger UI：`http://127.0.0.1:7993/docs`
+- ReDoc：`http://127.0.0.1:7993/redoc`
+- OpenAPI：`http://127.0.0.1:7993/openapi.json`
 - 人工维护接口文档：`backend/API.md`
 - 验收矩阵：`docs/REQUIREMENTS.md`
 

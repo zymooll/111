@@ -49,7 +49,7 @@ export function LoginPage() {
           <div className="login-security"><SafetyCertificateOutlined /></div>
           <Typography.Title level={2}>管理端登录</Typography.Title>
           <Typography.Paragraph type="secondary">请使用管理员账号继续</Typography.Paragraph>
-          {apiMode !== 'remote' && (
+          {apiMode === 'mock' && (
             <Alert
               type="info"
               showIcon
@@ -61,7 +61,7 @@ export function LoginPage() {
           <Form<LoginForm>
             layout="vertical"
             size="large"
-            initialValues={apiMode !== 'remote' ? { username: 'admin', password: 'admin123' } : undefined}
+            initialValues={apiMode === 'mock' ? { username: 'admin', password: 'admin123' } : undefined}
             onFinish={submit}
             requiredMark={false}
           >

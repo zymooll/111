@@ -1,15 +1,22 @@
 import { DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, SearchOutlined, StopOutlined, TagsOutlined, UploadOutlined } from '@ant-design/icons';
-import { App, Button, Card, Form, Input, InputNumber, Modal, Select, Space, Table, Tabs, Tag, Tooltip } from 'antd';
+import { App, Button, Card, Form, Input, InputNumber, Modal, Select, Space, Table, Tabs, Tag, Tooltip, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useCallback, useEffect, useState } from 'react';
 import { adminApi } from '../api/client';
+import { CursorPagination } from '../components/CursorPagination';
 import { LocationPicker } from '../components/LocationPicker';
+import { MerchantSelect } from '../components/MerchantSelect';
 import { PageHeader } from '../components/PageHeader';
 import { StatusTag } from '../components/StatusTag';
 import { CAMPUS_CENTER_WGS84 } from '../constants/campus';
-import type { CatalogMetadata, MenuItem, Merchant, PublishStatus, TagDefinition } from '../types';
+import { useCursorList } from '../hooks/useCursorList';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
+import type { CatalogMetadata, CursorQuery, MenuItem, Merchant, PublishStatus, TagDefinition } from '../types';
 
 const emptyMetadata: CatalogMetadata = { areas: [], categories: [], tags: [] };
+const pageSize = 10;
+const publishOptions = [{ value: 'online', label: '已上架' }, { value: 'offline', label: '已下架' }];
+const publishFilterOptions = [{ value: '', label: '全部状态' }, ...publishOptions];
 const tagKindOptions = [
   { value: 'taste', label: '口味' },
   { value: 'diet', label: '饮食偏好' },
@@ -17,6 +24,20 @@ const tagKindOptions = [
 const tagKindLabels: Record<string, string> = Object.fromEntries(
   tagKindOptions.map((item) => [item.value, item.label]),
 );
+
+function useCatalogMetadata() {
+  const [metadata, setMetadata] = useState<CatalogMetadata>(emptyMetadata);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    adminApi.catalogMetadata(controller.signal)
+      .then((value) => { if (!controller.signal.aborted) setMetadata(value); })
+      .catch(() => undefined);
+    return () => controller.abort();
+  }, []);
+
+  return metadata;
+}
 
 export function CatalogPage() {
   return (
@@ -38,51 +59,42 @@ export function CatalogPage() {
 
 function MerchantPanel() {
   const { message, modal } = App.useApp();
-  const [items, setItems] = useState<Merchant[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(false);
   const [keyword, setKeyword] = useState('');
   const [status, setStatus] = useState('');
-  const [page, setPage] = useState(1);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Merchant>();
   const [saving, setSaving] = useState(false);
-  const [metadata, setMetadata] = useState<CatalogMetadata>(emptyMetadata);
   const [form] = Form.useForm<Merchant>();
   const latitude = Form.useWatch('latitude', form);
   const longitude = Form.useWatch('longitude', form);
+  const metadata = useCatalogMetadata();
+  const search = useDebouncedValue(keyword);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [result, metadataResult] = await Promise.all([
-        adminApi.merchants({ keyword, status, page, pageSize: 10 }),
-        adminApi.catalogMetadata(),
-      ]);
-      setMetadata(metadataResult);
-      setItems(result.items.map((item) => ({
-        ...item,
-        area: metadataResult.areas.find((entry) => entry.id === item.areaId)?.name ?? item.area,
-        category: metadataResult.categories.find((entry) => entry.id === item.categoryId)?.name ?? item.category,
-      })));
-      setTotal(result.total);
-    } catch (error) {
-      message.error(error instanceof Error ? error.message : '商家列表加载失败');
-    } finally {
-      setLoading(false);
-    }
-  }, [keyword, message, page, status]);
+  const handleError = useCallback((error: unknown) => {
+    message.error(error instanceof Error ? error.message : '商家列表加载失败');
+  }, [message]);
 
-  useEffect(() => { void load(); }, [load]);
+  const loadPage = useCallback(
+    (query: CursorQuery, signal: AbortSignal) => adminApi.merchants({
+      ...query,
+      search: search.trim() || undefined,
+      active: status === '' ? undefined : status === 'online',
+    }, signal),
+    [search, status],
+  );
+
+  const list = useCursorList(loadPage, pageSize, handleError);
 
   const edit = (record?: Merchant) => {
     setEditing(record);
     form.resetFields();
-    form.setFieldsValue(record ? {
-      ...record,
-      areaId: record.areaId ?? metadata.areas.find((entry) => entry.name === record.area)?.id,
-      categoryId: record.categoryId ?? metadata.categories.find((entry) => entry.name === record.category)?.id,
-    } : ({ status: 'draft', openingHours: '10:00-20:00', latitude: CAMPUS_CENTER_WGS84.latitude, longitude: CAMPUS_CENTER_WGS84.longitude, priceLevel: 2 } as Merchant));
+    form.setFieldsValue(record ?? ({
+      status: 'offline',
+      openingHours: '10:00-20:00',
+      latitude: CAMPUS_CENTER_WGS84.latitude,
+      longitude: CAMPUS_CENTER_WGS84.longitude,
+      priceLevel: 2,
+    } as Merchant));
     setOpen(true);
   };
 
@@ -90,15 +102,10 @@ function MerchantPanel() {
     const values = await form.validateFields();
     setSaving(true);
     try {
-      await adminApi.saveMerchant({
-        ...editing,
-        ...values,
-        area: metadata.areas.find((entry) => entry.id === values.areaId)?.name ?? editing?.area ?? '未分区',
-        category: metadata.categories.find((entry) => entry.id === values.categoryId)?.name ?? editing?.category ?? '未分类',
-      });
+      await adminApi.saveMerchant({ ...editing, ...values });
       message.success(editing ? '商家信息已更新' : '商家已创建');
       setOpen(false);
-      await load();
+      if (editing) list.reload(); else list.reset();
     } catch (error) {
       message.error(error instanceof Error ? error.message : '保存失败');
     } finally {
@@ -109,27 +116,19 @@ function MerchantPanel() {
   const changeStatus = (record: Merchant, next: PublishStatus) => {
     modal.confirm({
       title: `${next === 'online' ? '上架' : '下架'}商家“${record.name}”？`,
-      content: next === 'offline' ? '商家下架后不会出现在搜索、推荐和地图结果中。' : '请确认营业信息和菜品数据已完成核验。',
+      content: next === 'offline'
+        ? '下架后商家不会出现在搜索、推荐和地图结果中；档案、历史评价和审计记录仍会保留。'
+        : '请确认营业信息和菜品数据已完成核验。',
       okText: `确认${next === 'online' ? '上架' : '下架'}`,
       okButtonProps: { danger: next === 'offline' },
       async onOk() {
-        await adminApi.updateMerchantStatus(record.id, next);
-        message.success(`商家已${next === 'online' ? '上架' : '下架'}`);
-        await load();
-      },
-    });
-  };
-
-  const remove = (record: Merchant) => {
-    modal.confirm({
-      title: `删除商家“${record.name}”？`,
-      content: '管理端将执行软删除，关联菜品停止展示；历史评价和审计记录仍会保留。',
-      okText: '确认删除',
-      okButtonProps: { danger: true },
-      async onOk() {
-        await adminApi.deleteMerchant(record.id);
-        message.success('商家档案已删除');
-        await load();
+        try {
+          await adminApi.updateMerchantStatus(record.id, next);
+          message.success(`商家已${next === 'online' ? '上架' : '下架'}`);
+          list.reload();
+        } catch (error) {
+          message.error(error instanceof Error ? error.message : '商家状态更新失败');
+        }
       },
     });
   };
@@ -144,13 +143,12 @@ function MerchantPanel() {
     { title: '收藏', dataIndex: 'favoriteCount', width: 90 },
     { title: '营业时间', dataIndex: 'openingHours', width: 130 },
     {
-      title: '操作', key: 'actions', fixed: 'right', width: 110,
+      title: '操作', key: 'actions', fixed: 'right', width: 90,
       render: (_, record) => <Space size={2}>
         <Tooltip title="编辑"><Button type="text" icon={<EditOutlined />} onClick={() => edit(record)} /></Tooltip>
         {record.status === 'online'
           ? <Tooltip title="下架"><Button danger type="text" icon={<StopOutlined />} onClick={() => changeStatus(record, 'offline')} /></Tooltip>
           : <Tooltip title="上架"><Button type="text" icon={<UploadOutlined />} onClick={() => changeStatus(record, 'online')} /></Tooltip>}
-        {record.status !== 'online' && <Tooltip title="删除"><Button danger type="text" icon={<DeleteOutlined />} onClick={() => remove(record)} /></Tooltip>}
       </Space>,
     },
   ];
@@ -159,28 +157,33 @@ function MerchantPanel() {
     <>
       <div className="table-toolbar">
         <Space wrap>
-          <Input allowClear prefix={<SearchOutlined />} placeholder="搜索商家、区域或类别" value={keyword} onChange={(event) => { setKeyword(event.target.value); setPage(1); }} className="wide-search" />
-          <Select value={status} onChange={(value) => { setStatus(value); setPage(1); }} style={{ width: 132 }} options={[{ value: '', label: '全部状态' }, { value: 'online', label: '已上架' }, { value: 'offline', label: '已下架' }, { value: 'draft', label: '草稿' }]} />
+          <Input allowClear prefix={<SearchOutlined />} placeholder="搜索商家名称" value={keyword} onChange={(event) => setKeyword(event.target.value)} className="wide-search" />
+          <Select value={status} onChange={setStatus} style={{ width: 132 }} options={publishFilterOptions} />
         </Space>
-        <Space><Button icon={<ReloadOutlined />} onClick={() => void load()}>刷新</Button><Button type="primary" icon={<PlusOutlined />} onClick={() => edit()}>新增商家</Button></Space>
+        <Space><Button icon={<ReloadOutlined />} onClick={list.reload}>刷新</Button><Button type="primary" icon={<PlusOutlined />} onClick={() => edit()}>新增商家</Button></Space>
       </div>
       <Table
         rowKey="id"
         columns={columns}
-        dataSource={items}
-        loading={loading}
-        scroll={{ x: 1110 }}
-        pagination={{ current: page, pageSize: 10, total, showTotal: (value) => `共 ${value} 家商家`, onChange: setPage }}
+        dataSource={list.items}
+        loading={list.loading}
+        scroll={{ x: 1090 }}
+        pagination={false}
       />
+      <CursorPagination list={list} />
       <Modal title={editing ? '编辑商家' : '新增商家'} width={680} open={open} onCancel={() => setOpen(false)} onOk={() => void save()} confirmLoading={saving} okText="保存">
         <Form form={form} layout="vertical" requiredMark={false} className="modal-form-grid">
           <Form.Item label="商家名称" name="name" rules={[{ required: true, message: '请输入商家名称' }]}><Input placeholder="如：林海餐厅·风味档口" /></Form.Item>
           <Form.Item label="所属区域" name="areaId" rules={[{ required: true, message: '请选择所属区域' }]}><Select showSearch optionFilterProp="label" placeholder="选择校园地点" options={metadata.areas.map((entry) => ({ value: entry.id, label: entry.name }))} /></Form.Item>
           <Form.Item label="餐饮类别" name="categoryId" rules={[{ required: true, message: '请选择餐饮类别' }]}><Select showSearch optionFilterProp="label" options={metadata.categories.map((entry) => ({ value: entry.id, label: entry.name }))} /></Form.Item>
-          <Form.Item label="初始状态" name="status" rules={[{ required: true }]}><Select options={[{ value: 'draft', label: '草稿' }, { value: 'online', label: '已上架' }, { value: 'offline', label: '已下架' }]} /></Form.Item>
+          <Form.Item label="上架状态" name="status" rules={[{ required: true }]}><Select options={publishOptions} /></Form.Item>
           <Form.Item label="详细地址" name="address" rules={[{ required: true, message: '请输入详细地址' }]} className="form-span-2"><Input placeholder="用于地图定位和地点筛选" /></Form.Item>
           <Form.Item label="商家简介" name="description" className="form-span-2"><Input.TextArea rows={3} maxLength={500} showCount placeholder="介绍主营特色、服务信息等" /></Form.Item>
-          <Form.Item label="地图选点（WGS-84）" className="form-span-2">
+          <Form.Item
+            label="地图选点（WGS-84）"
+            className="form-span-2"
+            extra="保存后由服务端换算用户端地图使用的 GCJ-02 坐标，用户端图钉会同步移动。"
+          >
             <LocationPicker
               latitude={latitude}
               longitude={longitude}
@@ -191,7 +194,6 @@ function MerchantPanel() {
           <Form.Item label="经度（WGS-84）" name="longitude" rules={[{ required: true, message: '请输入经度' }]}><InputNumber min={-180} max={180} precision={6} style={{ width: '100%' }} /></Form.Item>
           <Form.Item label="营业时间" name="openingHours" rules={[{ required: true, message: '请输入营业时间' }]}><Input placeholder="06:30-21:00" /></Form.Item>
           <Form.Item label="价格等级" name="priceLevel"><Select options={[1, 2, 3, 4].map((value) => ({ value, label: `${'¥'.repeat(value)} · ${value} 级` }))} /></Form.Item>
-          <Form.Item label="联系电话" name="contact" className="form-span-2"><Input placeholder="商家联系电话（后端接口预留）" /></Form.Item>
         </Form>
       </Modal>
     </>
@@ -200,50 +202,34 @@ function MerchantPanel() {
 
 function MenuItemPanel() {
   const { message, modal } = App.useApp();
-  const [items, setItems] = useState<MenuItem[]>([]);
-  const [merchants, setMerchants] = useState<Merchant[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [keyword, setKeyword] = useState('');
+  const [merchantId, setMerchantId] = useState<string>();
+  const [merchantLabel, setMerchantLabel] = useState<string>();
   const [status, setStatus] = useState('');
-  const [page, setPage] = useState(1);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<MenuItem>();
   const [saving, setSaving] = useState(false);
-  const [metadata, setMetadata] = useState<CatalogMetadata>(emptyMetadata);
   const [form] = Form.useForm<MenuItem>();
+  const metadata = useCatalogMetadata();
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [result, merchantResult, metadataResult] = await Promise.all([
-        adminApi.menuItems({ keyword, status, page, pageSize: 10 }),
-        adminApi.merchants({ page: 1, pageSize: 100 }),
-        adminApi.catalogMetadata(),
-      ]);
-      setMetadata(metadataResult);
-      setItems(result.items.map((item) => ({
-        ...item,
-        category: metadataResult.categories.find((entry) => entry.id === item.categoryId)?.name ?? item.category,
-      })));
-      setTotal(result.total);
-      setMerchants(merchantResult.items);
-    } catch (error) {
-      message.error(error instanceof Error ? error.message : '菜品列表加载失败');
-    } finally {
-      setLoading(false);
-    }
-  }, [keyword, message, page, status]);
+  const handleError = useCallback((error: unknown) => {
+    message.error(error instanceof Error ? error.message : '菜品列表加载失败');
+  }, [message]);
 
-  useEffect(() => { void load(); }, [load]);
+  const loadPage = useCallback(
+    (query: CursorQuery, signal: AbortSignal) => adminApi.menuItems({
+      ...query,
+      merchantId,
+      active: status === '' ? undefined : status === 'online',
+    }, signal),
+    [merchantId, status],
+  );
+
+  const list = useCursorList(loadPage, pageSize, handleError);
 
   const edit = (record?: MenuItem) => {
     setEditing(record);
     form.resetFields();
-    form.setFieldsValue(record ? {
-      ...record,
-      categoryId: record.categoryId ?? metadata.categories.find((entry) => entry.name === record.category)?.id,
-    } : { type: 'dish', status: 'draft', tags: [], imageUrl: '/images/dish-placeholder.webp' });
+    form.setFieldsValue(record ?? { type: 'dish', status: 'offline', tags: [], imageUrl: '/images/dish-placeholder.webp' });
     setOpen(true);
   };
 
@@ -251,14 +237,10 @@ function MenuItemPanel() {
     const values = await form.validateFields();
     setSaving(true);
     try {
-      await adminApi.saveMenuItem({
-        ...editing,
-        ...values,
-        category: metadata.categories.find((entry) => entry.id === values.categoryId)?.name ?? editing?.category ?? '未分类',
-      });
+      await adminApi.saveMenuItem({ ...editing, ...values });
       message.success(editing ? '菜品信息已更新' : '菜品已创建');
       setOpen(false);
-      await load();
+      if (editing) list.reload(); else list.reset();
     } catch (error) {
       message.error(error instanceof Error ? error.message : '保存失败');
     } finally {
@@ -269,27 +251,19 @@ function MenuItemPanel() {
   const changeStatus = (record: MenuItem, next: PublishStatus) => {
     modal.confirm({
       title: `${next === 'online' ? '上架' : '下架'}“${record.name}”？`,
-      content: next === 'offline' ? '下架后该菜品不会参与召回和推荐。' : '上架后将进入用户端的搜索与推荐候选池。',
+      content: next === 'offline'
+        ? '下架后该菜品不会参与召回和推荐；档案、历史评价和审计记录仍会保留。'
+        : '上架后将进入用户端的搜索与推荐候选池。',
       okText: `确认${next === 'online' ? '上架' : '下架'}`,
       okButtonProps: { danger: next === 'offline' },
       async onOk() {
-        await adminApi.updateMenuItemStatus(record.id, next);
-        message.success(`菜品已${next === 'online' ? '上架' : '下架'}`);
-        await load();
-      },
-    });
-  };
-
-  const remove = (record: MenuItem) => {
-    modal.confirm({
-      title: `删除“${record.name}”？`,
-      content: '管理端将执行软删除，历史评价与审计记录仍会保留。',
-      okText: '确认删除',
-      okButtonProps: { danger: true },
-      async onOk() {
-        await adminApi.deleteMenuItem(record.id);
-        message.success('菜品档案已删除');
-        await load();
+        try {
+          await adminApi.updateMenuItemStatus(record.id, next);
+          message.success(`菜品已${next === 'online' ? '上架' : '下架'}`);
+          list.reload();
+        } catch (error) {
+          message.error(error instanceof Error ? error.message : '菜品状态更新失败');
+        }
       },
     });
   };
@@ -303,13 +277,12 @@ function MenuItemPanel() {
     { title: '评价数', dataIndex: 'reviewCount', width: 90 },
     { title: '状态', dataIndex: 'status', width: 100, render: (value) => <StatusTag status={value} /> },
     {
-      title: '操作', key: 'actions', fixed: 'right', width: 170,
+      title: '操作', key: 'actions', fixed: 'right', width: 90,
       render: (_, record) => <Space size={2}>
         <Tooltip title="编辑"><Button type="text" icon={<EditOutlined />} onClick={() => edit(record)} /></Tooltip>
         {record.status === 'online'
           ? <Tooltip title="下架"><Button danger type="text" icon={<StopOutlined />} onClick={() => changeStatus(record, 'offline')} /></Tooltip>
           : <Tooltip title="上架"><Button type="text" icon={<UploadOutlined />} onClick={() => changeStatus(record, 'online')} /></Tooltip>}
-        {record.status !== 'online' && <Tooltip title="删除"><Button danger type="text" icon={<DeleteOutlined />} onClick={() => remove(record)} /></Tooltip>}
       </Space>,
     },
   ];
@@ -318,20 +291,30 @@ function MenuItemPanel() {
     <>
       <div className="table-toolbar">
         <Space wrap>
-          <Input allowClear prefix={<SearchOutlined />} placeholder="搜索菜品、套餐或所属商家" value={keyword} onChange={(event) => { setKeyword(event.target.value); setPage(1); }} className="wide-search" />
-          <Select value={status} onChange={(value) => { setStatus(value); setPage(1); }} style={{ width: 132 }} options={[{ value: '', label: '全部状态' }, { value: 'online', label: '已上架' }, { value: 'offline', label: '已下架' }, { value: 'draft', label: '草稿' }]} />
+          <MerchantSelect
+            allowClear
+            value={merchantId}
+            selectedLabel={merchantLabel}
+            placeholder="按商家筛选"
+            style={{ width: 240 }}
+            onChange={(value, option) => { setMerchantId(value); setMerchantLabel(option?.label); }}
+          />
+          <Select value={status} onChange={setStatus} style={{ width: 132 }} options={publishFilterOptions} />
         </Space>
-        <Space><Button icon={<ReloadOutlined />} onClick={() => void load()}>刷新</Button><Button type="primary" icon={<PlusOutlined />} onClick={() => edit()}>新增菜品 / 套餐</Button></Space>
+        <Space><Button icon={<ReloadOutlined />} onClick={list.reload}>刷新</Button><Button type="primary" icon={<PlusOutlined />} onClick={() => edit()}>新增菜品 / 套餐</Button></Space>
       </div>
-      <Table rowKey="id" columns={columns} dataSource={items} loading={loading} scroll={{ x: 1100 }} pagination={{ current: page, pageSize: 10, total, showTotal: (value) => `共 ${value} 个项目`, onChange: setPage }} />
+      <Table rowKey="id" columns={columns} dataSource={list.items} loading={list.loading} scroll={{ x: 1080 }} pagination={false} />
+      <CursorPagination list={list} />
       <Modal title={editing ? '编辑菜品 / 套餐' : '新增菜品 / 套餐'} width={680} open={open} onCancel={() => setOpen(false)} onOk={() => void save()} confirmLoading={saving} okText="保存">
         <Form form={form} layout="vertical" requiredMark={false} className="modal-form-grid">
           <Form.Item label="名称" name="name" rules={[{ required: true, message: '请输入名称' }]}><Input placeholder="菜品或套餐名称" /></Form.Item>
-          <Form.Item label="所属商家" name="merchantId" rules={[{ required: true, message: '请选择商家' }]}><Select showSearch optionFilterProp="label" options={merchants.map((merchant) => ({ value: merchant.id, label: merchant.name }))} /></Form.Item>
+          <Form.Item label="所属商家" name="merchantId" rules={[{ required: true, message: '请选择商家' }]}>
+            <MerchantSelect selectedLabel={editing?.merchantName} placeholder="输入商家名称检索" />
+          </Form.Item>
           <Form.Item label="类型" name="type" rules={[{ required: true }]}><Select options={[{ value: 'dish', label: '菜品' }, { value: 'combo', label: '套餐' }]} /></Form.Item>
           <Form.Item label="分类" name="categoryId" rules={[{ required: true, message: '请选择分类' }]}><Select showSearch optionFilterProp="label" options={metadata.categories.map((entry) => ({ value: entry.id, label: entry.name }))} /></Form.Item>
           <Form.Item label="价格" name="price" rules={[{ required: true, message: '请输入价格' }]}><InputNumber min={0} precision={2} prefix="¥" style={{ width: '100%' }} /></Form.Item>
-          <Form.Item label="状态" name="status"><Select options={[{ value: 'draft', label: '草稿' }, { value: 'online', label: '已上架' }, { value: 'offline', label: '已下架' }]} /></Form.Item>
+          <Form.Item label="上架状态" name="status"><Select options={publishOptions} /></Form.Item>
           <Form.Item label="简介" name="description" className="form-span-2"><Input.TextArea rows={3} maxLength={500} showCount placeholder="描述主要食材、分量或口味特点" /></Form.Item>
           <Form.Item label="菜品图片 URL" name="imageUrl" className="form-span-2"><Input placeholder="/images/dish-placeholder.webp" /></Form.Item>
           <Form.Item label="口味 / 特征标签" name="tags" className="form-span-2">
@@ -406,9 +389,13 @@ function TagPanel() {
       okText: '确认删除',
       okButtonProps: { danger: true },
       async onOk() {
-        await adminApi.deleteTag(record.id);
-        message.success('标签已删除');
-        await load();
+        try {
+          await adminApi.deleteTag(record.id);
+          message.success('标签已删除');
+          await load();
+        } catch (error) {
+          message.error(error instanceof Error ? error.message : '标签删除失败');
+        }
       },
     });
   };
@@ -504,6 +491,9 @@ function TagPanel() {
         pagination={false}
         scroll={{ x: 720 }}
       />
+      <Typography.Paragraph type="secondary" className="table-note">
+        标签字典由服务端一次性返回全量数据，此处的搜索与类型筛选作用于完整字典。
+      </Typography.Paragraph>
       <Modal
         title={editing ? '编辑标签' : '新增标签'}
         open={open}

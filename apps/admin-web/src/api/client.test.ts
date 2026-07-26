@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { adminApi } from './client';
+import { adminApi, adminRefreshTokenKey, adminTokenKey, onSessionExpired } from './client';
 
 function jsonResponse(value: unknown, status = 200) {
   return new Response(JSON.stringify(value), {
@@ -8,8 +8,13 @@ function jsonResponse(value: unknown, status = 200) {
   });
 }
 
+function authorizationOf(call: unknown[]) {
+  return new Headers((call[1] as RequestInit).headers).get('Authorization');
+}
+
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
   sessionStorage.clear();
 });
 
@@ -26,6 +31,7 @@ describe('admin HTTP adapter', () => {
 
     expect(result).toMatchObject({
       accessToken: 'admin-access-token',
+      refreshToken: 'admin-refresh-token',
       user: { id: 'admin-1', username: 'admin', role: 'super_admin' },
     });
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -55,6 +61,7 @@ describe('admin HTTP adapter', () => {
           text: '味道很好',
           images: [],
           status: 'pending_manual',
+          risk_level: 'medium',
           created_at: '2026-07-18T04:00:00Z',
         }],
       }));
@@ -73,6 +80,7 @@ describe('admin HTTP adapter', () => {
       userName: '同学甲',
       itemName: '番茄牛腩饭',
       status: 'pending_manual',
+      riskLevel: 'medium',
     });
     expect(fetchMock.mock.calls[0][0]).toContain('/dashboard?campus_id=00000000-0000-0000-0000-000000000001');
   });
@@ -95,13 +103,86 @@ describe('admin HTTP adapter', () => {
     }));
     vi.stubGlobal('fetch', fetchMock);
 
-    const result = await adminApi.merchants({ page: 1, pageSize: 10 });
+    const result = await adminApi.merchants({ limit: 10 });
 
     expect(result).toMatchObject({
-      total: 1,
-      items: [expect.objectContaining({ id: 'merchant-1', campusId: '00000000-0000-0000-0000-000000000001' })],
+      hasMore: false,
+      nextCursor: null,
+      items: [expect.objectContaining({ id: 'merchant-1', campusId: '00000000-0000-0000-0000-000000000001', status: 'online' })],
     });
     expect(fetchMock.mock.calls[0][0]).toContain('/merchants?campus_id=00000000-0000-0000-0000-000000000001');
+  });
+
+  it('walks review pages with the server cursor and never sends an offset', async () => {
+    const page = (id: string, nextCursor: string | null) => jsonResponse({
+      items: [{ id, status: 'pending_manual', rating: 4, text: '演示', images: [], risk_level: 'medium' }],
+      total: 42,
+      next_cursor: nextCursor,
+      has_more: nextCursor !== null,
+    });
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(page('review-1', 'cursor-2'))
+      .mockResolvedValueOnce(page('review-2', null));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const first = await adminApi.reviews({ status: 'pending_manual', limit: 10 });
+    const second = await adminApi.reviews({ status: 'pending_manual', limit: 10, cursor: first.nextCursor });
+
+    expect(first).toMatchObject({ nextCursor: 'cursor-2', hasMore: true, total: 42 });
+    expect(first.items[0].id).toBe('review-1');
+    expect(second).toMatchObject({ nextCursor: null, hasMore: false, total: 42 });
+    expect(second.items[0].id).toBe('review-2');
+
+    const urls = fetchMock.mock.calls.map((call) => String(call[0]));
+    expect(urls[0]).toContain('status=pending_manual');
+    expect(urls[0]).toContain('limit=10');
+    expect(urls[0]).not.toContain('cursor=');
+    expect(urls[1]).toContain('cursor=cursor-2');
+    expect(urls.some((url) => url.includes('offset'))).toBe(false);
+  });
+
+  it('renews the access token once for concurrent 401s and replays both requests', async () => {
+    sessionStorage.setItem(adminTokenKey, 'expired-access-token');
+    sessionStorage.setItem(adminRefreshTokenKey, 'stored-refresh-token');
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse({ detail: '登录状态无效' }, 401))
+      .mockResolvedValueOnce(jsonResponse({ detail: '登录状态无效' }, 401))
+      .mockResolvedValueOnce(jsonResponse({
+        access_token: 'fresh-access-token',
+        refresh_token: 'rotated-refresh-token',
+        token_type: 'bearer',
+        expires_in: 3600,
+      }))
+      .mockImplementation(() => Promise.resolve(jsonResponse({ items: [], next_cursor: null, has_more: false })));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await Promise.all([adminApi.users({ limit: 10 }), adminApi.merchants({ limit: 10 })]);
+
+    const urls = fetchMock.mock.calls.map((call) => String(call[0]));
+    expect(urls.filter((url) => url.endsWith('/auth/refresh'))).toHaveLength(1);
+    expect(JSON.parse(String(fetchMock.mock.calls[2][1]?.body))).toEqual({ refresh_token: 'stored-refresh-token' });
+    expect(sessionStorage.getItem(adminTokenKey)).toBe('fresh-access-token');
+    expect(sessionStorage.getItem(adminRefreshTokenKey)).toBe('rotated-refresh-token');
+    expect(authorizationOf(fetchMock.mock.calls[0])).toBe('Bearer expired-access-token');
+    expect(authorizationOf(fetchMock.mock.calls[3])).toBe('Bearer fresh-access-token');
+    expect(authorizationOf(fetchMock.mock.calls[4])).toBe('Bearer fresh-access-token');
+  });
+
+  it('clears the session and notifies listeners when renewal fails', async () => {
+    sessionStorage.setItem(adminTokenKey, 'expired-access-token');
+    sessionStorage.setItem(adminRefreshTokenKey, 'revoked-refresh-token');
+    const expired = vi.fn();
+    const unsubscribe = onSessionExpired(expired);
+    vi.stubGlobal('fetch', vi.fn()
+      .mockResolvedValueOnce(jsonResponse({ detail: '登录状态无效' }, 401))
+      .mockResolvedValueOnce(jsonResponse({ detail: '刷新令牌已撤销' }, 401)));
+
+    await expect(adminApi.auditLogs({ limit: 10 })).rejects.toThrow('登录状态已过期，请重新登录');
+
+    expect(sessionStorage.getItem(adminTokenKey)).toBeNull();
+    expect(sessionStorage.getItem(adminRefreshTokenKey)).toBeNull();
+    expect(expired).toHaveBeenCalledTimes(1);
+    unsubscribe();
   });
 
   it('surfaces FastAPI problem details instead of hiding 4xx errors', async () => {
@@ -112,6 +193,17 @@ describe('admin HTTP adapter', () => {
     }, 401)));
 
     await expect(adminApi.login('admin', 'wrong')).rejects.toThrow('账号或密码错误');
+  });
+
+  it('keeps failed writes visible while read-only data may degrade to demo content', async () => {
+    vi.stubEnv('VITE_API_MODE', 'fallback');
+    vi.resetModules();
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('后端不可达')));
+    const { adminApi: degradable, isFallbackActive } = await import('./client');
+
+    await expect(degradable.updateMerchantStatus('merchant-1', 'offline')).rejects.toThrow('后端不可达');
+    await expect(degradable.merchants({ limit: 10 })).resolves.toMatchObject({ items: expect.any(Array) });
+    expect(isFallbackActive()).toBe(true);
   });
 
   it('normalizes the campus tag dictionary and sends campus-scoped CRUD payloads', async () => {
@@ -158,7 +250,7 @@ describe('admin HTTP adapter', () => {
     expect(fetchMock.mock.calls[3][1]?.method).toBe('DELETE');
   });
 
-  it('preserves coordinates selected by the merchant map in the API payload', async () => {
+  it('submits only the picked WGS-84 coordinates and leaves the GCJ-02 pair to the server', async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse({
       id: 'merchant-map-1',
       campus_id: '00000000-0000-0000-0000-000000000001',
@@ -177,12 +269,12 @@ describe('admin HTTP adapter', () => {
       address: '北区食堂',
       latitude: 31.2312,
       longitude: 121.4758,
-      status: 'draft',
+      status: 'offline',
     });
 
-    expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body))).toMatchObject({
-      latitude: 31.2312,
-      longitude: 121.4758,
-    });
+    const body = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
+    expect(body).toMatchObject({ latitude: 31.2312, longitude: 121.4758, is_active: false });
+    expect(body).not.toHaveProperty('gcj02_latitude');
+    expect(body).not.toHaveProperty('gcj02_longitude');
   });
 });

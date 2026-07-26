@@ -1,7 +1,6 @@
 import {
   AppstoreOutlined,
   AuditOutlined,
-  BellOutlined,
   DownOutlined,
   ImportOutlined,
   LogoutOutlined,
@@ -11,10 +10,10 @@ import {
   StarFilled,
   TeamOutlined,
 } from '@ant-design/icons';
-import { Avatar, Badge, Button, Dropdown, Layout, Menu, Space, Tag, Typography } from 'antd';
-import { useMemo, useState } from 'react';
+import { Avatar, Button, Dropdown, Layout, Menu, Space, Tag, Tooltip, Typography } from 'antd';
+import { useEffect, useMemo, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { apiMode } from '../api/client';
+import { apiMode, isFallbackActive, onFallbackChange } from '../api/client';
 import { useAuth } from '../contexts/AuthContext';
 
 const { Header, Sider, Content } = Layout;
@@ -27,9 +26,12 @@ const roleLabel = {
 
 export function AdminLayout() {
   const [collapsed, setCollapsed] = useState(false);
+  const [degraded, setDegraded] = useState(isFallbackActive);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+
+  useEffect(() => onFallbackChange(setDegraded), []);
 
   const selectedKey = useMemo(() => {
     const match = ['/dashboard', '/users', '/catalog', '/reviews', '/imports', '/audit-logs'].find((path) => location.pathname.startsWith(path));
@@ -59,12 +61,6 @@ export function AdminLayout() {
           onClick={({ key }) => navigate(key)}
           className="admin-menu"
         />
-        {!collapsed && (
-          <div className="sider-tip">
-            <span className="sider-tip-dot" />
-            <div><strong>系统运行正常</strong><span>最近检查：刚刚</span></div>
-          </div>
-        )}
       </Sider>
       <Layout>
         <Header className="admin-header">
@@ -79,28 +75,30 @@ export function AdminLayout() {
               <span>当前校园</span>
               <strong>{user?.campusName}</strong>
             </div>
-            {apiMode !== 'remote' && <Tag color="blue">Mock API</Tag>}
+            {apiMode === 'mock' && <Tag color="blue">Mock API</Tag>}
+            {degraded && (
+              <Tooltip title="后端暂不可用，列表展示的是内置演示数据；写操作仍会真实提交并在失败时报错。">
+                <Tag color="orange">演示数据（后端不可用）</Tag>
+              </Tooltip>
+            )}
           </Space>
-          <Space size="large">
-            <Badge count={3} size="small"><Button type="text" shape="circle" icon={<BellOutlined />} aria-label="通知" /></Badge>
-            <Dropdown
-              menu={{
-                items: [
-                  { key: 'profile', label: <div><strong>{user?.name}</strong><br /><Typography.Text type="secondary">{user ? roleLabel[user.role] : ''}</Typography.Text></div>, disabled: true },
-                  { type: 'divider' },
-                  { key: 'logout', icon: <LogoutOutlined />, label: '退出登录', danger: true },
-                ],
-                onClick: ({ key }) => { if (key === 'logout') logout(); },
-              }}
-              placement="bottomRight"
-            >
-              <Button type="text" className="admin-profile">
-                <Avatar>{user?.name.slice(0, 1)}</Avatar>
-                <span>{user?.name}</span>
-                <DownOutlined />
-              </Button>
-            </Dropdown>
-          </Space>
+          <Dropdown
+            menu={{
+              items: [
+                { key: 'profile', label: <div><strong>{user?.name}</strong><br /><Typography.Text type="secondary">{user ? roleLabel[user.role] : ''}</Typography.Text></div>, disabled: true },
+                { type: 'divider' },
+                { key: 'logout', icon: <LogoutOutlined />, label: '退出登录', danger: true },
+              ],
+              onClick: ({ key }) => { if (key === 'logout') logout(); },
+            }}
+            placement="bottomRight"
+          >
+            <Button type="text" className="admin-profile">
+              <Avatar>{user?.name.slice(0, 1)}</Avatar>
+              <span>{user?.name}</span>
+              <DownOutlined />
+            </Button>
+          </Dropdown>
         </Header>
         <Content className="admin-content"><Outlet /></Content>
       </Layout>
