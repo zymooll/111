@@ -15,11 +15,11 @@ from collections import defaultdict
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from sqlalchemy import String, cast, or_, select
+from sqlalchemy import or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.models import ActorAffinity, InteractionEvent, MenuItem, Merchant
+from app.models import ActorAffinity, InteractionEvent, MenuItem, MenuItemTag, Merchant
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +99,13 @@ def _search_tags(db: Session, campus_id: str, queries: list[str]) -> dict[str, f
                 MenuItem.campus_id == campus_id,
                 or_(
                     MenuItem.name.like(f"%{escaped}%", escape="\\"),
-                    cast(MenuItem.tags, String).like(f"%{escaped}%", escape="\\"),
+                    # 标签匹配走归一化表：LIKE 落在短字符串列上而不是整个 JSON 文本。
+                    select(MenuItemTag.menu_item_id)
+                    .where(
+                        MenuItemTag.menu_item_id == MenuItem.id,
+                        MenuItemTag.tag.like(f"%{escaped}%", escape="\\"),
+                    )
+                    .exists(),
                 ),
             )
             .limit(SEARCH_MATCH_LIMIT)

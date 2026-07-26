@@ -452,7 +452,11 @@ def test_openapi_and_docs_are_hidden_in_production(tmp_path):
         database_url="sqlite://",
         upload_dir=tmp_path / "uploads",
     )
-    app = create_app(settings=settings, database=sqlite_memory_database())
+    database = sqlite_memory_database()
+    # 生产启动刻意跳过 create_all（结构由 alembic 负责），所以这里替 alembic 建好表，
+    # 否则后台任务会在一个空库上跑。
+    database.create_all()
+    app = create_app(settings=settings, database=database)
     with TestClient(app) as client:
         assert client.get("/openapi.json").status_code == 404
         assert client.get("/docs").status_code == 404

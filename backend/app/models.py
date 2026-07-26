@@ -400,6 +400,27 @@ class ImportJob(Base):
     )
 
 
+class MenuItemTag(Base):
+    """Indexed query side for menu item tags.
+
+    ``MenuItem.tags`` 这个 JSON 列继续作为读模型（随对象一起加载，打分和送给 LLM 都用它），
+    但它无法建索引：``cast(tags, String).like('%麻辣%')`` 永远全表扫，而且子串匹配还不精确
+    （"微辣" 会命中 "辣"）。这张表提供精确且可索引的谓词，由 flush 事件自动保持同步，
+    见 app/services/item_tags.py。
+    """
+
+    __tablename__ = "menu_item_tags"
+    __table_args__ = (Index("ix_menu_item_tag_lookup", "campus_id", "tag"),)
+
+    menu_item_id: Mapped[str] = mapped_column(
+        ForeignKey("menu_items.id", ondelete="CASCADE"), primary_key=True
+    )
+    tag: Mapped[str] = mapped_column(String(60), primary_key=True)
+    campus_id: Mapped[str] = mapped_column(
+        ForeignKey("campuses.id", ondelete="CASCADE"), nullable=False
+    )
+
+
 class ActorAffinity(Base):
     """Materialised taste/area affinity, updated incrementally as behaviour arrives.
 
@@ -474,6 +495,34 @@ class RecommendationSnapshot(Base):
         DateTime(timezone=True), default=utcnow, nullable=False
     )
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class RecommendationJob(Base):
+    """Durable queue for the off-request-path recommendation work.
+
+    进程内 deque 在重启或 worker 死亡时会静默丢作业，且 backlog 只存在于内存里、外部读不到。
+    落到表上之后：唯一约束天然去重，未完成的作业跨重启存活，积压量一条 COUNT(*) 就能看到。
+    """
+
+    __tablename__ = "recommendation_jobs"
+    __table_args__ = (
+        UniqueConstraint("dedupe_key", name="uq_recommendation_job_dedupe"),
+        Index("ix_recommendation_job_claim", "state", "created_at"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    kind: Mapped[str] = mapped_column(String(20), nullable=False)
+    dedupe_key: Mapped[str] = mapped_column(String(200), nullable=False)
+    payload: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+    #: pending | running —— 完成即删除，失败超过上限也删除，表里只留待办。
+    state: Mapped[str] = mapped_column(String(20), default="pending", nullable=False)
+    attempts: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, nullable=False
+    )
+    claimed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
 
 class IdempotencyRecord(Base):

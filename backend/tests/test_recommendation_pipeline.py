@@ -151,7 +151,7 @@ def test_model_failure_leaves_the_deterministic_snapshot_serving(client, demo_id
 
     assert after.headers["X-Recommendation-Source"] == SOURCE_DETERMINISTIC
     assert page_ids(after) == before
-    assert client.app.state.recommendations.metrics["enrich_failed"] == 1
+    assert client.app.state.recommendations.enrich_failed == {"no_usable_ordering": 1}
 
 
 def test_breaker_stops_calling_a_dead_model(client, demo_ids, monkeypatch):
@@ -170,7 +170,7 @@ def test_breaker_stops_calling_a_dead_model(client, demo_ids, monkeypatch):
         drain_recommendations(client)
 
     assert len(attempts) == service._breaker.threshold, "熔断后不应再打模型"
-    assert service.metrics["enrich_skipped"] >= 1
+    assert service.enrich_skipped.get("breaker_open", 0) >= 1
 
 
 def test_expired_snapshot_is_served_stale_then_rebuilt(client, demo_ids):

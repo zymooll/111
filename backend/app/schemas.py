@@ -492,6 +492,21 @@ class ImportJobRead(BaseModel):
     created_at: datetime
 
 
+class RecommendationHealth(BaseModel):
+    """推荐流水线的只读运维视图。"""
+
+    ai_configured: bool
+    breaker_open: bool
+    cache: dict[str, int]
+    cache_hit_ratio: float | None
+    enrich_failed: dict[str, int]
+    enrich_skipped: dict[str, int]
+    backlog: dict[str, int]
+    snapshots: dict[str, int]
+    ai_snapshot_share: float | None
+    profiled_actors: int
+
+
 class ImportJobDetailRead(ImportJobRead):
     """列表只给摘要，逐行错误报告单独取，避免列表响应被错误明细撑大。"""
 

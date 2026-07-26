@@ -3,11 +3,11 @@ from __future__ import annotations
 from typing import Annotated, Any
 
 from fastapi import APIRouter, HTTPException, Query
-from sqlalchemy import String, cast, or_, select
+from sqlalchemy import or_, select
 
 from app.api.presenters import favorite_merchant_ids
 from app.dependencies import DbSession, OptionalPrincipal
-from app.models import MenuItem, Merchant
+from app.models import MenuItem, MenuItemTag, Merchant
 from app.services.campuses import require_campus, require_category
 from app.services.hierarchy import category_with_descendants
 from app.services.map_clusters import merchant_geojson
@@ -81,12 +81,15 @@ def map_merchants(
             )
         )
     if taste:
+        # 走归一化表做精确匹配：原先的 JSON 子串匹配既无法建索引，又会让"辣"命中"微辣"。
         query = query.where(
             Merchant.id.in_(
-                select(MenuItem.merchant_id).where(
+                select(MenuItem.merchant_id)
+                .join(MenuItemTag, MenuItemTag.menu_item_id == MenuItem.id)
+                .where(
                     MenuItem.campus_id == campus_id,
                     MenuItem.is_active.is_(True),
-                    cast(MenuItem.tags, String).like(f"%{taste}%"),
+                    MenuItemTag.tag == taste,
                 )
             )
         )

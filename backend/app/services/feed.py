@@ -12,15 +12,15 @@ from __future__ import annotations
 import asyncio
 import logging
 import threading
-from collections import deque
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import String, and_, cast, or_, select
+from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
 
-from app.models import MenuItem, Merchant
+from app.models import MenuItem, MenuItemTag, Merchant
+from app.services import jobs
 from app.services.campuses import require_area, require_category
 from app.services.deepseek import DeepSeekClient
 from app.services.hierarchy import area_with_descendants, category_with_descendants
@@ -136,9 +136,16 @@ def recall_candidates(
             )
         )
     # 忌口在 SQL 里排除，否则 LIMIT 之后再过滤会凭空少掉候选。
-    for avoided in _string_list(preferences.get("avoid")):
+    # 走归一化表：精确匹配且可用 (campus_id, tag) 索引，不再对 JSON 列做全表 LIKE。
+    avoided = _string_list(preferences.get("avoid"))
+    if avoided:
         conditions.append(
-            cast(MenuItem.tags, String).notlike(f"%{_escape_like(avoided)}%", escape="\\")
+            ~select(MenuItemTag.menu_item_id)
+            .where(
+                MenuItemTag.menu_item_id == MenuItem.id,
+                MenuItemTag.tag.in_(avoided),
+            )
+            .exists()
         )
 
     return list(
@@ -269,6 +276,29 @@ class _Job:
     preferences: dict[str, Any] = field(default_factory=dict)
     favorites: frozenset[str] = frozenset()
 
+    def to_payload(self) -> dict[str, Any]:
+        return {
+            "snapshot_id": self.snapshot_id,
+            "key": asdict(self.key) if self.key else None,
+            "query": asdict(self.query) if self.query else None,
+            "preferences": self.preferences,
+            "favorites": sorted(self.favorites),
+        }
+
+    @classmethod
+    def from_record(cls, kind: str, dedupe: str, payload: dict[str, Any]) -> _Job:
+        key = payload.get("key")
+        query = payload.get("query")
+        return cls(
+            kind=kind,
+            dedupe=dedupe,
+            snapshot_id=payload.get("snapshot_id"),
+            key=SnapshotKey(**key) if key else None,
+            query=FeedQuery(**query) if query else None,
+            preferences=dict(payload.get("preferences") or {}),
+            favorites=frozenset(payload.get("favorites") or ()),
+        )
+
 
 class RecommendationService:
     """Owns the snapshot lifecycle: build fast, enrich slowly, serve from cache."""
@@ -281,9 +311,6 @@ class RecommendationService:
         # 不能用 asyncio 的版本——它们只在事件循环线程内成立。
         self._locks: dict[str, threading.Lock] = {}
         self._locks_guard = threading.Lock()
-        self._queue: deque[_Job] = deque()
-        self._queue_guard = threading.Lock()
-        self._queued: set[str] = set()
         self._breaker = _Breaker(
             threshold=settings.recommendation_breaker_threshold,
             cooldown_seconds=settings.recommendation_breaker_cooldown_seconds,
@@ -293,15 +320,19 @@ class RecommendationService:
             "stale": 0,
             "miss": 0,
             "enriched": 0,
-            "enrich_failed": 0,
-            "enrich_skipped": 0,
-            "queue_dropped": 0,
             "build_contended": 0,
         }
+        # 失败与跳过按原因分维度：只有一个总数时，运维分不清是模型超时还是熔断打开。
+        self.enrich_failed: dict[str, int] = {}
+        self.enrich_skipped: dict[str, int] = {}
 
     @property
     def ai_enabled(self) -> bool:
         return bool(self.settings.deepseek_api_key)
+
+    def breaker_allows_now(self) -> bool:
+        """Whether an enrichment attempt would be let through right now."""
+        return self._breaker.opened_at is None
 
     def _lock_for(self, key: str) -> threading.Lock:
         with self._locks_guard:
@@ -318,21 +349,15 @@ class RecommendationService:
                 self._locks[key] = lock
             return lock
 
-    def _enqueue(self, job: _Job) -> None:
-        with self._queue_guard:
-            if job.dedupe in self._queued:
-                return
-            if len(self._queue) >= self.settings.recommendation_queue_size:
-                # 队列满说明后台已经忙不过来；丢弃增强作业而不是拖慢用户读路径。
-                self.metrics["queue_dropped"] += 1
-                logger.warning("Recommendation job queue full; dropped a %s job", job.kind)
-                return
-            self._queue.append(job)
-            self._queued.add(job.dedupe)
+    def _count(self, bucket: dict[str, int], reason: str) -> None:
+        bucket[reason] = bucket.get(reason, 0) + 1
 
-    def _dequeue(self) -> _Job | None:
-        with self._queue_guard:
-            return self._queue.popleft() if self._queue else None
+    def _enqueue(self, job: _Job) -> None:
+        """Persist the job. 唯一约束负责去重，重启也不会把待办丢掉。"""
+        with self.database.session_factory() as db:
+            jobs.enqueue(
+                db, kind=job.kind, dedupe_key=job.dedupe, payload=job.to_payload()
+            )
 
     def build_snapshot(
         self,
@@ -429,14 +454,19 @@ class RecommendationService:
     async def _enrich(self, job: _Job) -> None:
         loop_now = asyncio.get_running_loop().time()
         if not self._breaker.allow(loop_now):
-            self.metrics["enrich_skipped"] += 1
+            self._count(self.enrich_skipped, "breaker_open")
             return
         with self.database.session_factory() as db:
             snapshot = self.store.by_id(db, str(job.snapshot_id))
-            if snapshot is None or snapshot.source == SOURCE_AI:
+            if snapshot is None:
+                self._count(self.enrich_skipped, "snapshot_gone")
+                return
+            if snapshot.source == SOURCE_AI:
+                self._count(self.enrich_skipped, "already_enriched")
                 return
             head = snapshot.ranked_item_ids[: self.settings.recommendation_ai_candidates]
             if not head:
+                self._count(self.enrich_skipped, "empty_snapshot")
                 return
             rows = db.execute(
                 select(MenuItem, Merchant)
@@ -456,12 +486,13 @@ class RecommendationService:
                 for item, merchant in (by_id[item_id] for item_id in head if item_id in by_id)
             ]
             if not candidates:
+                self._count(self.enrich_skipped, "no_live_candidates")
                 return
 
             ai_reasons = await DeepSeekClient(self.settings).rerank(candidates, job.preferences)
             self._breaker.record(ok=ai_reasons is not None, now=loop_now)
             if not ai_reasons:
-                self.metrics["enrich_failed"] += 1
+                self._count(self.enrich_failed, "no_usable_ordering")
                 logger.info(
                     "DeepSeek rerank produced no usable ordering for snapshot %s", snapshot.id
                 )
@@ -496,7 +527,9 @@ class RecommendationService:
             )
         self.schedule_enrichment(snapshot, preferences=job.preferences)
 
-    async def _process(self, job: _Job) -> None:
+    async def _process(self, record: jobs.Job) -> bool:
+        """Run one claimed job. Returns whether it succeeded."""
+        job = _Job.from_record(record.kind, record.dedupe_key, record.payload)
         try:
             if job.kind == "enrich":
                 await self._enrich(job)
@@ -504,26 +537,52 @@ class RecommendationService:
                 await self._rebuild(job)
         except Exception:  # noqa: BLE001 - 后台任务不得因单个作业失败而退出
             logger.warning("Recommendation %s job failed", job.kind, exc_info=True)
-        finally:
-            self._queued.discard(job.dedupe)
+            return False
+        return True
 
-    async def drain(self) -> int:
+    async def _run_once(self) -> bool:
+        """Claim and process a single job; False when the queue is empty."""
+        with self.database.session_factory() as db:
+            record = jobs.claim(db)
+        if record is None:
+            return False
+        succeeded = await self._process(record)
+        with self.database.session_factory() as db:
+            jobs.finish(db, record) if succeeded else jobs.fail(db, record)
+        return True
+
+    async def drain(self, limit: int = 500) -> int:
         """Process everything queued right now. Tests use this instead of sleeping."""
         processed = 0
-        while (job := self._dequeue()) is not None:
-            await self._process(job)
+        while processed < limit and await self._run_once():
             processed += 1
         return processed
 
-    async def run_worker(self, poll_seconds: float = 0.2) -> None:
-        """Consume jobs produced by request threads.
+    def backlog(self) -> dict[str, int]:
+        with self.database.session_factory() as db:
+            return jobs.backlog(db)
 
-        队列是线程安全的普通 deque，所以这里用轮询而不是 asyncio 的等待原语——避免在
-        请求线程里去唤醒事件循环，那是跨线程调用 asyncio 对象的经典错误来源。
+    async def run_worker(self, poll_seconds: float = 0.2) -> None:
+        """Consume jobs from the durable queue.
+
+        用轮询而不是 asyncio 等待原语：作业由请求线程写进数据库，跨线程唤醒事件循环是
+        经典的错误来源。空闲时每轮只有一条带索引的 SELECT，代价可以忽略。
         """
+        ticks = 0
         while True:
-            job = self._dequeue()
-            if job is None:
-                await asyncio.sleep(poll_seconds)
+            # 每一轮都自成一个失败域：一次瞬时数据库错误不该永久杀死后台增强。
+            try:
+                if ticks % 300 == 0:
+                    # 定期把死掉的 worker 领走却没做完的作业放回待办。
+                    with self.database.session_factory() as db:
+                        jobs.release_stale(db)
+                ticks += 1
+                if await self._run_once():
+                    continue
+            except asyncio.CancelledError:
+                raise
+            except Exception:  # noqa: BLE001
+                logger.warning("Recommendation worker tick failed; retrying", exc_info=True)
+                await asyncio.sleep(max(poll_seconds, 1.0))
                 continue
-            await self._process(job)
+            await asyncio.sleep(poll_seconds)

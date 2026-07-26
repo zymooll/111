@@ -18,6 +18,9 @@ from app.api.router import router as api_router
 from app.config import Settings, get_settings
 from app.database import Database
 from app.seed import seed_demo_data
+
+# 导入即注册 MenuItem.tags 与 menu_item_tags 的 flush 同步监听器，必须在任何写入之前发生。
+from app.services import item_tags  # noqa: F401
 from app.services.feed import RecommendationService
 from app.services.idempotency import idempotency_middleware
 from app.services.rate_limit import RateLimiter

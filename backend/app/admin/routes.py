@@ -14,6 +14,7 @@ from app.models import (
     Favorite,
     InteractionEvent,
     MenuItem,
+    MenuItemTag,
     Merchant,
     Review,
     ReviewStatus,
@@ -639,11 +640,19 @@ def update_tag(
     for key, value in changes.items():
         setattr(tag, key, value)
     if tag.name != old_name:
-        for item in db.scalars(
-            select(MenuItem).where(MenuItem.campus_id == campus_id)
-        ).all():
-            if old_name in (item.tags or []):
-                item.tags = [tag.name if value == old_name else value for value in item.tags]
+        # 先用索引定位受影响的菜品，只加载这一小撮；JSON 列改完由 flush 事件同步归一化表。
+        affected = db.scalars(
+            select(MenuItemTag.menu_item_id).where(
+                MenuItemTag.campus_id == campus_id, MenuItemTag.tag == old_name
+            )
+        ).all()
+        if affected:
+            for item in db.scalars(
+                select(MenuItem).where(MenuItem.id.in_(affected))
+            ).all():
+                item.tags = [
+                    tag.name if value == old_name else value for value in (item.tags or [])
+                ]
     _audit(
         db,
         admin,
@@ -664,13 +673,12 @@ def delete_tag(
 ) -> Message:
     require_campus(db, campus_id)
     tag = require_tag(db, campus_id, tag_id)
-    referenced = any(
-        tag.name in (item.tags or [])
-        for item in db.scalars(
-            select(MenuItem).where(MenuItem.campus_id == campus_id)
-        ).all()
+    referenced = db.scalar(
+        select(MenuItemTag.menu_item_id)
+        .where(MenuItemTag.campus_id == campus_id, MenuItemTag.tag == tag.name)
+        .limit(1)
     )
-    if referenced:
+    if referenced is not None:
         raise HTTPException(status_code=409, detail="标签已被菜品引用，不能删除")
     _audit(
         db,
