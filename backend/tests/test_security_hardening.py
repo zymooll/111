@@ -107,9 +107,12 @@ def _make_scoped_admin(client, *, campus_id: str | None, role: str) -> dict[str,
     with database.session_factory() as db:
         from app.security import hash_password
 
+        # username 是 String(50)：SQLite 不校验长度，PostgreSQL 会直接拒绝，
+        # 所以这里必须用短标识而不是把整个 uuid 拼进去。
+        tag = f"{role}-{(campus_id or 'none')[-6:]}"
         admin = User(
-            username=f"scoped-{role}-{campus_id or 'none'}",
-            email=f"scoped-{role}-{campus_id or 'none'}@example.com",
+            username=f"scoped-{tag}",
+            email=f"scoped-{tag}@example.com",
             password_hash=hash_password("Scoped123!"),
             role=role,
             managed_campus_id=campus_id,

@@ -13,14 +13,19 @@ from app.models import MenuItem, Merchant, Review, ReviewStatus
 def lock_menu_item(db: Session, menu_item_id: str) -> MenuItem | None:
     """Serialise concurrent recalculations of one item's aggregates.
 
+    锁强度必须是 FOR NO KEY UPDATE 而不是 FOR UPDATE。调用方通常刚往 reviews 插入一行，
+    而外键会让 PostgreSQL 对被引用的 menu_items 行持有 FOR KEY SHARE；FOR UPDATE 与之
+    冲突，多个事务同时想从共享锁升级上来就会互相等待，直接死锁（CI 的 PostgreSQL 作业
+    实测复现）。FOR NO KEY UPDATE 与 FOR KEY SHARE 不冲突，但仍与自身冲突，因此并发重算
+    照样串行化——而我们改的 review_count / rating_avg 本来就是非键列。
+
     必须显式发查询而不是 db.get()：后者命中身份映射时根本不发 SQL，锁也就不存在。
-    populate_existing 保证拿到的是加锁后的最新值。SQLite 不支持 FOR UPDATE，
-    SQLAlchemy 会把它编译成空——那里写入本来就被全局写锁串行化，语义一致。
+    SQLite 不支持行锁语法，SQLAlchemy 会把它编译成空——那里写入本来就被全局写锁串行化。
     """
     return db.execute(
         select(MenuItem)
         .where(MenuItem.id == menu_item_id)
-        .with_for_update()
+        .with_for_update(key_share=True)
         .execution_options(populate_existing=True)
     ).scalars().first()
 

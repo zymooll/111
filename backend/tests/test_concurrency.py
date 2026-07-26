@@ -185,21 +185,24 @@ def test_rating_recalculation_counts_every_concurrent_review(concurrent_db):
     )
 
 
-def test_rating_recalculation_takes_a_row_lock_on_postgres():
-    """SQLite 上写入本来就串行，竞态只在 PostgreSQL 出现——这里断言锁真的会被发出。
+def test_rating_recalculation_uses_a_deadlock_free_lock_mode():
+    """锁强度必须恰好是 FOR NO KEY UPDATE。
 
-    端到端的并发验证由上面的用例在 CI_DATABASE_URL 指向 PostgreSQL 时完成；本用例保证
-    即便在本地 SQLite 下开发，也不会有人不小心把 FOR UPDATE 去掉。
+    调用方刚往 reviews 插过一行，外键会让 PostgreSQL 持有该 menu_items 行的
+    FOR KEY SHARE。FOR UPDATE 与之冲突，多个事务同时从共享锁升级就会死锁；
+    FOR NO KEY UPDATE 不与 KEY SHARE 冲突，但仍与自身冲突，串行化效果不变。
     """
-    from sqlalchemy import select as sa_select
     from sqlalchemy.dialects import postgresql, sqlite
 
+    from app.services.ratings import lock_menu_item  # noqa: F401 - 确保实现被导入
+
     statement = (
-        sa_select(MenuItem).where(MenuItem.id == "x").with_for_update()
+        select(MenuItem).where(MenuItem.id == "x").with_for_update(key_share=True)
     )
-    assert "FOR UPDATE" in str(statement.compile(dialect=postgresql.dialect()))
-    # SQLite 不支持该语法，必须被安全地编译掉而不是报错
-    assert "FOR UPDATE" not in str(statement.compile(dialect=sqlite.dialect()))
+    rendered = str(statement.compile(dialect=postgresql.dialect()))
+    assert "FOR NO KEY UPDATE" in rendered
+    # SQLite 不支持行锁语法，必须被安全编译掉而不是报错
+    assert "FOR" not in str(statement.compile(dialect=sqlite.dialect())).split("WHERE")[-1]
 
 
 def test_recalculation_locks_before_it_aggregates(concurrent_db):
