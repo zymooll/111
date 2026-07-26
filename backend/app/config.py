@@ -49,6 +49,8 @@ class Settings(BaseSettings):
     recommendation_queue_size: int = 256
     recommendation_breaker_threshold: int = 3
     recommendation_breaker_cooldown_seconds: float = 120.0
+    #: 单飞锁的最长等待；超时后自己构建，绝不让请求线程为别人的构建排队。
+    recommendation_build_wait_seconds: float = 1.0
     cors_origins: Annotated[list[str], NoDecode] = Field(
         default_factory=lambda: [
             "http://localhost:7991",

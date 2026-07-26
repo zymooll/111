@@ -15,6 +15,7 @@ from app.services.feed import (
     FeedQuery,
     RecommendationService,
     owns_snapshot,
+    query_fingerprint,
     snapshot_key,
 )
 from app.services.profiles import recommendation_profile
@@ -77,16 +78,21 @@ def recommendation_feed(
     )
     service: RecommendationService = request.app.state.recommendations
 
+    query_fp = query_fingerprint(query, effective_max_price=effective_max_price)
     snapshot = None
     cache_state = "miss"
     if snapshot_id:
         candidate = service.store.by_id(db, snapshot_id)
         if candidate is not None and owns_snapshot(
-            candidate, campus_id=campus_id, actor_type=kind, actor_id=actor_id
+            candidate,
+            campus_id=campus_id,
+            actor_type=kind,
+            actor_id=actor_id,
+            query_fp=query_fp,
         ):
             snapshot, cache_state = candidate, "cursor"
         else:
-            # 快照已被清理，或这个游标根本不属于当前调用方：不采信它，改用自己的键重建。
+            # 快照已被清理、不属于当前调用方、或筛选条件已经变了：一律不采信这个游标。
             # 位置保留下来让无限滚动能继续，但把降级情况写进响应头而不是悄悄发生。
             cache_state = "cursor-rebuilt"
             logger.info("Unusable feed cursor for campus %s; rebuilding", campus_id)

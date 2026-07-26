@@ -420,3 +420,116 @@ def test_singleflight_lock_table_stays_bounded(client, demo_ids):
     for index in range(40):
         feed(client, demo_ids, limit=3, max_price_cents=500 + index)
     assert len(service._locks) <= MAX_TRACKED_LOCKS
+
+
+def test_changing_filters_invalidates_the_cursor(client, demo_ids):
+    """带着旧游标切换筛选条件，绝不能把不符合条件的旧快照当成"第二页"返回。"""
+    categories = client.get(
+        "/api/v1/categories", params={"campus_id": demo_ids["campus"]}
+    ).json()
+    narrow = categories[0]["children"][0]["id"] if categories[0].get("children") else categories[0]["id"]
+
+    unfiltered = feed(client, demo_ids, limit=5)
+    cursor = unfiltered.json()["next_cursor"]
+
+    switched = client.get(
+        "/api/v1/recommendations/feed",
+        params={
+            "campus_id": demo_ids["campus"],
+            "limit": 5,
+            "category_id": narrow,
+            "cursor": cursor,
+        },
+    )
+    assert switched.status_code == 200
+    assert switched.headers["X-Recommendation-Cache"] == "cursor-rebuilt"
+
+    legitimate = {
+        item["id"]
+        for item in feed(client, demo_ids, limit=50, category_id=narrow).json()["items"]
+    }
+    returned = {item["id"] for item in switched.json()["items"]}
+    assert returned <= legitimate, "返回了不属于该筛选条件的菜品"
+
+
+def test_same_filters_keep_the_cursor_alive(client, demo_ids):
+    """筛选没变时游标必须继续有效，否则翻页会退化成每页重建。"""
+    first = feed(client, demo_ids, limit=5, max_price_cents=5000)
+    cursor = first.json()["next_cursor"]
+    second = client.get(
+        "/api/v1/recommendations/feed",
+        params={
+            "campus_id": demo_ids["campus"],
+            "limit": 5,
+            "max_price_cents": 5000,
+            "cursor": cursor,
+        },
+    )
+    assert second.headers["X-Recommendation-Cache"] == "cursor"
+    assert not set(page_ids(first)) & set(page_ids(second))
+
+
+def test_affinity_failure_never_loses_behaviour_events(client, demo_ids, monkeypatch):
+    """画像只是派生物；它出错不该把用户真实产生的行为事件一起回滚掉。"""
+    from sqlalchemy.exc import OperationalError
+
+    def exploding_apply(*_args, **_kwargs):
+        raise OperationalError("boom", {}, Exception("affinity is down"))
+
+    monkeypatch.setattr("app.api.events.apply_events", exploding_apply)
+    guest = client.post("/api/v1/auth/guest").json()
+    response = client.post(
+        "/api/v1/interactions",
+        headers=bearer(guest["access_token"]),
+        json={
+            "campus_id": demo_ids["campus"],
+            "events": [
+                {
+                    "event_id": "resilient-click-0001",
+                    "event_type": "click",
+                    "menu_item_id": demo_ids["item_one"],
+                }
+            ],
+        },
+    )
+    assert response.status_code == 200, response.text
+
+    from app.models import InteractionEvent
+
+    with client.app.state.database.session_factory() as db:
+        stored = (
+            db.query(InteractionEvent)
+            .filter(InteractionEvent.event_id == "resilient-click-0001")
+            .one_or_none()
+        )
+    assert stored is not None, "画像失败把已接受的行为事件也回滚了"
+
+
+def test_build_never_blocks_indefinitely_on_a_held_lock(client, demo_ids, monkeypatch):
+    """单飞锁抢不到时必须自己构建，绝不让请求线程为别人的构建排队。"""
+    service = client.app.state.recommendations
+    monkeypatch.setattr(
+        client.app.state.settings, "recommendation_build_wait_seconds", 0.05
+    )
+    key_lock = None
+
+    original = service._lock_for
+
+    def capture(key):
+        nonlocal key_lock
+        key_lock = original(key)
+        return key_lock
+
+    monkeypatch.setattr(service, "_lock_for", capture)
+    feed(client, demo_ids, limit=5)          # 先建一次以拿到那把锁
+    assert key_lock is not None
+    key_lock.acquire()                        # 模拟另一个线程正在构建
+    try:
+        started = time.perf_counter()
+        response = feed(client, demo_ids, limit=5)
+        elapsed = time.perf_counter() - started
+    finally:
+        key_lock.release()
+
+    assert response.status_code == 200
+    assert elapsed < 2.0, f"抢不到锁时阻塞了 {elapsed:.2f}s"

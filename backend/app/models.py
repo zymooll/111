@@ -463,6 +463,8 @@ class RecommendationSnapshot(Base):
     actor_type: Mapped[str] = mapped_column(String(20), nullable=False)
     actor_id: Mapped[str] = mapped_column(String(36), nullable=False)
     filter_fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
+    #: 仅覆盖显式请求筛选，用于校验游标是否仍适用于当前这组筛选条件。
+    query_fingerprint: Mapped[str] = mapped_column(String(64), default="", nullable=False)
     ranked_item_ids: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
     reasons: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
     #: deterministic | ai —— 用于可观测性，AI 不可用时永远停在 deterministic。

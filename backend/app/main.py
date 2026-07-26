@@ -42,18 +42,34 @@ def create_app(settings: Settings | None = None, database: Database | None = Non
                     seed_demo_data(db)
         settings.upload_dir.mkdir(parents=True, exist_ok=True)
         background: list[asyncio.Task] = []
+
+        def _report_death(task: asyncio.Task) -> None:
+            # 后台任务无声死亡是最难查的一类故障：没有日志，只是功能慢慢不再生效。
+            if task.cancelled():
+                return
+            error = task.exception()
+            if error is not None:
+                logger.error("Background task %s died", task.get_name(), exc_info=error)
+
         if not settings.testing:
             # 测试里不起后台循环：推荐作业改由 service.drain() 显式排空，结果才确定。
             background.append(
                 asyncio.create_task(
-                    retention_loop(
+                    name="retention-sweep",
+                    coro=retention_loop(
                         database.session_factory,
                         idempotency_retention_hours=settings.idempotency_retention_hours,
                         snapshot_grace_seconds=settings.recommendation_snapshot_grace_seconds,
                     )
                 )
             )
-            background.append(asyncio.create_task(app.state.recommendations.run_worker()))
+            background.append(
+                asyncio.create_task(
+                    app.state.recommendations.run_worker(), name="recommendation-worker"
+                )
+            )
+            for task in background:
+                task.add_done_callback(_report_death)
         yield
         for task in background:
             task.cancel()

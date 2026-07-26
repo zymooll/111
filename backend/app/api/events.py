@@ -4,7 +4,7 @@ import logging
 
 from fastapi import APIRouter
 from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.dependencies import DbSession, PrincipalRequired
 from app.models import InteractionEvent
@@ -58,13 +58,25 @@ def record_interactions(
             continue
         accepted.append(record)
 
-    # 增量维护画像：把标签/区域解析的开销摊还在写入侧，推荐读路径不再扫原始事件。
-    apply_events(
-        db,
-        campus_id=payload.campus_id,
-        actor_type=principal.kind,
-        actor_id=principal.id,
-        events=accepted,
-    )
+    # 行为数据先落地。画像只是派生物，它出问题不该把用户真实产生的事件一起回滚掉。
     db.commit()
+
+    # 增量维护画像：把标签/区域解析的开销摊还在写入侧，推荐读路径不再扫原始事件。
+    try:
+        apply_events(
+            db,
+            campus_id=payload.campus_id,
+            actor_type=principal.kind,
+            actor_id=principal.id,
+            events=accepted,
+        )
+        db.commit()
+    except SQLAlchemyError:
+        db.rollback()
+        logger.warning(
+            "Affinity update failed for %s %s; events are still recorded",
+            principal.kind,
+            principal.id,
+            exc_info=True,
+        )
     return Message(message="行为事件已接收")

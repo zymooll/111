@@ -162,6 +162,22 @@ def _string_list(value: object) -> list[str]:
     return [str(item) for item in value if isinstance(item, (str, int, float))]
 
 
+def query_fingerprint(query: FeedQuery, *, effective_max_price: int | None) -> str:
+    """Fingerprint of the explicit request filters only.
+
+    与快照键分开：键里还含画像信息（口味/忌口/收藏），那些变化时应当继续沿用旧游标以保证
+    翻页连续；而筛选条件变化意味着用户要的是另一个集合，旧游标必须作废。
+    """
+    return fingerprint(
+        {
+            "category_id": query.category_id,
+            "area_id": query.area_id,
+            "search": query.normalized_search(),
+            "max_price_cents": effective_max_price,
+        }
+    )
+
+
 def snapshot_key(
     query: FeedQuery,
     preferences: dict[str, Any],
@@ -209,14 +225,24 @@ def snapshot_key(
 
 
 def owns_snapshot(
-    snapshot: Snapshot, *, campus_id: str, actor_type: str | None, actor_id: str | None
+    snapshot: Snapshot,
+    *,
+    campus_id: str,
+    actor_type: str | None,
+    actor_id: str | None,
+    query_fp: str,
 ) -> bool:
-    """A cursor may only resume a snapshot the caller is entitled to read.
+    """A cursor may only resume a snapshot that matches both the caller and the query.
 
-    快照 id 由客户端携带，因此必须服务端校验归属：否则伪造/转发一个游标就能读到别人的
-    个性化排序，而排序本身泄露了对方被推断出的口味。
+    两道校验缺一不可：
+    - 归属：快照 id 由客户端携带，不校验就能靠转发游标读到别人的个性化排序，而排序本身
+      泄露了对方被推断出的口味。
+    - 筛选：翻页途中改了品类/区域/搜索/价格却仍带旧游标时，旧快照里的条目根本不满足新
+      筛选条件，必须作废重建而不是把不符合的结果当成"第二页"返回。
     """
     if snapshot.key.campus_id != campus_id:
+        return False
+    if snapshot.query_fingerprint != query_fp:
         return False
     if snapshot.key.actor_type == SHARED_ACTOR_TYPE:
         return True
@@ -270,6 +296,7 @@ class RecommendationService:
             "enrich_failed": 0,
             "enrich_skipped": 0,
             "queue_dropped": 0,
+            "build_contended": 0,
         }
 
     @property
@@ -324,6 +351,9 @@ class RecommendationService:
         return self.store.save(
             db,
             key=key,
+            query_fingerprint=query_fingerprint(
+                query, effective_max_price=query.max_price_cents
+            ),
             ranked_item_ids=[item.id for item, _ in ranked],
             reasons={item.id: fallback_reason(item, preferences) for item, _ in ranked},
             source=SOURCE_DETERMINISTIC,
@@ -361,17 +391,27 @@ class RecommendationService:
             self.metrics["stale"] += 1
             return BuildOutcome(existing, "stale")
 
-        # 冷启动：同一把键上并发的请求只构建一次，其余等待并复用结果。
-        with self._lock_for(key.cache_key()):
+        # 冷启动：同一把键上并发的请求只构建一次，其余复用结果。
+        # 但绝不无限期等待——同步端点跑在 anyio 有限大小的线程池里，一次惊群若变成排队，
+        # 会把线程全部占满，连不相关的端点都会超时。抢不到锁就自己构建，宁可重复劳动。
+        lock = self._lock_for(key.cache_key())
+        acquired = lock.acquire(timeout=self.settings.recommendation_build_wait_seconds)
+        try:
             rebuilt = self.store.latest(db, key)
             if rebuilt is not None and rebuilt.is_fresh(now):
                 self.metrics["hit"] += 1
                 return BuildOutcome(rebuilt, "hit")
+            if not acquired:
+                self.metrics["build_contended"] += 1
+                logger.info("Snapshot build lock busy; building without single-flight")
             snapshot = self.build_snapshot(
                 db, key=key, query=query, preferences=preferences, favorites=favorites
             )
             self.metrics["miss"] += 1
             return BuildOutcome(snapshot, "miss")
+        finally:
+            if acquired:
+                lock.release()
 
     def schedule_enrichment(self, snapshot: Snapshot, *, preferences: dict[str, Any]) -> None:
         if not self.ai_enabled or snapshot.source == SOURCE_AI:
@@ -435,6 +475,7 @@ class RecommendationService:
             self.store.save(
                 db,
                 key=snapshot.key,
+                query_fingerprint=snapshot.query_fingerprint,
                 ranked_item_ids=reordered + snapshot.ranked_item_ids[len(head) :],
                 reasons=reasons,
                 source=SOURCE_AI,

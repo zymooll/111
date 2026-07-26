@@ -49,6 +49,9 @@ class SnapshotKey:
 class Snapshot:
     id: str
     key: SnapshotKey
+    #: 只覆盖显式请求筛选（品类/区域/搜索/价格上限）的指纹。游标续读时必须逐字匹配，
+    #: 否则改了筛选却带着旧游标会拿到未筛选的结果；画像变化则不在此列，以保翻页连续。
+    query_fingerprint: str
     ranked_item_ids: list[str]
     reasons: dict[str, str]
     source: str
@@ -69,6 +72,7 @@ class Snapshot:
             "actor_type": self.key.actor_type,
             "actor_id": self.key.actor_id,
             "filter_fingerprint": self.key.filter_fingerprint,
+            "query_fingerprint": self.query_fingerprint,
             "ranked_item_ids": self.ranked_item_ids,
             "reasons": self.reasons,
             "source": self.source,
@@ -87,6 +91,7 @@ class Snapshot:
                 actor_id=str(payload["actor_id"]),
                 filter_fingerprint=str(payload["filter_fingerprint"]),
             ),
+            query_fingerprint=str(payload.get("query_fingerprint", "")),
             ranked_item_ids=[str(value) for value in payload["ranked_item_ids"]],
             reasons={str(k): str(v) for k, v in (payload.get("reasons") or {}).items()},
             source=str(payload.get("source", SOURCE_DETERMINISTIC)),
@@ -105,6 +110,7 @@ class Snapshot:
                 actor_id=row.actor_id,
                 filter_fingerprint=row.filter_fingerprint,
             ),
+            query_fingerprint=row.query_fingerprint,
             ranked_item_ids=[str(value) for value in (row.ranked_item_ids or [])],
             reasons={str(k): str(v) for k, v in (row.reasons or {}).items()},
             source=row.source,
@@ -226,6 +232,7 @@ class SnapshotStore:
         db: Session,
         *,
         key: SnapshotKey,
+        query_fingerprint: str,
         ranked_item_ids: list[str],
         reasons: dict[str, str],
         source: str,
@@ -239,6 +246,7 @@ class SnapshotStore:
             actor_type=key.actor_type,
             actor_id=key.actor_id,
             filter_fingerprint=key.filter_fingerprint,
+            query_fingerprint=query_fingerprint,
             ranked_item_ids=ranked_item_ids,
             reasons=reasons,
             source=source,
