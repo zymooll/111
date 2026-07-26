@@ -18,6 +18,7 @@ from app.api.router import router as api_router
 from app.config import Settings, get_settings
 from app.database import Database
 from app.seed import seed_demo_data
+from app.services.feed import RecommendationService
 from app.services.idempotency import idempotency_middleware
 from app.services.rate_limit import RateLimiter
 from app.services.retention import retention_loop
@@ -40,19 +41,24 @@ def create_app(settings: Settings | None = None, database: Database | None = Non
                 with database.session_factory() as db:
                     seed_demo_data(db)
         settings.upload_dir.mkdir(parents=True, exist_ok=True)
-        sweeper = None
+        background: list[asyncio.Task] = []
         if not settings.testing:
-            sweeper = asyncio.create_task(
-                retention_loop(
-                    database.session_factory,
-                    idempotency_retention_hours=settings.idempotency_retention_hours,
+            # 测试里不起后台循环：推荐作业改由 service.drain() 显式排空，结果才确定。
+            background.append(
+                asyncio.create_task(
+                    retention_loop(
+                        database.session_factory,
+                        idempotency_retention_hours=settings.idempotency_retention_hours,
+                        snapshot_grace_seconds=settings.recommendation_snapshot_grace_seconds,
+                    )
                 )
             )
+            background.append(asyncio.create_task(app.state.recommendations.run_worker()))
         yield
-        if sweeper is not None:
-            sweeper.cancel()
+        for task in background:
+            task.cancel()
             with suppress(asyncio.CancelledError):
-                await sweeper
+                await task
         database.dispose()
 
     app = FastAPI(
@@ -72,6 +78,7 @@ def create_app(settings: Settings | None = None, database: Database | None = Non
     app.state.rate_limiter = RateLimiter(
         settings.redis_url, enabled=settings.rate_limit_enabled
     )
+    app.state.recommendations = RecommendationService(settings, database)
     settings.upload_dir.mkdir(parents=True, exist_ok=True)
 
     # add_middleware 是头插：最后注册的位于最外层。顺序必须让 CORS 包住幂等中间件，

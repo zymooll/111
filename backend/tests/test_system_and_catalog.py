@@ -23,7 +23,7 @@ from app.models import (
 )
 from app.seed import seed_demo_data
 from app.seed_catalog import EXTENDED_ITEM_COUNT
-from tests.conftest import bearer, login
+from tests.conftest import bearer, drain_recommendations, login
 
 
 def test_public_catalog_route_boundaries():
@@ -306,7 +306,9 @@ def test_deepseek_profile_excludes_raw_search_text(client, demo_ids, monkeypatch
     async def capture_profile(_adapter, _candidates, preferences):
         captured.update(preferences)
 
-    monkeypatch.setattr("app.api.discovery.DeepSeekClient.rerank", capture_profile)
+    # 增强现在发生在后台队列里，所以补丁打在推荐服务上，而不是 HTTP 处理函数上。
+    monkeypatch.setattr("app.services.feed.DeepSeekClient.rerank", capture_profile)
+    monkeypatch.setattr(client.app.state.settings, "deepseek_api_key", "test-key")
     guest = client.post("/api/v1/auth/guest").json()
     headers = {"Authorization": f"Bearer {guest['access_token']}"}
     raw_search = "student-private@example.com"
@@ -332,6 +334,12 @@ def test_deepseek_profile_excludes_raw_search_text(client, demo_ids, monkeypatch
     )
 
     assert response.status_code == 200
+    # 读路径绝不调用 LLM：请求返回时增强作业才刚入队。
+    assert captured == {}
+    assert response.headers["X-Recommendation-Source"] == "deterministic"
+
+    assert drain_recommendations(client) >= 1
+    assert captured, "背景增强应当把画像交给 DeepSeek"
     assert raw_search not in str(captured)
     assert captured["behavior_profile"]["search_signal_count"] == 1
 

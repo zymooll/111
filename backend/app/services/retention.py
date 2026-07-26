@@ -12,7 +12,12 @@ from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import delete, or_
 
-from app.models import AccountActionToken, IdempotencyRecord, RefreshSession
+from app.models import (
+    AccountActionToken,
+    IdempotencyRecord,
+    RecommendationSnapshot,
+    RefreshSession,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -20,11 +25,23 @@ SWEEP_INTERVAL_SECONDS = 3600
 REVOKED_GRACE_DAYS = 7
 
 
-def purge_expired(session_factory, *, idempotency_retention_hours: int) -> dict[str, int]:
+def purge_expired(
+    session_factory,
+    *,
+    idempotency_retention_hours: int,
+    snapshot_grace_seconds: int = 1800,
+) -> dict[str, int]:
     """Delete records that can no longer affect any request. Returns per-table counts."""
     now = datetime.now(UTC)
     removed: dict[str, int] = {}
     with session_factory() as db:
+        # 快照过期后再留一段宽限期，让仍在翻页的游标能读到同一份排序。
+        removed["recommendation_snapshots"] = db.execute(
+            delete(RecommendationSnapshot).where(
+                RecommendationSnapshot.expires_at
+                < now - timedelta(seconds=snapshot_grace_seconds)
+            )
+        ).rowcount or 0
         removed["idempotency_records"] = db.execute(
             delete(IdempotencyRecord).where(
                 IdempotencyRecord.created_at
@@ -52,13 +69,19 @@ def purge_expired(session_factory, *, idempotency_retention_hours: int) -> dict[
     return removed
 
 
-async def retention_loop(session_factory, *, idempotency_retention_hours: int) -> None:
+async def retention_loop(
+    session_factory,
+    *,
+    idempotency_retention_hours: int,
+    snapshot_grace_seconds: int = 1800,
+) -> None:
     while True:
         try:
             removed = await asyncio.to_thread(
                 purge_expired,
                 session_factory,
                 idempotency_retention_hours=idempotency_retention_hours,
+                snapshot_grace_seconds=snapshot_grace_seconds,
             )
             if any(removed.values()):
                 logger.info("Retention sweep removed %s", removed)

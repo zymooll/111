@@ -77,3 +77,13 @@ def admin_login(client: TestClient) -> dict:
 
 def bearer(token: str) -> dict[str, str]:
     return {"Authorization": f"Bearer {token}"}
+
+
+def drain_recommendations(client: TestClient) -> int:
+    """Run the queued background recommendation jobs to completion.
+
+    生产里这些作业由 lifespan 起的 worker 消费；测试里显式排空，结果才是确定的。
+    """
+    import asyncio
+
+    return asyncio.run(client.app.state.recommendations.drain())

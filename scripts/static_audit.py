@@ -133,8 +133,16 @@ def main() -> None:
         '"/recommendations/feed"',
         '"/search/suggestions"',
         '"/search"',
+        "owns_snapshot",
+    )
+    # 推荐读路径必须保持"零 LLM"：排序与重排都发生在快照构建期。
+    forbid_terms("backend/app/api/discovery.py", "DeepSeekClient", "deterministic_rank")
+    require_terms(
+        "backend/app/services/feed.py",
         "DeepSeekClient",
         "deterministic_rank",
+        "recall_candidates",
+        "schedule_enrichment",
     )
     require_terms(
         "backend/app/api/catalog.py",
@@ -235,12 +243,20 @@ def main() -> None:
     )
     require_terms(
         "backend/app/services/profiles.py",
-        "EVENT_WEIGHTS",
         "behavior_profile",
         "search_signal_count",
-        "Impressions are intentionally excluded",
         "campus_id",
     )
+    # 行为权重与"曝光不计权"的约定随增量画像一起迁到了 affinity.py。
+    require_terms(
+        "backend/app/services/affinity.py",
+        "EVENT_WEIGHTS",
+        "曝光(impression)刻意不计权",
+        "decay_multiplier",
+        "apply_events",
+    )
+    # 读路径不得再扫描原始行为事件表，否则增量物化就白做了。
+    forbid_terms("backend/app/services/profiles.py", "InteractionEvent")
     require_terms("backend/app/services/ratings.py", "ReviewStatus.PUBLISHED", "math.sqrt", "campus_average")
     require_terms("backend/app/services/map_clusters.py", "has_favorite", "GCJ-02")
 

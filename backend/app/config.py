@@ -39,6 +39,16 @@ class Settings(BaseSettings):
     expose_debug_tokens: bool = False
     rate_limit_enabled: bool = True
     idempotency_retention_hours: int = 48
+
+    # 推荐流水线：候选召回上限、快照有效期、以及 AI 增强的并发与熔断参数。
+    recommendation_candidate_limit: int = 300
+    recommendation_snapshot_ttl_seconds: int = 600
+    #: 过期快照多留一段时间，让仍在翻页的游标能读到同一份排序。
+    recommendation_snapshot_grace_seconds: int = 1800
+    recommendation_ai_candidates: int = 30
+    recommendation_queue_size: int = 256
+    recommendation_breaker_threshold: int = 3
+    recommendation_breaker_cooldown_seconds: float = 120.0
     cors_origins: Annotated[list[str], NoDecode] = Field(
         default_factory=lambda: [
             "http://localhost:7991",

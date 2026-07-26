@@ -400,6 +400,80 @@ class ImportJob(Base):
     )
 
 
+class ActorAffinity(Base):
+    """Materialised taste/area affinity, updated incrementally as behaviour arrives.
+
+    取代"每次推荐请求都从最近 120 条原始事件重算画像"。分数在写入时做懒惰指数衰减
+    （按 decayed_at 与当前时间的间隔一次性折算），因此不需要任何全表定时衰减扫描。
+    """
+
+    __tablename__ = "actor_affinities"
+    __table_args__ = (
+        UniqueConstraint(
+            "campus_id", "actor_type", "actor_id", name="uq_affinity_campus_actor"
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    campus_id: Mapped[str] = mapped_column(
+        ForeignKey("campuses.id", ondelete="CASCADE"), index=True, nullable=False
+    )
+    actor_type: Mapped[str] = mapped_column(String(20), nullable=False)
+    actor_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    tag_scores: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+    area_scores: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+    signal_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    #: 搜索行为单独计数：即使搜索词没命中任何标签，它仍然是一个有效的兴趣信号。
+    search_signals: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    #: 每次增量更新自增；推荐快照记录自己是基于哪一版画像构建的。
+    revision: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    decayed_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False
+    )
+
+
+class RecommendationSnapshot(Base):
+    """An immutable ordered slice of the catalogue, built off the request path.
+
+    请求路径只做"取快照 + 按位置切片"，因此翻页天然稳定：游标带上快照 id，同一轮浏览
+    始终读同一份排序，即使期间后台写入了 AI 增强版也不会串页。
+    """
+
+    __tablename__ = "recommendation_snapshots"
+    __table_args__ = (
+        Index(
+            "ix_snapshot_lookup",
+            "campus_id",
+            "actor_type",
+            "actor_id",
+            "filter_fingerprint",
+            "built_at",
+        ),
+        Index("ix_snapshot_expires_at", "expires_at"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    campus_id: Mapped[str] = mapped_column(
+        ForeignKey("campuses.id", ondelete="CASCADE"), index=True, nullable=False
+    )
+    #: 未登录/无行为的冷启动基线用 actor_type='shared'，可跨用户复用。
+    actor_type: Mapped[str] = mapped_column(String(20), nullable=False)
+    actor_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    filter_fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
+    ranked_item_ids: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
+    reasons: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+    #: deterministic | ai —— 用于可观测性，AI 不可用时永远停在 deterministic。
+    source: Mapped[str] = mapped_column(String(20), default="deterministic", nullable=False)
+    profile_revision: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    built_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, nullable=False
+    )
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
 class IdempotencyRecord(Base):
     __tablename__ = "idempotency_records"
     __table_args__ = (

@@ -1,18 +1,12 @@
 from __future__ import annotations
 
-from collections import Counter
 from typing import Any
 
-from sqlalchemy import String, cast, or_, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import GuestSession, InteractionEvent, MenuItem, Merchant, UserProfile
-
-EVENT_WEIGHTS = {
-    "click": 3,
-    "favorite": 4,
-    "view": 2,
-}
+from app.models import GuestSession, UserProfile
+from app.services.affinity import affinity_signals, load_affinity
 
 
 def recommendation_profile(
@@ -20,16 +14,15 @@ def recommendation_profile(
     principal: object | None,
     *,
     campus_id: str,
-    event_limit: int = 120,
 ) -> dict[str, Any]:
-    """Build a de-identified profile from explicit preferences and recent behavior.
+    """Combine explicit preferences with the materialised behaviour affinity.
 
-    Impressions are intentionally excluded from preference inference so the system does
-    not reinforce items merely because it displayed them. The resulting dictionary is
-    safe to send to the optional DeepSeek reranker: it contains tags, campus area IDs,
-    budget and aggregate signal counts, but no account identifiers or raw review text.
+    行为信号来自 actor_affinities（写入时增量维护），读路径只有一次主键查询——不再扫描
+    最近 N 条原始事件，也不再为每个历史搜索词各发一次 LIKE。
+
+    返回值可以安全地交给可选的 DeepSeek 重排：只含标签、校园区域 ID、预算与聚合信号数，
+    不含账号标识，也不含原始搜索词或评价文本。
     """
-
     explicit = _explicit_preferences(db, principal, campus_id)
     if principal is None:
         return explicit
@@ -39,101 +32,32 @@ def recommendation_profile(
     if not kind or not actor_id:
         return explicit
 
-    events = list(
-        db.scalars(
-            select(InteractionEvent)
-            .where(
-                InteractionEvent.actor_type == kind,
-                InteractionEvent.actor_id == actor_id,
-                InteractionEvent.campus_id == campus_id,
-            )
-            .order_by(InteractionEvent.occurred_at.desc())
-            .limit(event_limit)
-        ).all()
+    signals = affinity_signals(
+        load_affinity(db, campus_id=campus_id, actor_type=kind, actor_id=actor_id)
     )
-    if not events:
-        return explicit
-
-    item_ids = {event.menu_item_id for event in events if event.menu_item_id}
-    merchant_ids = {event.merchant_id for event in events if event.merchant_id}
-    item_context: dict[str, tuple[list[str], str | None]] = {}
-    if item_ids:
-        rows = db.execute(
-            select(MenuItem.id, MenuItem.tags, Merchant.area_id)
-            .join(Merchant, Merchant.id == MenuItem.merchant_id)
-            .where(MenuItem.id.in_(item_ids))
-            .where(MenuItem.campus_id == campus_id)
-        ).all()
-        item_context = {
-            str(item_id): ([str(tag) for tag in (tags or [])], area_id)
-            for item_id, tags, area_id in rows
-        }
-
-    merchant_areas: dict[str, str | None] = {}
-    if merchant_ids:
-        merchant_areas = {
-            str(merchant_id): area_id
-            for merchant_id, area_id in db.execute(
-                select(Merchant.id, Merchant.area_id).where(Merchant.id.in_(merchant_ids))
-                .where(Merchant.campus_id == campus_id)
-            ).all()
-        }
-
-    tag_scores: Counter[str] = Counter()
-    area_scores: Counter[str] = Counter()
-    search_queries: list[str] = []
-    weighted_signals = 0
-    for event in events:
-        weight = EVENT_WEIGHTS.get(event.event_type, 0)
-        if weight:
-            weighted_signals += 1
-            tags, item_area = item_context.get(str(event.menu_item_id), ([], None))
-            tag_scores.update(dict.fromkeys(tags, weight))
-            area_id = item_area or merchant_areas.get(str(event.merchant_id))
-            if area_id:
-                area_scores[str(area_id)] += weight
-        if event.event_type == "search" and len(search_queries) < 5:
-            raw_query = (event.metadata_json or {}).get("query")
-            if isinstance(raw_query, str) and raw_query.strip():
-                search_queries.append(raw_query.strip()[:40])
-
-    for search_query in _deduplicate(search_queries):
-        escaped_query = (
-            search_query.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
-        )
-        matched_items = db.scalars(
-            select(MenuItem)
-            .where(
-                MenuItem.is_active.is_(True),
-                MenuItem.campus_id == campus_id,
-                or_(
-                    MenuItem.name.like(f"%{escaped_query}%", escape="\\"),
-                    cast(MenuItem.tags, String).like(f"%{escaped_query}%", escape="\\"),
-                ),
-            )
-            .limit(5)
-        ).all()
-        for item in matched_items:
-            tag_scores.update({str(tag): 2 for tag in (item.tags or [])})
+    if not signals["signal_count"] and not signals["search_signal_count"]:
+        profile = dict(explicit)
+        profile["profile_revision"] = signals["revision"]
+        return profile
 
     avoid = {
         str(value)
         for value in explicit.get("avoid", [])
         if isinstance(value, (str, int, float))
     }
-    explicit_tastes = _string_list(explicit.get("tastes"))
-    inferred_tastes = [tag for tag, _score in tag_scores.most_common(6) if tag not in avoid]
-    explicit_areas = _string_list(explicit.get("frequent_area_ids"))
-    inferred_areas = [area_id for area_id, _score in area_scores.most_common(4)]
+    inferred_tastes = [tag for tag in signals["tastes"][:6] if tag not in avoid]
 
     profile = dict(explicit)
-    profile["tastes"] = _deduplicate([*explicit_tastes, *inferred_tastes])[:12]
-    profile["frequent_area_ids"] = _deduplicate([*explicit_areas, *inferred_areas])[:10]
+    profile["tastes"] = _deduplicate([*_string_list(explicit.get("tastes")), *inferred_tastes])[:12]
+    profile["frequent_area_ids"] = _deduplicate(
+        [*_string_list(explicit.get("frequent_area_ids")), *signals["areas"][:4]]
+    )[:10]
     profile["behavior_profile"] = {
-        "signal_count": weighted_signals,
+        "signal_count": signals["signal_count"],
         "inferred_tastes": inferred_tastes,
-        "search_signal_count": len(_deduplicate(search_queries)),
+        "search_signal_count": signals["search_signal_count"],
     }
+    profile["profile_revision"] = signals["revision"]
     return profile
 
 

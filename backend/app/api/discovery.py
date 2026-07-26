@@ -1,24 +1,27 @@
 from __future__ import annotations
 
-import base64
+import logging
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Query, Request
-from sqlalchemy import and_, or_, select
+from fastapi import APIRouter, HTTPException, Query, Request, Response
+from sqlalchemy import or_, select
 
 from app.api.presenters import favorite_merchant_ids, present_item, present_merchants
 from app.dependencies import DbSession, OptionalPrincipal
 from app.models import MenuItem, Merchant
-from app.schemas import CursorPage, SearchResults, SearchSuggestion
-from app.services.campuses import (
-    require_area,
-    require_campus,
-    require_category,
+from app.schemas import CursorPage, MenuItemSummary, SearchResults, SearchSuggestion
+from app.services.campuses import require_campus
+from app.services.feed import (
+    FeedQuery,
+    RecommendationService,
+    owns_snapshot,
+    snapshot_key,
 )
-from app.services.deepseek import DeepSeekClient
-from app.services.hierarchy import area_with_descendants, category_with_descendants
 from app.services.profiles import recommendation_profile
-from app.services.recommendations import deterministic_rank, fallback_reason
+from app.services.recommendations import fallback_reason
+from app.services.snapshots import decode_cursor, encode_cursor
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["发现与搜索"])
 
@@ -29,22 +32,10 @@ def _actor(principal: object | None) -> tuple[str | None, str | None]:
     return principal.kind, principal.id
 
 
-def _decode_cursor(value: str | None) -> int:
-    if not value:
-        return 0
-    try:
-        return max(0, int(base64.urlsafe_b64decode(value + "==").decode()))
-    except (ValueError, UnicodeDecodeError) as exc:
-        raise HTTPException(status_code=422, detail="游标无效") from exc
-
-
-def _encode_cursor(offset: int) -> str:
-    return base64.urlsafe_b64encode(str(offset).encode()).rstrip(b"=").decode()
-
-
-@router.get("/recommendations/feed", response_model=CursorPage)
-async def recommendation_feed(
+@router.get("/recommendations/feed", response_model=CursorPage[MenuItemSummary])
+def recommendation_feed(
     request: Request,
+    response: Response,
     db: DbSession,
     principal: OptionalPrincipal,
     campus_id: str,
@@ -54,103 +45,111 @@ async def recommendation_feed(
     max_price_cents: int | None = Query(default=None, ge=0),
     cursor: str | None = None,
     limit: Annotated[int, Query(ge=1, le=50)] = 20,
-) -> CursorPage:
+) -> CursorPage[MenuItemSummary]:
+    """Serve a pre-ranked snapshot. This handler never calls the LLM.
+
+    刻意是同步函数：函数体全是同步 SQLAlchemy 调用，交给 FastAPI 的线程池执行，事件循环
+    才能腾出来跑后台增强 worker。写成 async 会让请求与后台任务互相饿死。
+
+    游标携带快照 id，所以同一轮浏览始终读同一份排序；后台可能同时写入 AI 增强版，但只会
+    被下一次全新的翻页起点命中，不会让当前这轮漏项或重项。
+    """
     require_campus(db, campus_id)
-    offset = _decode_cursor(cursor)
+    snapshot_id, offset = decode_cursor(cursor)
+    if offset < 0:
+        raise HTTPException(status_code=422, detail="游标无效")
+
     kind, actor_id = _actor(principal)
-    favorites = favorite_merchant_ids(
-        db, kind=kind, actor_id=actor_id, campus_id=campus_id
-    )
+    favorites = favorite_merchant_ids(db, kind=kind, actor_id=actor_id, campus_id=campus_id)
     preferences = recommendation_profile(db, principal, campus_id=campus_id)
 
-    conditions = [
-        MenuItem.is_active.is_(True),
-        Merchant.is_active.is_(True),
-        Merchant.campus_id == campus_id,
-        MenuItem.campus_id == campus_id,
-    ]
-    if category_id:
-        require_category(db, campus_id, category_id)
-        category_ids = category_with_descendants(db, category_id, campus_id)
-        conditions.append(
-            or_(
-                MenuItem.category_id.in_(category_ids),
-                Merchant.category_id.in_(category_ids),
-            )
-        )
-    if area_id:
-        require_area(db, campus_id, area_id)
-        conditions.append(
-            Merchant.area_id.in_(area_with_descendants(db, area_id, campus_id))
-        )
     preference_budget = preferences.get("budget_max_cents")
     effective_max_price = max_price_cents
     if effective_max_price is None and isinstance(preference_budget, int):
         effective_max_price = preference_budget
-    if effective_max_price is not None:
-        conditions.append(MenuItem.price_cents <= effective_max_price)
-    if search:
-        keyword = f"%{search.strip()}%"
-        conditions.append(or_(MenuItem.name.like(keyword), Merchant.name.like(keyword)))
 
-    pairs = list(
-        db.execute(
-            select(MenuItem, Merchant)
-            .join(Merchant, Merchant.id == MenuItem.merchant_id)
-            .where(and_(*conditions))
-            .order_by(
-                MenuItem.rating_avg.desc(),
-                MenuItem.review_count.desc(),
-                MenuItem.id,
-            )
-        ).all()
+    query = FeedQuery(
+        campus_id=campus_id,
+        category_id=category_id,
+        area_id=area_id,
+        search=search,
+        max_price_cents=effective_max_price,
     )
-    raw_avoided = preferences.get("avoid", [])
-    avoided = (
-        {str(value) for value in raw_avoided}
-        if isinstance(raw_avoided, list)
-        else set()
-    )
-    if avoided:
-        pairs = [pair for pair in pairs if not avoided.intersection(pair[0].tags)]
-    pairs = deterministic_rank(pairs, preferences, favorites)
+    service: RecommendationService = request.app.state.recommendations
 
-    candidates = [
-        {
-            "id": item.id,
-            "name": item.name,
-            "price_cents": item.price_cents,
-            "rating": item.rating_avg,
-            "tags": item.tags,
-            "merchant": merchant.name,
-        }
-        for item, merchant in pairs[:30]
-    ]
-    ai_reasons = await DeepSeekClient(request.app.state.settings).rerank(
-        candidates, preferences
-    )
-    if ai_reasons:
-        order = {item_id: index for index, item_id in enumerate(ai_reasons)}
-        pairs.sort(key=lambda pair: order.get(pair[0].id, len(order)))
+    snapshot = None
+    cache_state = "miss"
+    if snapshot_id:
+        candidate = service.store.by_id(db, snapshot_id)
+        if candidate is not None and owns_snapshot(
+            candidate, campus_id=campus_id, actor_type=kind, actor_id=actor_id
+        ):
+            snapshot, cache_state = candidate, "cursor"
+        else:
+            # 快照已被清理，或这个游标根本不属于当前调用方：不采信它，改用自己的键重建。
+            # 位置保留下来让无限滚动能继续，但把降级情况写进响应头而不是悄悄发生。
+            cache_state = "cursor-rebuilt"
+            logger.info("Unusable feed cursor for campus %s; rebuilding", campus_id)
 
-    selected = pairs[offset : offset + limit]
-    items = [
-        present_item(
-            item,
-            merchant,
+    if snapshot is None:
+        key = snapshot_key(
+            query,
+            preferences,
+            actor_type=kind,
+            actor_id=actor_id,
+            effective_max_price=effective_max_price,
             favorites=favorites,
-            reason=(ai_reasons or {}).get(item.id)
-            or fallback_reason(item, preferences),
         )
-        for item, merchant in selected
-    ]
-    next_offset = offset + len(selected)
-    has_more = next_offset < len(pairs)
-    return CursorPage(
-        items=items,
-        next_cursor=_encode_cursor(next_offset) if has_more else None,
+        outcome = service.acquire_snapshot(
+            db, key=key, query=query, preferences=preferences, favorites=favorites
+        )
+        snapshot = outcome.snapshot
+        if cache_state != "cursor-rebuilt":
+            cache_state = outcome.cache_state
+        service.schedule_enrichment(snapshot, preferences=preferences)
+
+    page_ids = snapshot.slice(offset, limit)
+    items = _load_in_order(db, campus_id, page_ids)
+    next_offset = offset + len(page_ids)
+    has_more = next_offset < len(snapshot.ranked_item_ids)
+
+    # 用响应头暴露命中情况与排序来源：便于运维观察，又不改动响应体契约。
+    response.headers["X-Recommendation-Source"] = snapshot.source
+    response.headers["X-Recommendation-Cache"] = cache_state
+
+    return CursorPage[MenuItemSummary](
+        items=[
+            present_item(
+                item,
+                merchant,
+                favorites=favorites,
+                reason=snapshot.reasons.get(item.id) or fallback_reason(item, preferences),
+            )
+            for item, merchant in items
+        ],
+        next_cursor=encode_cursor(snapshot.id, next_offset) if has_more else None,
         has_more=has_more,
     )
+
+
+def _load_in_order(
+    db: DbSession, campus_id: str, item_ids: list[str]
+) -> list[tuple[MenuItem, Merchant]]:
+    """Hydrate one page of snapshot ids, dropping anything delisted since it was built."""
+    if not item_ids:
+        return []
+    rows = db.execute(
+        select(MenuItem, Merchant)
+        .join(Merchant, Merchant.id == MenuItem.merchant_id)
+        .where(
+            MenuItem.id.in_(item_ids),
+            MenuItem.is_active.is_(True),
+            Merchant.is_active.is_(True),
+            MenuItem.campus_id == campus_id,
+        )
+    ).all()
+    by_id = {item.id: (item, merchant) for item, merchant in rows}
+    return [by_id[item_id] for item_id in item_ids if item_id in by_id]
 
 
 @router.get("/search/suggestions", response_model=list[SearchSuggestion])

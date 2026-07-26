@@ -49,6 +49,11 @@ class Database:
     def _enable_sqlite_foreign_keys(dbapi_connection: object, _: object) -> None:
         cursor = dbapi_connection.cursor()  # type: ignore[attr-defined]
         cursor.execute("PRAGMA foreign_keys=ON")
+        # 后台任务与请求线程会并发写入（推荐快照、亲和度、保留期清理）。默认的
+        # rollback journal 下写会互斥并立刻抛 "database is locked"；WAL 让读写并行，
+        # busy_timeout 给短暂的写冲突一个重试窗口而不是直接失败。
+        cursor.execute("PRAGMA journal_mode=WAL")
+        cursor.execute("PRAGMA busy_timeout=5000")
         cursor.close()
 
     def create_all(self) -> None:
